@@ -8,6 +8,8 @@ import android.app.Activity;
 import android.graphics.Typeface;
 import android.util.Log;
 import android.view.Menu;
+import android.widget.Toast;
+
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.engine.handler.timer.ITimerCallback;
@@ -21,7 +23,15 @@ import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.Background;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.util.FPSLogger;
+//import org.andengine.examples.TMXTiledMapExample;
+import org.andengine.extension.tmx.TMXLayer;
+import org.andengine.extension.tmx.TMXLoader;
+import org.andengine.extension.tmx.TMXProperties;
+import org.andengine.extension.tmx.TMXTile;
+import org.andengine.extension.tmx.TMXTileProperty;
 import org.andengine.extension.tmx.TMXTiledMap;
+import org.andengine.extension.tmx.TMXLoader.ITMXTilePropertiesListener;
+import org.andengine.extension.tmx.util.exception.TMXLoadException;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.font.Font;
 import org.andengine.opengl.font.FontFactory;
@@ -34,6 +44,8 @@ import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.color.Color;
+import org.andengine.util.debug.Debug;
+
 import android.util.Log;
 
 
@@ -43,8 +55,10 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	//========================================
 	//	Create Camera and Scenes
 	///=======================================
-	int CAMERA_WIDTH = 800;
-	int CAMERA_HEIGHT = 480;
+	//int CAMERA_WIDTH = 800;
+	//int CAMERA_HEIGHT = 480;
+	int CAMERA_WIDTH = 1280;
+	int CAMERA_HEIGHT = 720;
 	Camera camera;
 	Scene scene;
 	private TMXTiledMap mTMXTiledMap;
@@ -161,10 +175,42 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			scene = new Scene();
 			
 			//=====================================
-			//		Define Array
+			//		TMXTileMap
+			//=====================================
+			Log.i("Location:","TMXMap block");
+			try {
+				final TMXLoader tmxLoader = new TMXLoader(this.getAssets(), this.mEngine.getTextureManager(), TextureOptions.BILINEAR_PREMULTIPLYALPHA, this.getVertexBufferObjectManager(), new ITMXTilePropertiesListener() {
+					@Override
+					public void onTMXTileWithPropertiesCreated(final TMXTiledMap pTMXTiledMap, final TMXLayer pTMXLayer, final TMXTile pTMXTile, final TMXProperties<TMXTileProperty> pTMXTileProperties) {
+						/* We are going to count the tiles that have the property "cactus=true" set. */
+						if(pTMXTileProperties.containsTMXProperty("cactus", "true")) {
+							;//TMXTiledMapExample.this.mCactusCount++;
+						}
+					}
+				});
+				//Load the Desert Map
+				Log.i("Location:","TMXMap Loading...");
+				this.mTMXTiledMap = tmxLoader.loadFromAsset("tmx/desert.tmx");
+				Log.i("Location:","TMXMap Loaded");		
+				//this is our update thread
+				this.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						;//Toast.makeText(TMXTiledMapExample.this, "Cactus count in this TMXTiledMap: " + TMXTiledMapExample.this.mCactusCount, Toast.LENGTH_LONG).show();
+					}
+				});
+			} catch (final TMXLoadException e) {
+				Debug.e(e);
+			}
+
+			final TMXLayer tmxLayer = this.mTMXTiledMap.getTMXLayers().get(0);
+			scene.attachChild(tmxLayer);
+			
+			//=====================================
+			//		Tower & Enemy stuff
 			//=====================================
 			arrayTower 	= new ArrayList<Tower>();
-		//	arrayBullet	= new ArrayList<Sprite>(); //usesless // we have array of bullets in Tower class
+		//	arrayBullet	= new ArrayList<Sprite>(); //useless // we have array of bullets in Tower class
 			arrayEn		= new ArrayList<Sprite>();
 
 			Log.i("Location:","registerUpdateHandler");				
