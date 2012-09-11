@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import org.andengine.entity.modifier.MoveByModifier;
 import org.andengine.entity.sprite.Sprite;
+import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
+import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
@@ -11,18 +13,21 @@ import org.andengine.opengl.vbo.VertexBufferObjectManager;
 public class Tower extends Sprite{
 	//I am Tower class and have my own bullets //
 	//TODO fire range, acquisistion range, pattern/type.
+	public String texture = "tower.png";
+	
 	TextureRegion bullet;
 	float x,y;
 	Sprite SpriteBullet;
 	int speed = 500;
 	VertexBufferObjectManager vbom;
-	ArrayList<Sprite> arrayBullets;
+	ArrayList<Sprite> arrayBullets; //may change to spritebatch
 	
+	//constructor
 	public Tower(TextureRegion b,float pX, float pY, float pWidth, float pHeight,
 			TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
 		super(pX, pY, pWidth, pHeight, pTextureRegion,tvbom);
 		vbom = tvbom;
-		bullet =b; // we need bullet TextureRegoin to make one
+		bullet = b; // we need bullet TextureRegoin to make one
 		x=pX; //some x n y of the tower
 		y=pY;
 		arrayBullets = new ArrayList<Sprite>(); // create a new ArrayList
@@ -39,7 +44,7 @@ public class Tower extends Sprite{
 		MoveByModifier movMByod = new MoveByModifier(0.5f, gX,  gY);
 		SpriteBullet.registerEntityModifier(movMByod);
 		
-		speed=500; // needs to be the same as abovespeed
+		speed=500; // needs to be the same as the above speed
 		arrayBullets.add(SpriteBullet);
 	}
 	

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.app.Activity;
 import android.graphics.Typeface;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.widget.Toast;
@@ -51,6 +52,9 @@ import android.util.Log;
 
 public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchListener{
 	//I am Main class//
+
+	//TODO Use SpriteBatch class for bullets, enemies, towers.
+	
 	
 	//========================================
 	//	Create Camera and Scenes
@@ -113,9 +117,16 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	    @Override
 	    public EngineOptions onCreateEngineOptions() {
 			Log.i("Location:","onCreateEngineOptions");
-			camera = new Camera(0,0,CAMERA_WIDTH,CAMERA_HEIGHT);
-			//return new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED, new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), camera);
+			//=================================================================================//
+			//								Setup Camera
+			//================================================================================//			
+			DisplayMetrics metrics = new DisplayMetrics();
+			getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+			CAMERA_HEIGHT = metrics.heightPixels;
+			CAMERA_WIDTH = metrics.widthPixels;
 			
+			camera = new Camera(0,0,CAMERA_WIDTH,CAMERA_HEIGHT);
 			EngineOptions mEngine = new EngineOptions(true,ScreenOrientation.LANDSCAPE_FIXED, new FillResolutionPolicy(),camera);
 			mEngine.getAudioOptions().setNeedsMusic(true).setNeedsSound(true);
 			return mEngine;
@@ -126,13 +137,13 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			Log.i("Location:","onCreateResources");
 			BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
 			TextureManager tm =  this.getTextureManager();
+
 			//=================================================================================//
 			//								Load Towers
 			//================================================================================//
 			//==== Tower Type 1
 			towerImage = new BitmapTextureAtlas(tm,512,512);
 			towerTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.towerImage, this,"tower.png", 0, 0);
-//				mEngine.getTextureManager().loadTextures(towerImage);
 			mEngine.getTextureManager().loadTexture(towerImage);
 			
 			//=================================================================================//
@@ -163,7 +174,6 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			//==== for text
 			fontTexture = new BitmapTextureAtlas(tm,256, 256,TextureOptions.BILINEAR_PREMULTIPLYALPHA);
 			//font = FontFactory.create(this.getFontManager(), tm,fontTexture, Typeface.DEFAULT, 40, true, Color.RED);
-			//mEngine.getTextureManager().loadTexture(fontTexture);  mEngine.getFontManager().loadFont(font);
 			font = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256, TextureOptions.BILINEAR_PREMULTIPLYALPHA, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 40);
 			font.load(); 
 	    }
@@ -191,6 +201,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 				//Load the Desert Map
 				Log.i("Location:","TMXMap Loading...");
 				this.mTMXTiledMap = tmxLoader.loadFromAsset("tmx/desert.tmx");
+				//this.mTMXTiledMap = tmxLoader.loadFromAsset("tmx/test.tmx");
 				Log.i("Location:","TMXMap Loaded");		
 				//this is our update thread
 				this.runOnUiThread(new Runnable() {
@@ -340,40 +351,38 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					scene.detachChild(bullet); // no longer needed to be shown
 					getBullet.remove(bullet);  // also remove it from array so we don't check it again
 					
-					// you can remove shoot enemies here or create enemy class with its own life here 
+					//TODO you can remove shoot enemies here or create enemy class with its own life here 
 					break; // take a break
 				}
 			}
 	}
 	
-	int allow_enemy ;
+	int allow_enemy = 20; // number of enemies to allow
 	public void add_enemy(VertexBufferObjectManager vbom){
-		Log.i("Location:","add_enemy");
-		final float delay = 2f;
+		final float delay = 2f; //delay between adding enemies
 		final VertexBufferObjectManager tvbom = vbom;
 		
 		TimerHandler enemy_handler = new TimerHandler(delay,true, new ITimerCallback() {
-			
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
-				
 				//=================Code must go here=======================
-				allow_enemy++;
-				
+				Log.i("allow_enemy:",""+allow_enemy);		
 				Random a = new Random();
-				int b = a.nextInt(400)+10;
+				int x = a.nextInt(CAMERA_WIDTH-60)+20;
+				int y = a.nextInt(CAMERA_HEIGHT-60)+20;
 				
-				if(allow_enemy>=5){}// only let it add 5
-				else{
+				if(allow_enemy > 0){
 					//TODO fix the last argument here
-				Enemy = new Sprite(b,b,enTexture,tvbom);
-				scene.attachChild(Enemy);
-				arrayEn.add(Enemy);
+					Enemy = new Sprite(x,y,enTexture,tvbom);
+					scene.attachChild(Enemy);
+					arrayEn.add(Enemy);
+					allow_enemy--;
 				}
-				//this above code adds enemy every 2s 
+				else{}
 				//================= end of code==========================
 			}
 		} );
+
 		getEngine().registerUpdateHandler(enemy_handler);
 		
 	}
