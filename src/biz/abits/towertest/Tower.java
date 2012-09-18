@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import org.andengine.audio.sound.Sound;
 import org.andengine.audio.sound.SoundFactory;
 import org.andengine.audio.sound.SoundManager;
-import org.andengine.engine.options.EngineOptions;
 import org.andengine.entity.modifier.MoveByModifier;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.texture.TextureManager;
@@ -32,18 +31,24 @@ public class Tower extends Sprite{
 	//TODO fire range, acquisition range, pattern/type.
 	private static String texture = "tower.png";
 	private long cooldown = 500; //in milliseconds | 1 sec = 1,000 millisec 
+	private long credits = 50; //cost to build tower in credits
+	private int level = 1; //level of tower
+	private int maxLevel = 10; //level of tower
+	public int damage = 100; //Tower damage
+	public String damageType = "normal";
 	private float cdMod = 0.5f;
 	private long lastFire = 0;
+	private static int total = 0; //total number of this type of tower
 	TextureRegion tower;
 	TextureRegion bullet;
 	private static String strFire = "tower.ogg"; 
 	private static Sound soundFire;
 	float x,y;
 	boolean moveable = true;
-	Sprite SpriteBullet;
+	Projectile SpriteBullet;
 	//int speed = 500;
 	VertexBufferObjectManager vbom;
-	ArrayList<Sprite> arrayBullets; //may change to spritebatch
+	ArrayList<Projectile> arrayBullets; //may change to spritebatch
 	//Body range = PhysicsFactory.createCircularBody();
  
 	//constructor
@@ -54,9 +59,10 @@ public class Tower extends Sprite{
 		bullet = b; // we need bullet TextureRegion to make one
 		x=pX; //some x n y of the tower
 		y=pY;
-		arrayBullets = new ArrayList<Sprite>(); // create a new ArrayList
+		arrayBullets = new ArrayList<Projectile>(); // create a new ArrayList
+		total++;
 	}
-	
+
 	/**
 	 * Fires projectiles
 	 * check cooldown in milli seconds with: <br>
@@ -71,9 +77,8 @@ public class Tower extends Sprite{
 		//TODO move bullet to mouth of cannon
 		long elapsed = System.currentTimeMillis() - lastFire;
 		//only fire if tower is off cool down
-		//Log.i("arrayBullet.Size:","B: "+arrayBullets.size());
-		if( elapsed > cooldown * cdMod){
-			SpriteBullet  = new Sprite(tx,ty, 10, 10, bullet,vbom);
+		if( elapsed > cooldown * cdMod && !moveable){ //not on cooldown, and not actively being placed
+			SpriteBullet  = new Projectile(tx,ty, 10f, 10f, bullet,vbom);
 
 			float gY =  targetY -  SpriteBullet.getY(); // some calc about how far the bullet can go, in this case up to the enemy
 			float gX =  targetX - SpriteBullet.getX();
@@ -81,14 +86,10 @@ public class Tower extends Sprite{
 			MoveByModifier movMByod = new MoveByModifier(0.1f, gX,  gY);
 			SpriteBullet.registerEntityModifier(movMByod);
 			
-			//TODO find a better way to do this
-			//speed=500; // needs to be the same as the above speed
 			arrayBullets.add(SpriteBullet);
 			lastFire = System.currentTimeMillis();
-			//Log.i("After Fire:","CD:"+cooldown%10000+"  EL:"+elapsed%10000+" LF:"+lastFire%10000);
 			//TODO check sound settings
-			soundFire.play();
-			Log.i("arrayBullets.Size:",""+arrayBullets.size());
+			//soundFire.play();
 			return true;
 		}
 		else return false;
@@ -144,11 +145,26 @@ public class Tower extends Sprite{
 		return SpriteBullet; // our main class uses this to attach to the scene
 	}
 	
-	
-	public ArrayList<Sprite> getArrayList(){
+	public ArrayList<Projectile> getArrayList(){ 
 		return arrayBullets; // our main class uses this to check bullets etc
 	}
 	
-	
+	/**
+	 * Get to cost to build this tower
+	 * @return build cost in credits
+	 */
+	public long getCredits(){ return credits; }
 
+	/**
+	 * Get Current tower level
+	 * @return tower level
+	 */
+	public int getLevel(){ return level; }
+	
+	/**
+	 * Upgrade tower one level
+	 * @return Returns false if tower already at max level
+	 */
+	public boolean upgradeLevel(){ if(level == maxLevel)  return false; else level++; return true; }
+	
 }

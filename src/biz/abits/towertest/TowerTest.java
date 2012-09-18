@@ -1,5 +1,6 @@
 package biz.abits.towertest;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Random;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.Background;
 import org.andengine.entity.sprite.Sprite;
+import org.andengine.entity.util.FPSCounter;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.extension.tmx.TMXLoader;
@@ -36,6 +38,7 @@ import org.andengine.extension.tmx.TMXLoader.ITMXTilePropertiesListener;
 import org.andengine.extension.tmx.util.exception.TMXLoadException;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.entity.scene.ITouchArea;
+import org.andengine.entity.text.Text;
 import org.andengine.opengl.font.Font;
 import org.andengine.opengl.font.FontFactory;
 import org.andengine.opengl.texture.TextureManager;
@@ -78,7 +81,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	ArrayList<Tower> arrayTower;
 	Tower tw; // this is Tower class and its only used when creating towers on touch event
 	Tower buildTower; //a basic Tower Sprite used to build towers 
-	
+	boolean createNewTower = true;
 	//========================================
 	//		 The Bullet in Array
 	//========================================
@@ -114,10 +117,11 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	
 	Handler TIMER_ONE; // our thread
 	
-	//==== just for testing outputs ====// never used
-	BitmapTextureAtlas fontTexture;
-	Font font;
-	//ChangeableText fpsFont;
+	Font font10;
+	Font font20;
+	Font font40;
+	
+	long credits = 200;
 
 	    @Override
 	    public EngineOptions onCreateEngineOptions() {
@@ -137,6 +141,9 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			return mEngine;
 	    }
 
+	    /**
+	     * Load all game resources
+	     */
 	    @Override
 	    protected void onCreateResources() {
 			Log.i("Location:","onCreateResources");
@@ -168,19 +175,26 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			//==== Default Map 	
 			SoundFactory.setAssetBasePath("mfx/");
 			Tower.loadSound(this.mEngine.getSoundManager(), this);
-			//==== for text
-			fontTexture = new BitmapTextureAtlas(tm,256, 256,TextureOptions.BILINEAR_PREMULTIPLYALPHA);
-			//font = FontFactory.create(this.getFontManager(), tm,fontTexture, Typeface.DEFAULT, 40, true, Color.RED);
-			font = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256, TextureOptions.BILINEAR_PREMULTIPLYALPHA, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 40);
-			font.load(); 
+			//=================================================================================//
+			//								Load Sounds
+			//================================================================================//
+			this.font10 = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256, TextureOptions.BILINEAR, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 10);
+			this.font20 = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256, TextureOptions.BILINEAR, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 20);
+			this.font40 = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256, TextureOptions.BILINEAR, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 40);
+			this.font10.load();
+			this.font20.load();
+			this.font40.load();
 	    }
 	
+	    /**
+	     * Create Scene  Create all scenes to use in game
+	     */
 	    @Override
 	    protected Scene onCreateScene() {
 			Log.i("Location:","onCreateScene");
 			this.mEngine.registerUpdateHandler(new FPSLogger());
 			scene = new Scene();
-			
+
 			//=====================================
 			//		TMXTileMap
 			//=====================================
@@ -213,7 +227,24 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 
 			final TMXLayer tmxLayer = this.mTMXTiledMap.getTMXLayers().get(0);
 			scene.attachChild(tmxLayer);
-			
+			//=====================================
+			//		Interface
+			//=====================================	
+			final FPSCounter fpsCounter = new FPSCounter();
+			this.mEngine.registerUpdateHandler(fpsCounter);
+			//xcoord,ycoord,font,initial text?,length,vbom
+			final Text fpsText = new Text(CAMERA_WIDTH-100, 20, this.font20, "FPS:", "FPS: xxx.xx".length(), this.getVertexBufferObjectManager());
+			final Text creditText = new Text(20, 20, this.font40, "$", 12, this.getVertexBufferObjectManager());
+			scene.attachChild(fpsText);
+			scene.attachChild(creditText);
+			scene.registerUpdateHandler(new TimerHandler(1 / 10.0f, true, new ITimerCallback() {
+				@Override
+				public void onTimePassed(final TimerHandler pTimerHandler) {
+					//elapsedText.setText("Seconds elapsed: " + ChangeableTextExample.this.mEngine.getSecondsElapsedTotal());
+					fpsText.setText("FPS: " + new DecimalFormat("#.##").format(fpsCounter.getFPS()));
+					creditText.setText("$" + credits);
+				}
+			}));
 			//=====================================
 			//		Tower & Enemy stuff
 			//=====================================
@@ -232,37 +263,20 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			scene.setOnAreaTouchListener(new IOnAreaTouchListener() {
 				@Override
 				public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final ITouchArea pTouchArea, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-					boolean createNewTower = true;
 					/*if (pSceneTouchEvent.isActionDown()) {
 						//touchDuration = event.getEventTime() - event.getDownTime();
-						touchX = pSceneTouchEvent.getX();
-						touchY = pSceneTouchEvent.getY();
-						//150,150 is the size of the Sprite
-					    tw = new Tower(bulletTexture,touchX ,touchY,150,150,towerTexture,self.getVertexBufferObjectManager())
-					    {
-					    	@Override
-					    	public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
-					    		tw.setPosition(pSceneTouchEvent.getX() - this.getWidth() / 2, pSceneTouchEvent.getY() - this.getHeight() / 2);
-					    		if (pSceneTouchEvent.isActionUp()) {
-									tw.moveable = false;
-									return true;
-								}
-					    		return true;
-					        }
-					   };
-					   arrayTower.add(tw); // add to array
-					   scene.registerTouchArea( tw); // register touch area , so this allows you to drag it
-					   scene.attachChild( tw); // add it to the scene
 					   return true;
 					}*/ 
+					if (pSceneTouchEvent.isActionDown()) { createNewTower = true; }
 					if (pSceneTouchEvent.isActionUp()) {
 						tw.moveable = false;
 						createNewTower = true;
+						//if location is good continue, else destroy tower and refund cost
 						return true;
 					}
 					if (pSceneTouchEvent.isActionMove()) {
-						Log.i("Tower Moveable:",""+tw.moveable);
-						if(createNewTower){
+						if(createNewTower && credits >= buildTower.getCredits()){
+							credits -= buildTower.getCredits();
 							createNewTower = false;
 							touchX = pSceneTouchEvent.getX();
 							touchY = pSceneTouchEvent.getY();
@@ -282,9 +296,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 						   arrayTower.add(tw); // add to array
 						   scene.registerTouchArea( tw); // register touch area , so this allows you to drag it
 						   scene.attachChild( tw); // add it to the scene
-						}
-
-						if(tw.moveable){
+						}else if(tw.moveable){
 							tw.setPosition(pSceneTouchEvent.getX() - tw.getWidth() / 2, pSceneTouchEvent.getY() - tw.getHeight() / 2);
 							touchX = pSceneTouchEvent.getX();
 				        	touchY = pSceneTouchEvent.getY();
@@ -306,50 +318,25 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			});
 
 			return scene;
-/*				Log.i("Location:","onCreateScene");
-		    	Scene scene = new Scene();
-		        scene.setBackground(new Background(0.09804f, 0.6274f, 0));
-		        return scene;
-*/		        
 	    }
 
 		@Override
 		public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
 			Log.i("Location:","onSceneTouchEvent");
-/*
+/* scroll screen here
 			if (pSceneTouchEvent.isActionDown()) {
-				 //touchDuration = event.getEventTime() - event.getDownTime();
-				touchX = pSceneTouchEvent.getX();
-		        touchY = pSceneTouchEvent.getY();
-		        //TODO check the 150x150 is this the collision size?
-		        tw = new Tower(bulletTexture,touchX ,touchY,150,150,towerTexture,this.getVertexBufferObjectManager())
-				 {
-				  @Override
-				public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
-					  tw.setPosition(pSceneTouchEvent.getX() - this.getWidth() / 2, pSceneTouchEvent.getY() - this.getHeight() / 2);
-			         		                return true;
-			        }
-			    };
-			   arrayTower.add(tw); // add to array
-			   scene.registerTouchArea( tw); // register touch area , so this allows you to drag it
-			   scene.attachChild( tw); // add it to the scene
 				return true;
 			} 
 
 			if (pSceneTouchEvent.isActionUp()) {
-				tw.moveable = false;			
 				return true;
 			}
 			if (pSceneTouchEvent.isActionMove()) {
-				touchX = pSceneTouchEvent.getX();
-		        touchY = pSceneTouchEvent.getY();
 				return true;
 			}
 */
 			return true;
-	}
-		
-
+		}
 		
 		IUpdateHandler loop = new IUpdateHandler() {
 		    @Override
@@ -362,7 +349,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		    	//code ends
 		        }
 		};
-		
+		//how to register this with the engine????
 	public void TIMER_ONE_START(){
 		// == THREAD STARTS	
 		new Thread(new Runnable() {
@@ -408,33 +395,43 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		}
 	}
 
-	
 	public void fire(Tower tower,Enemy enemy){
 		targetX = enemy.getX()+enemy.getWidth()/2; // simple get the enemy x,y and center it and tell the bullet where to aim and fire
 		targetY = enemy.getY()+enemy.getHeight()/2;
+		//call fire from the tower
 		boolean fired = tower.fire(targetX, targetY,tower.getX()+tower.getWidth()/2,tower.getY()+tower.getHeight()/2); //Asks the tower to open fire and places the bullet in middle of tower
 		if(fired){
-			ArrayList<Sprite> getBullet = tower.getArrayList(); //gets bullets from Tower class where our bullets are fired from
+			ArrayList<Projectile> towerBulletList = tower.getArrayList(); //gets bullets from Tower class where our bullets are fired from
 	
 			scene.attachChild(tower.getBulletSprite());
-			//for(Sprite bullet : getBullet){
-			for(int i = 0; i < getBullet.size(); i++){
-				Sprite bullet;
-				bullet = getBullet.get(i);
+			//for(Sprite bullet : towerBulletList){
+			Log.i("towerBulletList.Size:",""+towerBulletList.size());
+			for(int i = 0; i < towerBulletList.size(); i++){
+				Projectile bullet;
+				bullet = towerBulletList.get(i);
 				
 				if(bullet.collidesWith(enemy)){
-					scene.detachChild(bullet); // no longer needed to be shown
-					getBullet.remove(bullet);  // also remove it from array so we don't check it again
-					if(enemy.takeDamage(100,"normal") < 1){
+					//WARNING: This function should be called from within postRunnable(Runnable) which is registered to a Scene or the Engine itself, because otherwise it may throw an IndexOutOfBoundsException in the Update-Thread or the GL-Thread!
+					scene.detachChild(bullet); // When else should we remove bullets? Check its range?
+					towerBulletList.remove(bullet);  // also remove it from array so we don't check it again
+					//enemy takes
+					if(enemy.takeDamage(tower.damage,tower.damageType) < 1){
+						credits += enemy.getCredits();
 						scene.detachChild(enemy);
 						//TODO play death animation enemy function pass scene to detach
-					} 
+					}
 					break; // take a break
+						//this else if may be completely useless..... or wrong
+				}else if(bullet.getX() == bullet.targetX && bullet.getY() == bullet.targetY){ //bullet has gone full distance
+					//WARNING: This function should be called from within postRunnable(Runnable) which is registered to a Scene or the Engine itself, because otherwise it may throw an IndexOutOfBoundsException in the Update-Thread or the GL-Thread!
+					scene.detachChild(bullet); // remove sprite
+					towerBulletList.remove(bullet);  // also remove it from array so we don't check it again
 				}
 			}
 		}
 	}
 	
+	//break this all out to a wave class, also use SpriteBatch
 	int allow_enemy = 20; // number of enemies to allow
 	public void add_enemy(VertexBufferObjectManager vbom){
 		final float delay = 2f; //delay between adding enemies

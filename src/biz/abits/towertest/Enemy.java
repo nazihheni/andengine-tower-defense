@@ -1,8 +1,5 @@
 package biz.abits.towertest;
 
-import java.util.ArrayList;
-
-import org.andengine.entity.modifier.MoveByModifier;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.texture.TextureManager;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
@@ -16,6 +13,7 @@ import android.util.Log;
 public class Enemy extends Sprite{
 	//I am Enemy class
 	private int health = 1000;
+	private static int credits = 10;
 	public float x,y;
 	public float speed = 10.0f; //movement speed (duration of animation)
 	VertexBufferObjectManager vbom;
@@ -75,5 +73,13 @@ public class Enemy extends Sprite{
 	 */
 	public int getHealth(){
 		return health;
+	}
+	
+	/**
+	 * Get enemy Credit value if killed
+	 * @return Credit value of enemy
+	 */
+	public int getCredits(){
+		return credits;
 	}
 }
