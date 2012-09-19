@@ -7,6 +7,7 @@ import org.andengine.audio.sound.Sound;
 import org.andengine.audio.sound.SoundFactory;
 import org.andengine.audio.sound.SoundManager;
 import org.andengine.entity.modifier.MoveByModifier;
+import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.texture.TextureManager;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
@@ -44,11 +45,15 @@ public class Tower extends Sprite{
 	private static String strFire = "tower.ogg"; 
 	private static Sound soundFire;
 	float x,y;
+	float targetX;
+	float targetY;
+	
 	boolean moveable = true;
 	Projectile SpriteBullet;
 	//int speed = 500;
 	VertexBufferObjectManager vbom;
 	ArrayList<Projectile> arrayBullets; //may change to spritebatch
+	
 	//Body range = PhysicsFactory.createCircularBody();
  
 	//constructor
@@ -78,14 +83,9 @@ public class Tower extends Sprite{
 		long elapsed = System.currentTimeMillis() - lastFire;
 		//only fire if tower is off cool down
 		if( elapsed > cooldown * cdMod && !moveable){ //not on cooldown, and not actively being placed
-			SpriteBullet  = new Projectile(tx,ty, 10f, 10f, bullet,vbom);
-
-			float gY =  targetY -  SpriteBullet.getY(); // some calc about how far the bullet can go, in this case up to the enemy
-			float gX =  targetX - SpriteBullet.getX();
-		
-			MoveByModifier movMByod = new MoveByModifier(0.1f, gX,  gY);
-			SpriteBullet.registerEntityModifier(movMByod);
-			
+			SpriteBullet  = new Projectile(tx,ty, 10f, 10f, bullet,vbom); //READY?!?
+			SpriteBullet.setTarget(targetX, targetY); //AIM...
+			SpriteBullet.shoot(); //FIIIIIRE!!!!
 			arrayBullets.add(SpriteBullet);
 			lastFire = System.currentTimeMillis();
 			//TODO check sound settings
@@ -93,6 +93,67 @@ public class Tower extends Sprite{
 			return true;
 		}
 		else return false;
+	}
+	
+	/**
+	 * This function will remove all current bullets
+	 */
+	public void ceaseFire(Scene scene) {
+		for(int i=0;i<arrayBullets.size();i++){
+			scene.detachChild(arrayBullets.get(i));
+			arrayBullets.remove(i);
+		}
+		
+	}
+	
+	public void fire(Enemy enemy, Scene scene, ArrayList<Enemy> arrayEn){
+		
+		targetX = enemy.getX()+enemy.getWidth()/2; // simple get the enemy x,y and center it and tell the bullet where to aim and fire
+		targetY = enemy.getY()+enemy.getHeight()/2;
+		//call fire from the tower
+		boolean fired = this.fire(targetX, targetY,this.getX()+this.getWidth()/2,this.getY()+this.getHeight()/2); //Asks the tower to open fire and places the bullet in middle of tower
+		if(fired){
+			ArrayList<Projectile> towerBulletList = this.getArrayList(); //gets bullets from Tower class where our bullets are fired from
+	
+			Sprite myBullet = this.getLastBulletSprite();
+			scene.attachChild(myBullet);
+			//for(Sprite bullet : towerBulletList){
+			for(int i = 0; i < towerBulletList.size(); i++){
+				Projectile bullet;
+				bullet = towerBulletList.get(i);
+				
+				if(bullet.collidesWith(enemy)){
+					//WARNING: This function should be called from within postRunnable(Runnable) which is registered to a Scene or the Engine itself, because otherwise it may throw an IndexOutOfBoundsException in the Update-Thread or the GL-Thread!
+					bullet.stop();
+					scene.detachChild(bullet); // When else should we remove bullets? Check its range?
+					towerBulletList.remove(bullet);  // also remove it from array so we don't check it again
+					//enemy takes
+					if(enemy.takeDamage(this.damage,this.damageType) < 1){
+						credits += enemy.getCredits();
+						scene.detachChild(enemy);
+						arrayEn.remove(enemy);
+						this.ceaseFire(scene);
+						for(int j=0;j<towerBulletList.size();j++){
+							towerBulletList.get(j).stop(); //stop any bullets that are in motion
+							scene.detachChild(towerBulletList.get(j)); // remove sprite
+							towerBulletList.remove(towerBulletList.get(j));  // also remove it from array so we don't check it again
+						}
+						//scene.detachChild(myBullet);
+						//TODO play death animation enemy function pass scene to detach
+					}
+					break; // take a break
+						//this else if may be completely useless..... or wrong
+				}/*else if(bullet.trajectory.isFinished()) { //bullet has gone full distance
+					//WARNING: This function should be called from within postRunnable(Runnable) which is registered to a Scene or the Engine itself, because otherwise it may throw an IndexOutOfBoundsException in the Update-Thread or the GL-Thread!
+					/*
+					bullet.stop();
+					scene.detachChild(bullet); // remove sprite
+					towerBulletList.remove(bullet);  // also remove it from array so we don't check it again
+					*/
+					//this WAS firing, your LOGCAT is just BROKEN TO HELL!!!
+				//}
+			}
+		}
 	}
 	
 	/**
@@ -141,7 +202,7 @@ public class Tower extends Sprite{
 		} catch (final IOException e) {  Debug.e(e);  }
 	}
 	
-	public Sprite getBulletSprite(){
+	public Sprite getLastBulletSprite(){
 		return SpriteBullet; // our main class uses this to attach to the scene
 	}
 	

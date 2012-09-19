@@ -1,5 +1,6 @@
 package biz.abits.towertest;
 
+import org.andengine.entity.modifier.MoveByModifier;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.texture.TextureManager;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
@@ -15,7 +16,8 @@ public class Projectile extends Sprite{
 	//I am Enemy class
 	public float x,y;
 	public float targetX,targetY;
-	public float speed = 0.5f; //movement speed
+	public final static float speed = 1.0f; //movement speed
+	public MoveByModifier trajectory;
 	VertexBufferObjectManager vbom;
 	public static String texture = "bullet.png";
 
@@ -51,5 +53,27 @@ public class Projectile extends Sprite{
 		tr = BitmapTextureAtlasTextureRegionFactory.createFromAsset(towerImage, c, texture, 0, 0);
 		tm.loadTexture(towerImage);
 		return tr;
+	}
+
+	public void shoot() {
+		float gY =  targetY -  this.getY(); // some calc about how far the bullet can go, in this case up to the enemy
+		float gX =  targetX - this.getX();
+		trajectory = new MoveByModifier(1/Projectile.speed, gX,  gY);
+		this.registerEntityModifier(trajectory);
+	}
+	
+	/**
+	 * Stops this bullet if it is in motion still
+	 */
+	public void stop() {
+		this.unregisterEntityModifier(trajectory);
+	}
+	
+	/**
+	 * Tells you if the bullet has reached the end of it's trajectory
+	 * @return
+	 */
+	public boolean targetReached() {
+		return (targetX == x && targetY == y);
 	}
 }

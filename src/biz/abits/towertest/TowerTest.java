@@ -341,13 +341,16 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		//Lets Loop our array of enemies
 		//for(Enemy enemy: arrayEn){
 
-		for(int j = 0; j < arrayEn.size();j++){
+		//***************************************************************
+		//TODO WE SHOULD PROBABLY MULTITHREAD THIS LOOP FO' SHIZZLE!!!!!!
+		//***************************************************************
+		for(int j = 0; j < arrayEn.size();j++){//iterate through the enemies
 			Enemy enemy = arrayEn.get(j);
 
 			//enemy.setPosition(enemy.getX()+3/6f,enemy.getY());  //you can use to move enemy
 			//Lets Loop our Towers
 			//for(Tower tower: arrayTower){
-			for(int k = 0; k < arrayTower.size(); k++){
+			for(int k = 0; k < arrayTower.size(); k++){//iterate through the towers
 				Tower tower = arrayTower.get(k);
 					
 				//check if they collide The size of the Tower is the range of the tower or something maybe
@@ -355,52 +358,19 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 				//if enemy is in tower range
 
 				if(enemy.collidesWith(tower)){
-					fire(tower,enemy);// call fire and pass the tower and enemy to fire
+					tower.fire(enemy, scene, arrayEn);// call fire and pass the tower and enemy to fire
 					//Log.i("Location:","Firing on enemy");
 					//TODO find a way to end thread?
 					break; // take a break
+				}else{
+					//this line is what erases any floating leftover bullets, we might be able to get rid of it? :-\
+					tower.ceaseFire(scene);
 				}
 			}
 			enemy.move();
 		}
 	}
 
-	public void fire(Tower tower,Enemy enemy){
-		targetX = enemy.getX()+enemy.getWidth()/2; // simple get the enemy x,y and center it and tell the bullet where to aim and fire
-		targetY = enemy.getY()+enemy.getHeight()/2;
-		//call fire from the tower
-		boolean fired = tower.fire(targetX, targetY,tower.getX()+tower.getWidth()/2,tower.getY()+tower.getHeight()/2); //Asks the tower to open fire and places the bullet in middle of tower
-		if(fired){
-			ArrayList<Projectile> towerBulletList = tower.getArrayList(); //gets bullets from Tower class where our bullets are fired from
-	
-			scene.attachChild(tower.getBulletSprite());
-			//for(Sprite bullet : towerBulletList){
-			for(int i = 0; i < towerBulletList.size(); i++){
-				Projectile bullet;
-				bullet = towerBulletList.get(i);
-				
-				if(bullet.collidesWith(enemy)){
-					//WARNING: This function should be called from within postRunnable(Runnable) which is registered to a Scene or the Engine itself, because otherwise it may throw an IndexOutOfBoundsException in the Update-Thread or the GL-Thread!
-					scene.detachChild(bullet); // When else should we remove bullets? Check its range?
-					towerBulletList.remove(bullet);  // also remove it from array so we don't check it again
-					//enemy takes
-					if(enemy.takeDamage(tower.damage,tower.damageType) < 1){
-						//tower.arrayBullets = new ArrayList<Projectile>(0);
-						credits += enemy.getCredits();
-						scene.detachChild(enemy);
-						arrayEn.remove(enemy);
-						//TODO play death animation enemy function pass scene to detach
-					}
-					break; // take a break
-						//this else if may be completely useless..... or wrong
-				}else if(bullet.getX() == bullet.targetX && bullet.getY() == bullet.targetY){ //bullet has gone full distance
-					//WARNING: This function should be called from within postRunnable(Runnable) which is registered to a Scene or the Engine itself, because otherwise it may throw an IndexOutOfBoundsException in the Update-Thread or the GL-Thread!
-					scene.detachChild(bullet); // remove sprite
-					towerBulletList.remove(bullet);  // also remove it from array so we don't check it again
-				}
-			}
-		}
-	}
 	
 	//break this all out to a wave class, also use SpriteBatch
 	int allow_enemy = 50; // number of enemies to allow

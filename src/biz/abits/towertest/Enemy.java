@@ -12,10 +12,10 @@ import android.util.Log;
 
 public class Enemy extends Sprite{
 	//I am Enemy class
-	private int health = 1000;
+	private int health = 500;
 	private static int credits = 10;
 	public float x,y;
-	public float speed = 10.0f; //movement speed (duration of animation)
+	public float speed = 2.0f; //movement speed (distance to move per update)
 	VertexBufferObjectManager vbom;
 	public static String texture = "enemy.png";
 	//TODO Add waypoints  as ArrayList. make move to waypoint, set waypoint, addWaypoint functions.
@@ -54,7 +54,7 @@ public class Enemy extends Sprite{
 	 * move 3 pixels per 5ms i think the 6f is speed i think
 	 */
 	public void move(){
-		setPosition(getX()+3/6f,getY()); 
+		setPosition(getX()+speed,getY()); 
 	}
 	/**
 	 * Deal damage to the enemy, modified by type <br>
