@@ -118,7 +118,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	Font font10;
 	Font font20;
 	Font font40;
-	
+	Text fpsText;
+	Text creditText;
 	long credits = 200;
 
 	    @Override
@@ -232,18 +233,18 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			final FPSCounter fpsCounter = new FPSCounter();
 			this.mEngine.registerUpdateHandler(fpsCounter);
 			//xcoord,ycoord,font,initial text?,length,vbom
-			final Text fpsText = new Text(CAMERA_WIDTH-100, 20, this.font20, "FPS:", "FPS: xxx.xx".length(), this.getVertexBufferObjectManager());
-			final Text creditText = new Text(20, 20, this.font40, "$", 12, this.getVertexBufferObjectManager());
+			fpsText = new Text(CAMERA_WIDTH-100, 20, this.font20, "FPS:", "FPS: xxx.xx".length(), this.getVertexBufferObjectManager());
+			creditText = new Text(20, 20, this.font40, "$", 12, this.getVertexBufferObjectManager());
 			scene.attachChild(fpsText);
 			scene.attachChild(creditText);
-			/*scene.registerUpdateHandler(new TimerHandler(1 / 10.0f, true, new ITimerCallback() {
+			scene.registerUpdateHandler(new TimerHandler(1 / 10.0f, true, new ITimerCallback() {
 				@Override
 				public void onTimePassed(final TimerHandler pTimerHandler) {
 					//elapsedText.setText("Seconds elapsed: " + ChangeableTextExample.this.mEngine.getSecondsElapsedTotal());
 					fpsText.setText("FPS: " + new DecimalFormat("#.##").format(fpsCounter.getFPS()));
 					creditText.setText("$" + credits);
 				}
-			}));*/
+			}));
 			//=====================================
 			//		Tower & Enemy stuff
 			//=====================================

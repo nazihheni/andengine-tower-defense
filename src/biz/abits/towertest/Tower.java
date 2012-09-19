@@ -89,7 +89,7 @@ public class Tower extends Sprite{
 			arrayBullets.add(SpriteBullet);
 			lastFire = System.currentTimeMillis();
 			//TODO check sound settings
-			//soundFire.play();
+			soundFire.play();
 			return true;
 		}
 		else return false;
