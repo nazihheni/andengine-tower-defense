@@ -115,8 +115,6 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	float targetX;
 	float targetY;
 	
-	Handler TIMER_ONE; // our thread
-	
 	Font font10;
 	Font font20;
 	Font font40;
@@ -214,6 +212,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 				this.mTMXTiledMap = tmxLoader.loadFromAsset("tmx/desert.tmx");
 				//this.mTMXTiledMap = tmxLoader.loadFromAsset("tmx/test.tmx");
 				Log.i("Location:","TMXMap Loaded");		
+				//TODO put this into the main update function
 				//this is our update thread
 				this.runOnUiThread(new Runnable() {
 					@Override
@@ -237,14 +236,14 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			final Text creditText = new Text(20, 20, this.font40, "$", 12, this.getVertexBufferObjectManager());
 			scene.attachChild(fpsText);
 			scene.attachChild(creditText);
-			scene.registerUpdateHandler(new TimerHandler(1 / 10.0f, true, new ITimerCallback() {
+			/*scene.registerUpdateHandler(new TimerHandler(1 / 10.0f, true, new ITimerCallback() {
 				@Override
 				public void onTimePassed(final TimerHandler pTimerHandler) {
 					//elapsedText.setText("Seconds elapsed: " + ChangeableTextExample.this.mEngine.getSecondsElapsedTotal());
 					fpsText.setText("FPS: " + new DecimalFormat("#.##").format(fpsCounter.getFPS()));
 					creditText.setText("$" + credits);
 				}
-			}));
+			}));*/
 			//=====================================
 			//		Tower & Enemy stuff
 			//=====================================
@@ -253,6 +252,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			arrayEn		= new ArrayList<Enemy>();
 
 			Log.i("Location:","registerUpdateHandler");				
+			//Register our update Handler
 			scene.registerUpdateHandler(loop);
 			scene.setTouchAreaBindingOnActionDownEnabled(true); //TODO check this is the right event/whatever
 			scene.setOnSceneTouchListener(this);
@@ -308,15 +308,6 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 				
 			});
 			add_enemy(this.getVertexBufferObjectManager()); //timer add enemy every amount of defined secs
-
-			this.runOnUiThread(new Runnable() {
-			    @Override
-			    public void run() {
-			    	TIMER_ONE = new Handler(); 
-			    	TIMER_ONE_START(); 
-			    }
-			});
-
 			return scene;
 	    }
 
@@ -344,28 +335,11 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		    }
 		    @Override
 		    public void onUpdate(float pSecondsElapsed) {
-				//=================Code must go here=======================
-		    	//this is free to do any other things you like!
+				//=================MAIN GAME LOOP=======================
+		    	collision(); // run the <--collision every update
 		    	//code ends
 		        }
-		};
-		//how to register this with the engine????
-	public void TIMER_ONE_START(){
-		// == THREAD STARTS	
-		new Thread(new Runnable() {
-			    @Override
-				    public void run() {  while (true) {  try {  Thread.sleep(5); TIMER_ONE.post(new Runnable() {
-					    @Override
-						public void run(){
-					    	// ======= BEGIN WRITING ========================================================================
-					    	collision(); // run the <--collision every 5ms
-					    	// == END WRITING ================================================================================
-						} /* Code finishes*/ 
-				    });
-			} catch (Exception e) {}}}}).start(); /* Re-start the thread */ 
-		// == THREAD ENDS
-	}
-	
+		};		
 	//TODO put in a thread
 	public void collision(){
 		//Lets Loop our array of enemies
@@ -405,7 +379,6 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	
 			scene.attachChild(tower.getBulletSprite());
 			//for(Sprite bullet : towerBulletList){
-			Log.i("towerBulletList.Size:",""+towerBulletList.size());
 			for(int i = 0; i < towerBulletList.size(); i++){
 				Projectile bullet;
 				bullet = towerBulletList.get(i);
@@ -434,7 +407,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	//break this all out to a wave class, also use SpriteBatch
 	int allow_enemy = 20; // number of enemies to allow
 	public void add_enemy(VertexBufferObjectManager vbom){
-		final float delay = 2f; //delay between adding enemies
+		final float delay = 5f; //delay between adding enemies
 		final VertexBufferObjectManager tvbom = vbom;
 		
 		TimerHandler enemy_handler = new TimerHandler(delay,true, new ITimerCallback() {
