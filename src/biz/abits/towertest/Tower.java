@@ -100,8 +100,7 @@ public class Tower extends Sprite{
 	 */
 	public void ceaseFire(Scene scene) {
 		for(int i=0;i<arrayBullets.size();i++){
-			scene.detachChild(arrayBullets.get(i));
-			arrayBullets.remove(i);
+			arrayBullets.get(i).stop(scene, arrayBullets);
 		}
 		
 	}
@@ -124,34 +123,25 @@ public class Tower extends Sprite{
 				
 				if(bullet.collidesWith(enemy)){
 					//WARNING: This function should be called from within postRunnable(Runnable) which is registered to a Scene or the Engine itself, because otherwise it may throw an IndexOutOfBoundsException in the Update-Thread or the GL-Thread!
-					bullet.stop();
+					//bullet.stop();
 					scene.detachChild(bullet); // When else should we remove bullets? Check its range?
 					towerBulletList.remove(bullet);  // also remove it from array so we don't check it again
 					//enemy takes
-					if(enemy.takeDamage(this.damage,this.damageType) < 1){
-						credits += enemy.getCredits();
+					if(enemy.takeDamage(this.damage,this.damageType) < 1){ //then the enemy dies
+						TowerTest.addCredits(enemy.getCredits());
 						scene.detachChild(enemy);
 						arrayEn.remove(enemy);
 						this.ceaseFire(scene);
-						for(int j=0;j<towerBulletList.size();j++){
-							towerBulletList.get(j).stop(); //stop any bullets that are in motion
-							scene.detachChild(towerBulletList.get(j)); // remove sprite
-							towerBulletList.remove(towerBulletList.get(j));  // also remove it from array so we don't check it again
-						}
-						//scene.detachChild(myBullet);
 						//TODO play death animation enemy function pass scene to detach
 					}
+					i = towerBulletList.size();
 					break; // take a break
 						//this else if may be completely useless..... or wrong
-				}/*else if(bullet.trajectory.isFinished()) { //bullet has gone full distance
+				} /*else if(bullet.trajectory.getSecondsElapsed()>3) { //bullet has gone full distance
 					//WARNING: This function should be called from within postRunnable(Runnable) which is registered to a Scene or the Engine itself, because otherwise it may throw an IndexOutOfBoundsException in the Update-Thread or the GL-Thread!
-					/*
-					bullet.stop();
-					scene.detachChild(bullet); // remove sprite
-					towerBulletList.remove(bullet);  // also remove it from array so we don't check it again
-					*/
-					//this WAS firing, your LOGCAT is just BROKEN TO HELL!!!
-				//}
+					bullet.stop(scene, towerBulletList);
+					//apparently there's no way to know if the tower is done firing! :-(
+				}*/
 			}
 		}
 	}

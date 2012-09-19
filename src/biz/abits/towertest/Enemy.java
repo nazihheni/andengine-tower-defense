@@ -12,7 +12,7 @@ import android.util.Log;
 
 public class Enemy extends Sprite{
 	//I am Enemy class
-	private int health = 500;
+	private int health = 1000;
 	private static int credits = 10;
 	public float x,y;
 	public float speed = 2.0f; //movement speed (distance to move per update)

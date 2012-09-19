@@ -121,8 +121,9 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	
 	final FPSCounter fpsCounter = new FPSCounter();
 	Text fpsText;
-	Text creditText;
-	long credits = 200;
+	static Text creditText;
+	static long credits;
+	final long initialCredits = 200;
 
 	    @Override
 	    public EngineOptions onCreateEngineOptions() {
@@ -230,6 +231,9 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			creditText = new Text(20, 20, this.font40, "$", 12, this.getVertexBufferObjectManager());
 			scene.attachChild(fpsText);
 			scene.attachChild(creditText);
+			//Initialize the credits they have to display it at first
+			credits = initialCredits;
+			creditText.setText("$" + credits);
 			/*scene.registerUpdateHandler(new TimerHandler(1 / 10.0f, true, new ITimerCallback() {
 				@Override
 				public void onTimePassed(final TimerHandler pTimerHandler) {
@@ -270,7 +274,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					}
 					if (pSceneTouchEvent.isActionMove()) {
 						if(createNewTower && credits >= buildTower.getCredits()){
-							credits -= buildTower.getCredits();
+							TowerTest.addCredits(-buildTower.getCredits());
 							createNewTower = false;
 							touchX = pSceneTouchEvent.getX();
 							touchY = pSceneTouchEvent.getY();
@@ -332,7 +336,6 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 				//=================MAIN GAME LOOP=======================
 		    	collision(); // run the <--collision every update
 				fpsText.setText("FPS: " + new DecimalFormat("#.##").format(fpsCounter.getFPS()));
-				creditText.setText("$" + credits);
 		    	//code ends
 		        }
 		};		
@@ -361,16 +364,25 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					tower.fire(enemy, scene, arrayEn);// call fire and pass the tower and enemy to fire
 					//Log.i("Location:","Firing on enemy");
 					//TODO find a way to end thread?
-					break; // take a break
+					//break; //do NOT enable this line or it will only allow ONE tower to fire!
 				}else{
 					//this line is what erases any floating leftover bullets, we might be able to get rid of it? :-\
-					tower.ceaseFire(scene);
+					//tower.ceaseFire(scene);
 				}
 			}
 			enemy.move();
 		}
 	}
-
+	
+	/**
+	 * Handles the adding of credits to the score
+	 * @param enCredits
+	 */
+	public static void addCredits(long enCredits) {
+		credits += enCredits;
+		creditText.setText("$" + credits);
+		//update screen to reflect new score
+	}
 	
 	//break this all out to a wave class, also use SpriteBatch
 	int allow_enemy = 50; // number of enemies to allow

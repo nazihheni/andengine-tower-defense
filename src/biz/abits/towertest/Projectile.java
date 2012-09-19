@@ -1,6 +1,9 @@
 package biz.abits.towertest;
 
+import java.util.ArrayList;
+
 import org.andengine.entity.modifier.MoveByModifier;
+import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.texture.TextureManager;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
@@ -65,8 +68,10 @@ public class Projectile extends Sprite{
 	/**
 	 * Stops this bullet if it is in motion still
 	 */
-	public void stop() {
+	public void stop(Scene scene, ArrayList<Projectile> arrayBullets) {
 		this.unregisterEntityModifier(trajectory);
+		scene.detachChild(this);
+		arrayBullets.remove(this);
 	}
 	
 	/**
