@@ -118,6 +118,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	Font font10;
 	Font font20;
 	Font font40;
+	
+	final FPSCounter fpsCounter = new FPSCounter();
 	Text fpsText;
 	Text creditText;
 	long credits = 200;
@@ -213,14 +215,6 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 				this.mTMXTiledMap = tmxLoader.loadFromAsset("tmx/desert.tmx");
 				//this.mTMXTiledMap = tmxLoader.loadFromAsset("tmx/test.tmx");
 				Log.i("Location:","TMXMap Loaded");		
-				//TODO put this into the main update function
-				//this is our update thread
-				this.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						;//Toast.makeText(TMXTiledMapExample.this, "Cactus count in this TMXTiledMap: " + TMXTiledMapExample.this.mCactusCount, Toast.LENGTH_LONG).show();
-					}
-				});
 			} catch (final TMXLoadException e) {
 				Debug.e(e);
 			}
@@ -230,21 +224,20 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			//=====================================
 			//		Interface
 			//=====================================	
-			final FPSCounter fpsCounter = new FPSCounter();
 			this.mEngine.registerUpdateHandler(fpsCounter);
 			//xcoord,ycoord,font,initial text?,length,vbom
 			fpsText = new Text(CAMERA_WIDTH-100, 20, this.font20, "FPS:", "FPS: xxx.xx".length(), this.getVertexBufferObjectManager());
 			creditText = new Text(20, 20, this.font40, "$", 12, this.getVertexBufferObjectManager());
 			scene.attachChild(fpsText);
 			scene.attachChild(creditText);
-			scene.registerUpdateHandler(new TimerHandler(1 / 10.0f, true, new ITimerCallback() {
+			/*scene.registerUpdateHandler(new TimerHandler(1 / 10.0f, true, new ITimerCallback() {
 				@Override
 				public void onTimePassed(final TimerHandler pTimerHandler) {
 					//elapsedText.setText("Seconds elapsed: " + ChangeableTextExample.this.mEngine.getSecondsElapsedTotal());
 					fpsText.setText("FPS: " + new DecimalFormat("#.##").format(fpsCounter.getFPS()));
 					creditText.setText("$" + credits);
 				}
-			}));
+			}));*/
 			//=====================================
 			//		Tower & Enemy stuff
 			//=====================================
@@ -338,6 +331,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		    public void onUpdate(float pSecondsElapsed) {
 				//=================MAIN GAME LOOP=======================
 		    	collision(); // run the <--collision every update
+				fpsText.setText("FPS: " + new DecimalFormat("#.##").format(fpsCounter.getFPS()));
+				creditText.setText("$" + credits);
 		    	//code ends
 		        }
 		};		
@@ -390,9 +385,10 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					towerBulletList.remove(bullet);  // also remove it from array so we don't check it again
 					//enemy takes
 					if(enemy.takeDamage(tower.damage,tower.damageType) < 1){
-						tower.arrayBullets = new ArrayList<Projectile>(0);
+						//tower.arrayBullets = new ArrayList<Projectile>(0);
 						credits += enemy.getCredits();
 						scene.detachChild(enemy);
+						arrayEn.remove(enemy);
 						//TODO play death animation enemy function pass scene to detach
 					}
 					break; // take a break
@@ -407,7 +403,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	}
 	
 	//break this all out to a wave class, also use SpriteBatch
-	int allow_enemy = 20; // number of enemies to allow
+	int allow_enemy = 50; // number of enemies to allow
 	public void add_enemy(VertexBufferObjectManager vbom){
 		final float delay = 5f; //delay between adding enemies
 		final VertexBufferObjectManager tvbom = vbom;
