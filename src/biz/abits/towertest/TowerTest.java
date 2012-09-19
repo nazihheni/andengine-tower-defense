@@ -390,6 +390,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					towerBulletList.remove(bullet);  // also remove it from array so we don't check it again
 					//enemy takes
 					if(enemy.takeDamage(tower.damage,tower.damageType) < 1){
+						tower.arrayBullets = new ArrayList<Projectile>(0);
 						credits += enemy.getCredits();
 						scene.detachChild(enemy);
 						//TODO play death animation enemy function pass scene to detach
