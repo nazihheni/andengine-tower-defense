@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import org.andengine.audio.sound.Sound;
 import org.andengine.audio.sound.SoundFactory;
 import org.andengine.audio.sound.SoundManager;
-import org.andengine.entity.modifier.MoveByModifier;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.texture.TextureManager;
@@ -18,9 +17,7 @@ import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.debug.Debug;
 
 import android.content.Context;
-import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 
 /**
  * Basic Tower class contains it's own projectiles and provides methods for firing
