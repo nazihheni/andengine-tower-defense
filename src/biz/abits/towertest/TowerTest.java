@@ -53,7 +53,7 @@ import android.graphics.Typeface;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.Toast;
-//and some stuff
+
 @SuppressWarnings("unused")
 public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchListener,IScrollDetectorListener, IPinchZoomDetectorListener{
 	//I am Main class//
