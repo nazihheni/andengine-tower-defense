@@ -9,11 +9,13 @@ import org.andengine.audio.sound.SoundManager;
 import org.andengine.entity.modifier.MoveByModifier;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
+//more crap
 import org.andengine.opengl.texture.TextureManager;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
+//some stuff
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.debug.Debug;
 
@@ -49,7 +51,8 @@ public class Tower extends Sprite{
         float x,y;
         float targetX;
         float targetY;
-        
+        public String crapola="stuff";
+        public String getCrap(){ return crapola;}
         boolean moveable = true;
         Projectile SpriteBullet;
         //int speed = 500;
