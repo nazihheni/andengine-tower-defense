@@ -5,7 +5,7 @@
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK/AndEngine"/>
-	<classpathentry kind="src" path="/AndEngine"/>
+	<classpathentry exported="true" kind="src" path="/AndEngine"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/AndEngineTMXTiledMapExtension"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/AndEnginePhysicsBox2DExtension"/>
 	<classpathentry exported="true" kind="lib" path="/AndEngine/bin/andengine.jar"/>

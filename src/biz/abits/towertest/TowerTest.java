@@ -3,42 +3,40 @@ package biz.abits.towertest;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Random;
-import android.os.Bundle;
-import android.os.Handler;
-import android.app.Activity;
-import android.graphics.Typeface;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.Menu;
-import android.widget.Toast;
 
 import org.andengine.audio.sound.SoundFactory;
 import org.andengine.engine.camera.Camera;
+import org.andengine.engine.camera.ZoomCamera;
+import org.andengine.engine.camera.hud.HUD;
 import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.FillResolutionPolicy;
-import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.IOnAreaTouchListener;
 import org.andengine.entity.scene.IOnSceneTouchListener;
+import org.andengine.entity.scene.ITouchArea;
 import org.andengine.entity.scene.Scene;
-import org.andengine.entity.scene.background.Background;
 import org.andengine.entity.sprite.Sprite;
+import org.andengine.entity.text.Text;
 import org.andengine.entity.util.FPSCounter;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.extension.tmx.TMXLoader;
+import org.andengine.extension.tmx.TMXLoader.ITMXTilePropertiesListener;
 import org.andengine.extension.tmx.TMXProperties;
 import org.andengine.extension.tmx.TMXTile;
 import org.andengine.extension.tmx.TMXTileProperty;
 import org.andengine.extension.tmx.TMXTiledMap;
-import org.andengine.extension.tmx.TMXLoader.ITMXTilePropertiesListener;
 import org.andengine.extension.tmx.util.exception.TMXLoadException;
 import org.andengine.input.touch.TouchEvent;
-import org.andengine.entity.scene.ITouchArea;
-import org.andengine.entity.text.Text;
+import org.andengine.input.touch.controller.MultiTouch;
+import org.andengine.input.touch.detector.PinchZoomDetector;
+import org.andengine.input.touch.detector.PinchZoomDetector.IPinchZoomDetectorListener;
+import org.andengine.input.touch.detector.ScrollDetector;
+import org.andengine.input.touch.detector.ScrollDetector.IScrollDetectorListener;
+import org.andengine.input.touch.detector.SurfaceScrollDetector;
 import org.andengine.opengl.font.Font;
 import org.andengine.opengl.font.FontFactory;
 import org.andengine.opengl.texture.TextureManager;
@@ -49,13 +47,15 @@ import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
-import org.andengine.util.color.Color;
 import org.andengine.util.debug.Debug;
 
+import android.graphics.Typeface;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.widget.Toast;
 
 @SuppressWarnings("unused")
-public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchListener{
+public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchListener,IScrollDetectorListener, IPinchZoomDetectorListener{
 	//I am Main class//
 	//TODO use accelerometer to pan screen around
 	//TODO Use SpriteBatch class for bullets, enemies, towers.
@@ -67,9 +67,16 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	///=======================================
 	//int CAMERA_WIDTH = 800;
 	//int CAMERA_HEIGHT = 480;
-	int CAMERA_WIDTH = 1280;
-	int CAMERA_HEIGHT = 720;
-	Camera camera;
+	private static int CAMERA_WIDTH = 1280;
+	private static int CAMERA_HEIGHT = 720;
+	private ZoomCamera zoomCamera;
+	private Camera camera;
+	
+	private SurfaceScrollDetector mScrollDetector;
+    private PinchZoomDetector mPinchZoomDetector;
+    private float mPinchZoomStartedCameraZoomFactor;
+    
+	HUD hud;
 	Scene scene;
 	private TMXTiledMap mTMXTiledMap;
 	
@@ -138,7 +145,19 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			CAMERA_WIDTH = metrics.widthPixels;
 			
 			camera = new Camera(0,0,CAMERA_WIDTH,CAMERA_HEIGHT);
-			EngineOptions mEngine = new EngineOptions(true,ScreenOrientation.LANDSCAPE_FIXED, new FillResolutionPolicy(),camera);
+			zoomCamera = new ZoomCamera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
+
+			EngineOptions mEngine = new EngineOptions(true,ScreenOrientation.LANDSCAPE_FIXED, new FillResolutionPolicy(),zoomCamera);
+
+			if(MultiTouch.isSupported(this)) {
+				if(MultiTouch.isSupportedDistinct(this)) {
+					Toast.makeText(this, "MultiTouch detected --> Both controls will work properly!", Toast.LENGTH_SHORT).show();
+				} else {
+					Toast.makeText(this, "MultiTouch detected, but your device has problems distinguishing between fingers.\n\nControls are placed at different vertical locations.", Toast.LENGTH_LONG).show();
+				}
+			} else {
+				Toast.makeText(this, "Sorry your device does NOT support MultiTouch!\n\n(Falling back to SingleTouch.)\n\nControls are placed at different vertical locations.", Toast.LENGTH_LONG).show();
+			}
 			mEngine.getAudioOptions().setNeedsMusic(true).setNeedsSound(true);
 			return mEngine;
 	    }
@@ -186,6 +205,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			this.font10.load();
 			this.font20.load();
 			this.font40.load();
+
 	    }
 	
 	    /**
@@ -196,6 +216,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			Log.i("Location:","onCreateScene");
 			this.mEngine.registerUpdateHandler(new FPSLogger());
 			scene = new Scene();
+			hud = new HUD();
 
 			//=====================================
 			//		TMXTileMap
@@ -223,14 +244,14 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			final TMXLayer tmxLayer = this.mTMXTiledMap.getTMXLayers().get(0);
 			scene.attachChild(tmxLayer);
 			//=====================================
-			//		Interface
+			//		Interface & HUD
 			//=====================================	
+			this.mScrollDetector = new SurfaceScrollDetector(this);
+			this.mPinchZoomDetector = new PinchZoomDetector(this);
 			this.mEngine.registerUpdateHandler(fpsCounter);
 			//xcoord,ycoord,font,initial text?,length,vbom
 			fpsText = new Text(CAMERA_WIDTH-100, 20, this.font20, "FPS:", "FPS: xxx.xx".length(), this.getVertexBufferObjectManager());
 			creditText = new Text(20, 20, this.font40, "$", 12, this.getVertexBufferObjectManager());
-			scene.attachChild(fpsText);
-			scene.attachChild(creditText);
 			//Initialize the credits they have to display it at first
 			credits = initialCredits;
 			creditText.setText("$" + credits);
@@ -242,6 +263,13 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					creditText.setText("$" + credits);
 				}
 			}));*/
+			scene.attachChild(fpsText);
+			scene.attachChild(creditText);
+			//hud.attachChild(fpsText);
+			//hud.attachChild(creditText);
+			//TODO setup build buttons in HUD
+
+			
 			//=====================================
 			//		Tower & Enemy stuff
 			//=====================================
@@ -309,10 +337,21 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			return scene;
 	    }
 
+	    
 		@Override
 		public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
 			Log.i("Location:","onSceneTouchEvent");
-/* scroll screen here
+			this.mPinchZoomDetector.onTouchEvent(pSceneTouchEvent);
+
+			if(this.mPinchZoomDetector.isZooming()) {
+				this.mScrollDetector.setEnabled(false);
+			} else {
+				if(pSceneTouchEvent.isActionDown()) {
+					this.mScrollDetector.setEnabled(true);
+				}
+				this.mScrollDetector.onTouchEvent(pSceneTouchEvent);
+			}
+			/* scroll screen here
 			if (pSceneTouchEvent.isActionDown()) {
 				return true;
 			} 
@@ -323,7 +362,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			if (pSceneTouchEvent.isActionMove()) {
 				return true;
 			}
-*/
+			 */
 			return true;
 		}
 		
@@ -347,31 +386,39 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		//***************************************************************
 		//TODO WE SHOULD PROBABLY MULTITHREAD THIS LOOP FO' SHIZZLE!!!!!!
 		//***************************************************************
-		for(int j = 0; j < arrayEn.size();j++){//iterate through the enemies
-			Enemy enemy = arrayEn.get(j);
+        if (arrayEn.size() > 0) {
+            for(int j = 0; j < arrayEn.size();j++){//iterate through the enemies
+                    Enemy enemy = arrayEn.get(j);
 
-			//enemy.setPosition(enemy.getX()+3/6f,enemy.getY());  //you can use to move enemy
-			//Lets Loop our Towers
-			//for(Tower tower: arrayTower){
-			for(int k = 0; k < arrayTower.size(); k++){//iterate through the towers
-				Tower tower = arrayTower.get(k);
-					
-				//check if they collide The size of the Tower is the range of the tower or something maybe
-				//TODO, add physics for collision
-				//if enemy is in tower range
+                    //enemy.setPosition(enemy.getX()+3/6f,enemy.getY());  //you can use to move enemy
+                    //Lets Loop our Towers
+                    //for(Tower tower: arrayTower){
+                    for(int k = 0; k < arrayTower.size(); k++){//iterate through the towers
+                            Tower tower = arrayTower.get(k);
+                                    
+                            //check if they collide The size of the Tower is the range of the tower or something maybe
+                            //TODO, add physics for collision
+                            //if enemy is in tower range
 
-				if(enemy.collidesWith(tower)){
-					tower.fire(enemy, scene, arrayEn);// call fire and pass the tower and enemy to fire
-					//Log.i("Location:","Firing on enemy");
-					//TODO find a way to end thread?
-					//break; //do NOT enable this line or it will only allow ONE tower to fire!
-				}else{
-					//this line is what erases any floating leftover bullets, we might be able to get rid of it? :-\
-					//tower.ceaseFire(scene);
-				}
-			}
-			enemy.move();
-		}
+                            if(enemy.collidesWith(tower)){
+                                    tower.fire(enemy, scene, arrayEn);// call fire and pass the tower and enemy to fire
+                                    //Log.i("Location:","Firing on enemy");
+                                    //TODO find a way to end thread?
+                                    //break; //do NOT enable this line or it will only allow ONE tower to fire!
+                            }else{
+                                    //this line is what erases any floating leftover bullets (if the bullet isn't hitting an enemy, technically, this shouldn't ever happen if our targeting doesn't suck)
+                                    tower.checkBullets(scene);
+                            }
+                    }
+                    enemy.move();
+            }
+	    } else {
+	            //if we have nothing better to do (there's no enemies)
+	            //check for lost, or misguided bullets
+	            for(int k = 0; k < arrayTower.size(); k++)//iterate through the towers
+	                    arrayTower.get(k).checkBullets(scene);
+	    }
+
 	}
 	
 	/**
@@ -417,7 +464,42 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		getEngine().registerUpdateHandler(enemy_handler);
 		
 	}
-		
+	//=====================================
+	//		Pinch Zoom and Scroll stuff
+	//=====================================		
+	//TODO establish limits
+	@Override
+	public void onScrollStarted(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
+		final float zoomFactor = this.zoomCamera.getZoomFactor();
+		this.zoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+	}
+
+	@Override
+	public void onScroll(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
+		final float zoomFactor = this.zoomCamera.getZoomFactor();
+		this.zoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+	}
+
+	@Override
+	public void onScrollFinished(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
+		final float zoomFactor = this.zoomCamera.getZoomFactor();
+		this.zoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+	}
+
+	@Override
+	public void onPinchZoomStarted(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent) {
+		this.mPinchZoomStartedCameraZoomFactor = this.zoomCamera.getZoomFactor();
+	}
+
+	@Override
+	public void onPinchZoom(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
+		this.zoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
+	}
+
+	@Override
+	public void onPinchZoomFinished(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
+		this.zoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
+	}	
 //  END OF CLASS
 }
 
