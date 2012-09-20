@@ -70,14 +70,15 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	private static int CAMERA_WIDTH = 1280;
 	private static int CAMERA_HEIGHT = 720;
 	private ZoomCamera zoomCamera;
-	private Camera camera;
+	//private Camera camera;
 	
 	private SurfaceScrollDetector mScrollDetector;
     private PinchZoomDetector mPinchZoomDetector;
     private float mPinchZoomStartedCameraZoomFactor;
     
-	HUD hud;
-	Scene scene;
+	private HUD hud;
+	private Scene scene;
+	private ProgressBar waveProgress; //add to wave class
 	private TMXTiledMap mTMXTiledMap;
 	
 	//========================================
@@ -131,7 +132,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	static Text creditText;
 	static long credits;
 	final long initialCredits = 200;
-
+	int wave_size = 50; // number of enemies to allow
 	    @Override
 	    public EngineOptions onCreateEngineOptions() {
 			Log.i("Location:","onCreateEngineOptions");
@@ -144,20 +145,17 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			CAMERA_HEIGHT = metrics.heightPixels;
 			CAMERA_WIDTH = metrics.widthPixels;
 			
-			camera = new Camera(0,0,CAMERA_WIDTH,CAMERA_HEIGHT);
+			//camera = new Camera(0,0,CAMERA_WIDTH,CAMERA_HEIGHT);
 			zoomCamera = new ZoomCamera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
 
 			EngineOptions mEngine = new EngineOptions(true,ScreenOrientation.LANDSCAPE_FIXED, new FillResolutionPolicy(),zoomCamera);
 
 			if(MultiTouch.isSupported(this)) {
-				if(MultiTouch.isSupportedDistinct(this)) {
-					Toast.makeText(this, "MultiTouch detected --> Both controls will work properly!", Toast.LENGTH_SHORT).show();
-				} else {
-					Toast.makeText(this, "MultiTouch detected, but your device has problems distinguishing between fingers.\n\nControls are placed at different vertical locations.", Toast.LENGTH_LONG).show();
-				}
-			} else {
-				Toast.makeText(this, "Sorry your device does NOT support MultiTouch!\n\n(Falling back to SingleTouch.)\n\nControls are placed at different vertical locations.", Toast.LENGTH_LONG).show();
-			}
+				if(MultiTouch.isSupportedDistinct(this)) 
+					Toast.makeText(this, "MultiTouch detected Pinch Zoom will work properly!", Toast.LENGTH_SHORT).show();
+				else 
+					Toast.makeText(this, "MultiTouch detected, but your device has problems distinguishing between fingers", Toast.LENGTH_LONG).show();
+			} else Toast.makeText(this, "Sorry your device does NOT support MultiTouch! Use Zoom Buttons.", Toast.LENGTH_LONG).show();
 			mEngine.getAudioOptions().setNeedsMusic(true).setNeedsSound(true);
 			return mEngine;
 	    }
@@ -216,8 +214,14 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			Log.i("Location:","onCreateScene");
 			this.mEngine.registerUpdateHandler(new FPSLogger());
 			scene = new Scene();
+			//HUD does not move with camera, it is stationary
 			hud = new HUD();
-
+			//number of enemies remaining
+			waveProgress = new ProgressBar(zoomCamera,20,64,100,10,this.getVertexBufferObjectManager());
+			waveProgress.setProgressColor(1.0f, 0.0f, 0.0f, 1.0f).setFrameColor(0.4f, 0.4f, 0.4f, 1.0f).setBackColor(0.0f, 0.0f, 0.0f, 0.2f);
+			//waveProgress.setMax(wave_size);
+			zoomCamera.setHUD(hud);
+			zoomCamera.setHUD(waveProgress);
 			//=====================================
 			//		TMXTileMap
 			//=====================================
@@ -263,6 +267,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					creditText.setText("$" + credits);
 				}
 			}));*/
+			
 			scene.attachChild(fpsText);
 			scene.attachChild(creditText);
 			//hud.attachChild(fpsText);
@@ -432,7 +437,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	}
 	
 	//break this all out to a wave class, also use SpriteBatch
-	int allow_enemy = 50; // number of enemies to allow
+	int allow_enemy = wave_size;
 	public void add_enemy(VertexBufferObjectManager vbom){
 		final float delay = 5f; //delay between adding enemies
 		final VertexBufferObjectManager tvbom = vbom;
@@ -441,7 +446,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
 				//=================Code must go here=======================
-				Log.i("allow_enemy:",""+allow_enemy);		
+				//Log.i("allow_enemy:",""+allow_enemy);		
 				Random a = new Random();
 				//int x = a.nextInt(CAMERA_WIDTH-60)+20;
 				//int y = a.nextInt(CAMERA_HEIGHT-60)+20;
@@ -455,6 +460,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					scene.attachChild(enemy);
 					arrayEn.add(enemy);
 					allow_enemy--;
+					waveProgress.setProgress(1-(float)(allow_enemy/wave_size));
+					Log.i("waveProg", ""+(float)allow_enemy/wave_size);
 				}
 				else{}
 				//================= end of code==========================
@@ -504,3 +511,4 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 }
 
 	
+

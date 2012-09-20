@@ -19,7 +19,7 @@ public class Projectile extends Sprite{
         //I am Enemy class
         public float x,y;
         public float targetX,targetY;
-        public final float speed = 1f; //movement speed
+        public final float speed = 5f; //movement speed higher is faster
         public MoveByModifier trajectory;
         VertexBufferObjectManager vbom;
         public static String texture = "bullet.png";
