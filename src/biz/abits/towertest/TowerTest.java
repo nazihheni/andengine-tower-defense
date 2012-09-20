@@ -342,7 +342,9 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			return scene;
 	    }
 
-	    
+	    /**
+	     * This gets called when the screen is touched
+	     */
 		@Override
 		public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
 			Log.i("Location:","onSceneTouchEvent");
