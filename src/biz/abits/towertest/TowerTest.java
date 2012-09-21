@@ -91,8 +91,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	BitmapTextureAtlas towerImage;
 	TextureRegion towerTexture;
 	ArrayList<Tower> arrayTower;
-	Tower buildTower; //a basic Tower Sprite used to build towers 
-	Tower buildBasicTower; //a basic Tower Sprite used to build towers
+	/**a basic Tower in the HUD Sprite used to build towers*/
+	Tower buildBasicTower; 
 	//========================================
 	//		 The Bullet in Array
 	//========================================
@@ -318,17 +318,14 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			
 			hud.setTouchAreaBindingOnActionDownEnabled(true);
 			//A tower button to build other towers xcoord,ycoord,xsize,ysize
-			buildTower = new Tower(bulletTexture,50,50,150,150,towerTexture,this.getVertexBufferObjectManager());
-			buildBasicTower = new Tower(bulletTexture,350,50,150,150,towerTexture,this.getVertexBufferObjectManager());
+			buildBasicTower = new Tower(bulletTexture,150,0,150,150,towerTexture,this.getVertexBufferObjectManager());
 			//TODO add to hud
 			hud.attachChild(buildBasicTower);
-			hud.registerTouchArea( buildBasicTower); // register touch area , so this allows you to drag it
+			hud.registerTouchArea(buildBasicTower); // register touch area , so this allows you to drag it
 			//hud.setOnAreaTouchListener();
 			
-			scene.attachChild( buildTower); // add it to the scene
-			scene.registerTouchArea( buildTower); // register touch area , so this allows you to drag it
-			BuildTowerTouchHandler btth = new BuildTowerTouchHandler(buildTower, scene, credits, arrayTower, bulletTexture, towerTexture, self.getVertexBufferObjectManager());
-			scene.setOnAreaTouchListener(btth);
+			BuildTowerTouchHandler btth = new BuildTowerTouchHandler(buildBasicTower, scene, credits, arrayTower, bulletTexture, towerTexture, self.getVertexBufferObjectManager());
+			//scene.setOnAreaTouchListener(btth);
 			hud.setOnAreaTouchListener(btth);
 			add_enemy(this.getVertexBufferObjectManager()); //timer add enemy every amount of defined secs
 			return scene;

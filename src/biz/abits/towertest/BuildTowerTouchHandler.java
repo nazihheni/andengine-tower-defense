@@ -20,9 +20,10 @@ import android.util.Log;
 public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 	boolean createNewTower;
 	Tower tw;
-	long credits;
+	static long credits;
 	Scene scene;
-	float touchX, touchY;
+	//Scene hud;
+	//float touchX, touchY;
 	Tower buildTower;
 	ArrayList<Tower> arrayTower;
 	TextureRegion bulletTexture;
@@ -38,9 +39,10 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 	 * @param ttex Tower TextureRegion
 	 * @param vbom VertexBufferObjectManager
 	 */
-	public BuildTowerTouchHandler(Tower bt, Scene s, long creds, ArrayList<Tower> al, TextureRegion btex, TextureRegion ttex,VertexBufferObjectManager vbom){
+	public BuildTowerTouchHandler(Tower bt, Scene s, long creds, ArrayList<Tower> al, TextureRegion btex, TextureRegion ttex,VertexBufferObjectManager vbom){ //Scene h, 
 		credits = creds;
 		scene = s;
+		//hud = h;
 		buildTower = bt;
 		arrayTower = al;
 		bulletTexture = btex;
@@ -62,8 +64,8 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 			if(createNewTower && credits >= buildTower.getCredits()){
 				TowerTest.addCredits(-buildTower.getCredits());
 				createNewTower = false;
-				touchX = pSceneTouchEvent.getX();
-				touchY = pSceneTouchEvent.getY();
+				float touchX = pSceneTouchEvent.getX();
+				float touchY = pSceneTouchEvent.getY();
 
 				//150,150 is the size of the Sprite
 			    tw = new Tower(bulletTexture,touchX ,touchY,150,150,towerTexture,tvbom)
@@ -82,9 +84,8 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 			   scene.registerTouchArea( tw); // register touch area , so this allows you to drag it
 			   scene.attachChild( tw); // add it to the scene
 			}else if(tw.moveable){
+				//TODO somehow we need to adjust these coordinates so if the person has panned, or zoomed, the tower still goes to the right spot!
 				tw.setPosition(pSceneTouchEvent.getX() - tw.getWidth() / 2, pSceneTouchEvent.getY() - tw.getHeight() / 2);
-				touchX = pSceneTouchEvent.getX();
-	        	touchY = pSceneTouchEvent.getY();
 			}
 			return true;
 		}

@@ -56,6 +56,17 @@ public class Tower extends Sprite{
         //Body range = PhysicsFactory.createCircularBody();
  
         //constructor
+        /**
+         * Constructor for tower class
+         * 
+         * @param b TextureRegion for bullet
+         * @param pX x coordinate of tower to create
+         * @param pY y coordinate of tower to create
+         * @param pWidth width of tower
+         * @param pHeight height of tower
+         * @param pTextureRegion I don't think this is even used? :-\
+         * @param tvbom VertexBufferObjectManager
+         */
         public Tower(TextureRegion b,float pX, float pY, float pWidth, float pHeight,
                         TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
                 super(pX, pY, pWidth, pHeight, pTextureRegion,tvbom);
