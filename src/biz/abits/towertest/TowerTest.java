@@ -315,6 +315,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			scene.registerUpdateHandler(loop);
 			scene.setTouchAreaBindingOnActionDownEnabled(true);
 			scene.setOnSceneTouchListener(this);
+			
+			hud.setTouchAreaBindingOnActionDownEnabled(true);
 			//A tower button to build other towers xcoord,ycoord,xsize,ysize
 			buildTower = new Tower(bulletTexture,50,50,150,150,towerTexture,this.getVertexBufferObjectManager());
 			buildBasicTower = new Tower(bulletTexture,350,50,150,150,towerTexture,this.getVertexBufferObjectManager());
@@ -348,7 +350,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 				}
 				this.mScrollDetector.onTouchEvent(pSceneTouchEvent);
 			}
-			/* scroll screen here
+			/* 
 			if (pSceneTouchEvent.isActionDown()) {
 				return true;
 			} 
