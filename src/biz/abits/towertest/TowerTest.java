@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import org.andengine.audio.sound.SoundFactory;
-import org.andengine.engine.camera.Camera;
 import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.engine.camera.hud.HUD;
 import org.andengine.engine.handler.IUpdateHandler;
@@ -14,6 +13,7 @@ import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.FillResolutionPolicy;
+import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnAreaTouchListener;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.ITouchArea;
@@ -39,6 +39,8 @@ import org.andengine.input.touch.detector.ScrollDetector.IScrollDetectorListener
 import org.andengine.input.touch.detector.SurfaceScrollDetector;
 import org.andengine.opengl.font.Font;
 import org.andengine.opengl.font.FontFactory;
+import org.andengine.opengl.font.StrokeFont;
+import org.andengine.opengl.texture.ITexture;
 import org.andengine.opengl.texture.TextureManager;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
@@ -47,8 +49,10 @@ import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
+import org.andengine.util.color.Color;
 import org.andengine.util.debug.Debug;
 
+import android.content.Entity;
 import android.graphics.Typeface;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -87,9 +91,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	BitmapTextureAtlas towerImage;
 	TextureRegion towerTexture;
 	ArrayList<Tower> arrayTower;
-	Tower tw; // this is Tower class and its only used when creating towers on touch event
 	Tower buildTower; //a basic Tower Sprite used to build towers 
-	boolean createNewTower = true;
+	Tower buildBasicTower; //a basic Tower Sprite used to build towers
 	//========================================
 	//		 The Bullet in Array
 	//========================================
@@ -195,11 +198,23 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			SoundFactory.setAssetBasePath("mfx/");
 			Tower.loadSound(this.mEngine.getSoundManager(), this);
 			//=================================================================================//
-			//								Load Sounds
+			//								Load Fonts
 			//================================================================================//
+/*			final ITexture fontTexture = new BitmapTextureAtlas(this.getTextureManager(),256,256);
+			mFont = FontFactory.createFromAsset(this.getFontManager(),fontTexture,this.getAssets(),"COMIC.TTF",18f,true,Color.WHITE);
+*/
+/*			final ITexture     strokeFontTexture = new BitmapTextureAtlas(this.getTextureManager(), 256, 256, TextureOptions.BILINEAR);
+			final ITexture strokeOnlyFontTexture = new BitmapTextureAtlas(this.getTextureManager(), 256, 256, TextureOptions.BILINEAR);
+
+			this.font10 = new StrokeFont(this.getFontManager(), strokeFontTexture,     Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 10, true, Color.BLACK, 2, Color.WHITE);
+			this.font20 = new StrokeFont(this.getFontManager(), strokeFontTexture,     Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 20, true, Color.BLACK, 2, Color.WHITE);
+			this.font40 = new StrokeFont(this.getFontManager(), strokeFontTexture,     Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 40, true, Color.BLACK, 2, Color.WHITE);
+			//this.font20 = new StrokeFont(this.getFontManager(), strokeOnlyFontTexture, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 20, true, Color.BLACK, 2, Color.WHITE, true);
+*/			
 			this.font10 = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256, TextureOptions.BILINEAR, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 10);
 			this.font20 = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256, TextureOptions.BILINEAR, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 20);
 			this.font40 = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256, TextureOptions.BILINEAR, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 40);
+
 			this.font10.load();
 			this.font20.load();
 			this.font40.load();
@@ -221,7 +236,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			waveProgress.setProgressColor(1.0f, 0.0f, 0.0f, 1.0f).setFrameColor(0.4f, 0.4f, 0.4f, 1.0f).setBackColor(0.0f, 0.0f, 0.0f, 0.2f);
 			//waveProgress.setMax(wave_size);
 			zoomCamera.setHUD(hud);
-			zoomCamera.setHUD(waveProgress);
+			//zoomCamera.setHUD(waveProgress); //TODO fix this
 			//=====================================
 			//		TMXTileMap
 			//=====================================
@@ -254,11 +269,20 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			this.mPinchZoomDetector = new PinchZoomDetector(this);
 			this.mEngine.registerUpdateHandler(fpsCounter);
 			//xcoord,ycoord,font,initial text?,length,vbom
+			final Rectangle fpsMask = this.makeColoredRectangle(CAMERA_WIDTH-100, 20, 20 ,100, .8f, .8f, .8f,1f);
+			hud.attachChild(fpsMask);
 			fpsText = new Text(CAMERA_WIDTH-100, 20, this.font20, "FPS:", "FPS: xxx.xx".length(), this.getVertexBufferObjectManager());
+			final Rectangle creditMask = this.makeColoredRectangle(20, 20, 40 ,100, .8f, .8f, .8f,1f);
+			hud.attachChild(creditMask);
 			creditText = new Text(20, 20, this.font40, "$", 12, this.getVertexBufferObjectManager());
+
+			
+			//final Entity rectangleGroup = new Entity(CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2);  //group shapes together
+			
 			//Initialize the credits they have to display it at first
 			credits = initialCredits;
 			creditText.setText("$" + credits);
+			//maybe use this for HUD
 			/*scene.registerUpdateHandler(new TimerHandler(1 / 10.0f, true, new ITimerCallback() {
 				@Override
 				public void onTimePassed(final TimerHandler pTimerHandler) {
@@ -268,10 +292,11 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 				}
 			}));*/
 			
-			scene.attachChild(fpsText);
-			scene.attachChild(creditText);
-			//hud.attachChild(fpsText);
-			//hud.attachChild(creditText);
+			//scene.attachChild(fpsText);
+			//scene.attachChild(creditText);
+			hud.attachChild(fpsText);
+			hud.attachChild(creditText);
+
 			//TODO setup build buttons in HUD
 
 			
@@ -283,61 +308,26 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			arrayEn		= new ArrayList<Enemy>();
 
 			Log.i("Location:","registerUpdateHandler");				
+			scene.registerUpdateHandler(hudLoop);
+			//hud.setOnSceneTouchListener(this); //TODO enable these two lines
+			//hud.setTouchAreaBindingOnActionDownEnabled(true);
 			//Register our update Handler
 			scene.registerUpdateHandler(loop);
-			scene.setTouchAreaBindingOnActionDownEnabled(true); //TODO check this is the right event/whatever
+			scene.setTouchAreaBindingOnActionDownEnabled(true);
 			scene.setOnSceneTouchListener(this);
 			//A tower button to build other towers xcoord,ycoord,xsize,ysize
 			buildTower = new Tower(bulletTexture,50,50,150,150,towerTexture,this.getVertexBufferObjectManager());
+			buildBasicTower = new Tower(bulletTexture,350,50,150,150,towerTexture,this.getVertexBufferObjectManager());
+			//TODO add to hud
+			hud.attachChild(buildBasicTower);
+			hud.registerTouchArea( buildBasicTower); // register touch area , so this allows you to drag it
+			//hud.setOnAreaTouchListener();
+			
 			scene.attachChild( buildTower); // add it to the scene
 			scene.registerTouchArea( buildTower); // register touch area , so this allows you to drag it
-			scene.setOnAreaTouchListener(new IOnAreaTouchListener() {
-				@Override
-				public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final ITouchArea pTouchArea, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-					/*if (pSceneTouchEvent.isActionDown()) {
-						//touchDuration = event.getEventTime() - event.getDownTime();
-					   return true;
-					}*/ 
-					if (pSceneTouchEvent.isActionDown()) { createNewTower = true; }
-					if (pSceneTouchEvent.isActionUp()) {
-						tw.moveable = false;
-						createNewTower = true;
-						//if location is good continue, else destroy tower and refund cost
-						return true;
-					}
-					if (pSceneTouchEvent.isActionMove()) {
-						if(createNewTower && credits >= buildTower.getCredits()){
-							TowerTest.addCredits(-buildTower.getCredits());
-							createNewTower = false;
-							touchX = pSceneTouchEvent.getX();
-							touchY = pSceneTouchEvent.getY();
-							//150,150 is the size of the Sprite
-						    tw = new Tower(bulletTexture,touchX ,touchY,150,150,towerTexture,self.getVertexBufferObjectManager())
-						    {
-						    	@Override
-						    	public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
-						    		//TODO add code for upgrades
-						    		if (pSceneTouchEvent.isActionDown()) {
-						    			//do upgrade
-						    			Log.i("Location:","Upgrading Tower");
-						    		}
-						    		return true;
-						        }
-						   };
-						   arrayTower.add(tw); // add to array
-						   scene.registerTouchArea( tw); // register touch area , so this allows you to drag it
-						   scene.attachChild( tw); // add it to the scene
-						}else if(tw.moveable){
-							tw.setPosition(pSceneTouchEvent.getX() - tw.getWidth() / 2, pSceneTouchEvent.getY() - tw.getHeight() / 2);
-							touchX = pSceneTouchEvent.getX();
-				        	touchY = pSceneTouchEvent.getY();
-						}
-						return true;
-					}
-					return true;
-				}
-				
-			});
+			BuildTowerTouchHandler btth = new BuildTowerTouchHandler(buildTower, scene, credits, arrayTower, bulletTexture, towerTexture, self.getVertexBufferObjectManager());
+			scene.setOnAreaTouchListener(btth);
+			hud.setOnAreaTouchListener(btth);
 			add_enemy(this.getVertexBufferObjectManager()); //timer add enemy every amount of defined secs
 			return scene;
 	    }
@@ -379,10 +369,22 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		    public void onUpdate(float pSecondsElapsed) {
 				//=================MAIN GAME LOOP=======================
 		    	collision(); // run the <--collision every update
-				fpsText.setText("FPS: " + new DecimalFormat("#.##").format(fpsCounter.getFPS()));
+				//fpsText.setText("FPS: " + new DecimalFormat("#.##").format(fpsCounter.getFPS()));
 		    	//code ends
 		        }
 		};		
+		//TODO not sure these should be separate
+		IUpdateHandler hudLoop = new IUpdateHandler() {
+		    @Override
+		    public void reset() {
+		    }
+		    @Override
+		    public void onUpdate(float pSecondsElapsed) {
+				//=================HUD LOOP=======================
+				fpsText.setText("FPS: " + new DecimalFormat("#.##").format(fpsCounter.getFPS()));
+		    	//code ends
+		        }
+		};	
 	//TODO put in a thread
 	public void collision(){
 		//Lets Loop our array of enemies
@@ -471,6 +473,24 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		getEngine().registerUpdateHandler(enemy_handler);
 		
 	}
+	/**
+	 * Makes rectangles
+	 * @param pX x coord
+	 * @param pY y coord
+	 * @param pWidth width
+	 * @param pHeight height
+	 * @param pRed color value
+	 * @param pGreen color value
+	 * @param pBlue color value
+	 * @param pAlpha color Alpha value
+	 * @return
+	 */
+	private Rectangle makeColoredRectangle(final float pX, final float pY, final float pWidth, final float pHeight, final float pRed, final float pGreen, final float pBlue, final float pAlpha) {
+		
+		final Rectangle coloredRect = new Rectangle(pX, pY, pHeight, pWidth, this.getVertexBufferObjectManager());
+		coloredRect.setColor(pRed, pGreen, pBlue, pAlpha);
+		return coloredRect;
+	}
 	//=====================================
 	//		Pinch Zoom and Scroll stuff
 	//=====================================		
@@ -495,7 +515,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 
 	@Override
 	public void onPinchZoomStarted(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent) {
-		this.mPinchZoomStartedCameraZoomFactor = this.zoomCamera.getZoomFactor();
+		this.mPinchZoomStartedCameraZoomFactor = this.zoomCamera.getZoomFactor(); //TODO maximum/minimum zoom factor
 	}
 
 	@Override

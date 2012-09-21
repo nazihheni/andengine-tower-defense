@@ -215,6 +215,18 @@ public class Tower extends Sprite{
         public boolean upgradeLevel(){ if(level == maxLevel)  return false; else level++; return true; }
 
         /**
+         * Get the total number of these towers that have been built
+         * @return number of this tower that has been built
+         */
+        public int getTotal(){ return total;}
+        
+        /**
+         * Sell tower, return credit value
+         * @return credit value of tower
+         */ //TODO finish this function (pass in scene/list to remove it maybe)
+        public long sell(){ total--; return credits;}
+        
+        /**
          * This checks through all the bullets that the tower has, to make sure any non-moving bullets get erased
          * @param scene
          */
