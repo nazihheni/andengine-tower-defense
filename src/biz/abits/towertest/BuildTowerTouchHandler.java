@@ -20,7 +20,6 @@ import android.util.Log;
 public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 	boolean createNewTower;
 	Tower tw;
-	static long credits;
 	Scene scene;
 	//Scene hud;
 	//float touchX, touchY;
@@ -40,7 +39,6 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 	 * @param vbom VertexBufferObjectManager
 	 */
 	public BuildTowerTouchHandler(Tower bt, Scene s, long creds, ArrayList<Tower> al, TextureRegion btex, TextureRegion ttex,VertexBufferObjectManager vbom){ //Scene h, 
-		credits = creds;
 		scene = s;
 		//hud = h;
 		buildTower = bt;
@@ -61,7 +59,7 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 			return true;
 		}
 		if (pSceneTouchEvent.isActionMove()) {
-			if(createNewTower && credits >= buildTower.getCredits()){
+			if(createNewTower && TowerTest.credits >= buildTower.getCredits()){
 				TowerTest.addCredits(-buildTower.getCredits());
 				createNewTower = false;
 				float touchX = pSceneTouchEvent.getX();
