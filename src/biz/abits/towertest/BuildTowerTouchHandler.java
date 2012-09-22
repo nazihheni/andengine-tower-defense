@@ -83,7 +83,27 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 			   scene.attachChild( tw); // add it to the scene
 			}else if(tw.moveable){
 				//TODO somehow we need to adjust these coordinates so if the person has panned, or zoomed, the tower still goes to the right spot!
-				tw.setPosition(pSceneTouchEvent.getX() - tw.getWidth() / 2, pSceneTouchEvent.getY() - tw.getHeight() / 2);
+				float myZoom = TowerTest.getZoom();
+				float myXOffset = TowerTest.getPanX() - TowerTest.CAMERA_WIDTH / 2/myZoom;
+				float myYOffset = TowerTest.getPanY() - TowerTest.CAMERA_HEIGHT / 2/myZoom;
+				
+				float newX = (pSceneTouchEvent.getX()/myZoom + myXOffset);
+				float newY = (pSceneTouchEvent.getY()/myZoom + myYOffset);
+				
+				tw.setPosition(newX - tw.getWidth()/2, newY - tw.getHeight()/2);
+				Log.e("NewX",""+newX);
+				Log.e("NewY",""+newY);
+				Log.e("X",""+pSceneTouchEvent.getX());
+				Log.e("Y",""+pSceneTouchEvent.getY());
+				Log.e("Zoom",""+myZoom);
+				//- tw.getWidth()
+				//- tw.getHeight()
+				
+				/*Log.e("myXOffset",""+myXOffset);
+				Log.e("myYOffset",""+myYOffset);
+				/*Log.e("myCameraHeight",""+TowerTest.CAMERA_HEIGHT);
+				Log.e("myCameraWidth",""+TowerTest.CAMERA_WIDTH);*/
+				
 			}
 			return true;
 		}

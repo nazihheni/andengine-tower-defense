@@ -71,9 +71,9 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	///=======================================
 	//int CAMERA_WIDTH = 800;
 	//int CAMERA_HEIGHT = 480;
-	private static int CAMERA_WIDTH = 1280;
-	private static int CAMERA_HEIGHT = 720;
-	private ZoomCamera zoomCamera;
+	public static int CAMERA_WIDTH = 1280;
+	public static int CAMERA_HEIGHT = 720;
+	private static ZoomCamera zoomCamera;
 	//private Camera camera;
 	
 	private SurfaceScrollDetector mScrollDetector;
@@ -122,8 +122,9 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	float touchY;
 	long touchDuration;
 	
-	// Enemy location // updated real time in a loop
+	/** Enemy X location - updated real time in a loop */
 	float targetX;
+	/** Enemy Y location - updated real time in a loop */
 	float targetY;
 	
 	Font font10;
@@ -496,36 +497,65 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	//		Pinch Zoom and Scroll stuff
 	//=====================================		
 	//TODO establish limits
+	//static float currentZoom = 1;
+	//static float currentXoffset = 0;
+	//static float currentYoffset = 0;
+	
+	public static float getPanX(){
+		return zoomCamera.getCenterX();
+	}
+	
+	public static float getPanY(){
+		return zoomCamera.getCenterY();
+	}
+	
+	public static float getZoom(){
+		return zoomCamera.getZoomFactor();
+	}
+	
 	@Override
 	public void onScrollStarted(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
 		final float zoomFactor = this.zoomCamera.getZoomFactor();
+		//currentZoom = zoomFactor;
+		//currentXoffset = pDistanceX;
+		//currentYoffset = pDistanceY;
 		this.zoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
 	}
 
 	@Override
 	public void onScroll(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
 		final float zoomFactor = this.zoomCamera.getZoomFactor();
+		//currentZoom = zoomFactor;
+		//currentXoffset = pDistanceX;
+		//currentYoffset = pDistanceY;
 		this.zoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
 	}
 
 	@Override
 	public void onScrollFinished(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
 		final float zoomFactor = this.zoomCamera.getZoomFactor();
+		//currentZoom = zoomFactor;
+		//currentXoffset = pDistanceX;
+		//currentYoffset = pDistanceY;
 		this.zoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
 	}
 
 	@Override
 	public void onPinchZoomStarted(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent) {
-		this.mPinchZoomStartedCameraZoomFactor = this.zoomCamera.getZoomFactor(); //TODO maximum/minimum zoom factor
+		final float zoomFactor = this.zoomCamera.getZoomFactor();
+		//currentZoom = zoomFactor;
+		this.mPinchZoomStartedCameraZoomFactor = zoomFactor; //TODO maximum/minimum zoom factor
 	}
 
 	@Override
 	public void onPinchZoom(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
+		//currentZoom = pZoomFactor;
 		this.zoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
 	}
 
 	@Override
 	public void onPinchZoomFinished(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
+		//currentZoom = pZoomFactor;
 		this.zoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
 	}	
 //  END OF CLASS
