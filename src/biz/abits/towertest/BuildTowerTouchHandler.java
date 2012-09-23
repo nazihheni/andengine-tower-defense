@@ -47,7 +47,7 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 		towerTexture = ttex;
 		tvbom = vbom;
 	}
-	
+
 	@Override
 	public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final ITouchArea pTouchArea, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
 		//touchDuration = event.getEventTime() - event.getDownTime();
@@ -60,50 +60,31 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 		}
 		if (pSceneTouchEvent.isActionMove()) {
 			if(createNewTower && TowerTest.credits >= buildTower.getCredits()){
+				//This is the part that creates the tower when you hit the "creation" tower
 				TowerTest.addCredits(-buildTower.getCredits());
 				createNewTower = false;
-				float touchX = pSceneTouchEvent.getX();
-				float touchY = pSceneTouchEvent.getY();
-
-				//150,150 is the size of the Sprite
-			    tw = new Tower(bulletTexture,touchX ,touchY,150,150,towerTexture,tvbom)
-			    {
-			    	@Override
-			    	public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
-			    		//TODO add code for upgrades, better make a separate class for it, perhaps contained within the Tower class
-			    		if (pSceneTouchEvent.isActionDown()) {
-			    			//do upgrade
-			    			Log.i("Location:","Upgrading Tower");
-			    		}
-			    		return true;
-			        }
-			   };
-			   arrayTower.add(tw); // add to array
-			   scene.registerTouchArea( tw); // register touch area , so this allows you to drag it
-			   scene.attachChild( tw); // add it to the scene
+				float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - buildTower.getXHandleOffset();
+				float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - buildTower.getYHandleOffset();
+				tw = new Tower(bulletTexture,newX,newY,150,150,towerTexture,tvbom)
+				{
+					@Override
+					public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
+						//TODO add code for upgrades, better make a separate class for it, perhaps contained within the Tower class
+						if (pSceneTouchEvent.isActionDown()) {
+							//do upgrade
+							Log.i("Location:","Upgrading Tower");
+						}
+						return true;
+					}
+				};
+				arrayTower.add(tw); // add to array
+				scene.registerTouchArea( tw); // register touch area , so this allows you to drag it
+				scene.attachChild( tw); // add it to the scene
 			}else if(tw.moveable){
-				//TODO somehow we need to adjust these coordinates so if the person has panned, or zoomed, the tower still goes to the right spot!
-				float myZoom = TowerTest.getZoom();
-				float myXOffset = TowerTest.getPanX() - TowerTest.CAMERA_WIDTH / 2/myZoom;
-				float myYOffset = TowerTest.getPanY() - TowerTest.CAMERA_HEIGHT / 2/myZoom;
-				
-				float newX = (pSceneTouchEvent.getX()/myZoom + myXOffset);
-				float newY = (pSceneTouchEvent.getY()/myZoom + myYOffset);
-				
-				tw.setPosition(newX - tw.getWidth()/2, newY - tw.getHeight()/2);
-				Log.e("NewX",""+newX);
-				Log.e("NewY",""+newY);
-				Log.e("X",""+pSceneTouchEvent.getX());
-				Log.e("Y",""+pSceneTouchEvent.getY());
-				Log.e("Zoom",""+myZoom);
-				//- tw.getWidth()
-				//- tw.getHeight()
-				
-				/*Log.e("myXOffset",""+myXOffset);
-				Log.e("myYOffset",""+myYOffset);
-				/*Log.e("myCameraHeight",""+TowerTest.CAMERA_HEIGHT);
-				Log.e("myCameraWidth",""+TowerTest.CAMERA_WIDTH);*/
-				
+				//This moves it to it's new position whenever they move their finger
+				float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
+				float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
+				tw.setPosition(newX, newY);
 			}
 			return true;
 		}
