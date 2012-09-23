@@ -1,5 +1,7 @@
 package biz.abits.towertest;
 
+import java.util.ArrayList;
+
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.texture.TextureManager;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
@@ -17,21 +19,76 @@ public class Enemy extends Sprite{
 	public float x,y;
 	public float speed = 2.0f; //movement speed (distance to move per update)
 	VertexBufferObjectManager vbom;
-	public static String texture = "enemy.png";
+	private static String texture = "enemy.png";
+	public Path path;
 	//TODO Add waypoints  as ArrayList. make move to waypoint, set waypoint, addWaypoint functions.
 
+	/**
+	 * Create a new enemy with size
+	 * @param b 
+	 * @param pX Xcoord location
+	 * @param pY Ycoord location
+	 * @param pWidth
+	 * @param pHeight
+	 * @param pTextureRegion
+	 * @param tvbom
+	 */
 	public Enemy(TextureRegion b,float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
 		super(pX, pY, pWidth, pHeight, pTextureRegion,tvbom);
 		vbom = tvbom;
 		x=pX; //some x n y of the enemy
 		y=pY;
+		path = new Path();
+	}
+	
+	/**
+	 * Create a new enemy with size and a set Path list of waypoints
+	 * @param p Path of waypoints
+	 * @param b 
+	 * @param pX Xcoord location
+	 * @param pY Ycoord location
+	 * @param pWidth
+	 * @param pHeight
+	 * @param pTextureRegion
+	 * @param tvbom
+	 */
+	public Enemy(Path p, TextureRegion b,float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
+		super(pX, pY, pWidth, pHeight, pTextureRegion,tvbom);
+		vbom = tvbom;
+		x=pX; //some x n y of the enemy
+		y=pY;
+		path = p;
 	}
 
+	/**
+	 * Create a new enemy
+	 * @param pX
+	 * @param pY
+	 * @param pTextureRegion
+	 * @param tvbom
+	 */
 	public Enemy(float pX, float pY, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
 		super(pX, pY, pTextureRegion,tvbom);
 		vbom = tvbom;
 		x=pX; //some x n y of the enemy
 		y=pY;
+	}
+	
+	/**
+	 * Create a new enemy with a set Path list of waypoints
+	 * @param p Path of waypoints
+	 * @param b 
+	 * @param pX Xcoord location
+	 * @param pY Ycoord location
+	 * @param pTextureRegion
+	 * @param tvbom
+	 */
+	public Enemy(Path p, float pX, float pY, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
+		super(pX, pY, pTextureRegion,tvbom);
+		vbom = tvbom;
+		x=pX; //some x n y of the enemy
+		y=pY;
+		path = p;
 	}
 	
 	/**
@@ -54,6 +111,7 @@ public class Enemy extends Sprite{
 	 * move 3 pixels per 5ms i think the 6f is speed i think
 	 */
 	public void move(){
+		//TODO use waypoints
 		setPosition(getX()+speed,getY()); 
 	}
 	/**
