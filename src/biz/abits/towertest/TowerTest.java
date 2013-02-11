@@ -22,9 +22,12 @@ import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.util.FPSCounter;
 import org.andengine.entity.util.FPSLogger;
+import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.extension.tmx.TMXLoader;
 import org.andengine.extension.tmx.TMXLoader.ITMXTilePropertiesListener;
+import org.andengine.extension.tmx.TMXObject;
+import org.andengine.extension.tmx.TMXObjectGroup;
 import org.andengine.extension.tmx.TMXProperties;
 import org.andengine.extension.tmx.TMXTile;
 import org.andengine.extension.tmx.TMXTileProperty;
@@ -52,6 +55,10 @@ import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.color.Color;
 import org.andengine.util.debug.Debug;
 
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+
 import android.content.Entity;
 import android.graphics.Typeface;
 import android.util.DisplayMetrics;
@@ -67,6 +74,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	//For Snapping tower to a grid
 	public static boolean enableSnap = true;
 	public static int snapScale = 100;
+	public static boolean collision;
 	
 	//for use in situations that 'this' is not accessible
 	TowerTest self = this;
@@ -253,15 +261,11 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 				final TMXLoader tmxLoader = new TMXLoader(this.getAssets(), this.mEngine.getTextureManager(), TextureOptions.BILINEAR_PREMULTIPLYALPHA, this.getVertexBufferObjectManager(), new ITMXTilePropertiesListener() {
 					@Override
 					public void onTMXTileWithPropertiesCreated(final TMXTiledMap pTMXTiledMap, final TMXLayer pTMXLayer, final TMXTile pTMXTile, final TMXProperties<TMXTileProperty> pTMXTileProperties) {
-						/* We are going to count the tiles that have the property "cactus=true" set. */
-						if(pTMXTileProperties.containsTMXProperty("cactus", "true")) {
-							;//TMXTiledMapExample.this.mCactusCount++;
-						}
 					}
 				});
 				//Load the Desert Map
 				Log.i("Location:","TMXMap Loading...");
-				this.mTMXTiledMap = tmxLoader.loadFromAsset("tmx/desert.tmx");
+				this.mTMXTiledMap = tmxLoader.loadFromAsset("tmx/desert5.tmx");
 				//this.mTMXTiledMap = tmxLoader.loadFromAsset("tmx/test.tmx");
 				Log.i("Location:","TMXMap Loaded");		
 			} catch (final TMXLoadException e) {
@@ -270,6 +274,9 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 
 			final TMXLayer tmxLayer = this.mTMXTiledMap.getTMXLayers().get(0);
 			scene.attachChild(tmxLayer);
+			final TMXObjectGroup tmxObjectGroup = this.mTMXTiledMap.getTMXObjectGroups().get(0);
+			if(tmxObjectGroup.getTMXObjectGroupProperties().containsTMXProperty("type", "collision"))
+			
 			//=====================================
 			//		Interface & HUD
 			//=====================================	
