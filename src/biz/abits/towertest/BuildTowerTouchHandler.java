@@ -65,6 +65,11 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 				createNewTower = false;
 				float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - buildTower.getXHandleOffset();
 				float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - buildTower.getYHandleOffset();
+				//Snaps tower to grid
+				if (TowerTest.enableSnap) {
+					newX = Math.round((newX)/TowerTest.snapScale) * TowerTest.snapScale;   
+					newY = Math.round((newY)/TowerTest.snapScale) * TowerTest.snapScale;
+				}
 				tw = new Tower(bulletTexture,newX,newY,150,150,towerTexture,tvbom)
 				{
 					@Override
@@ -84,6 +89,11 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 				//This moves it to it's new position whenever they move their finger
 				float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
 				float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
+				//Snaps tower to grid
+				if (TowerTest.enableSnap) {
+					newX = Math.round((newX)/TowerTest.snapScale) * TowerTest.snapScale;   
+					newY = Math.round((newY)/TowerTest.snapScale) * TowerTest.snapScale;
+				}
 				tw.setPosition(newX, newY);
 			}
 			return true;

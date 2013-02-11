@@ -64,6 +64,10 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	//TODO use accelerometer to pan screen around
 	//TODO Use SpriteBatch class for bullets, enemies, towers.
 	
+	//For Snapping tower to a grid
+	public static boolean enableSnap = true;
+	public static int snapScale = 100;
+	
 	//for use in situations that 'this' is not accessible
 	TowerTest self = this;
 	//========================================
