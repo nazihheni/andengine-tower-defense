@@ -3,12 +3,17 @@ package biz.abits.towertest;
 //it breaks as soon as your move off the buildBasiTower sprite
 import java.util.ArrayList;
 
+import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnAreaTouchListener;
 import org.andengine.entity.scene.ITouchArea;
 import org.andengine.entity.scene.Scene;
+import org.andengine.extension.tmx.TMXProperties;
+import org.andengine.extension.tmx.TMXTile;
+import org.andengine.extension.tmx.TMXTileProperty;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
+import org.andengine.util.Constants;
 
 import android.util.Log;
 /**
@@ -89,15 +94,24 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 				//This moves it to it's new position whenever they move their finger
 				float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
 				float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
+		
 				//Snaps tower to grid
 				if (TowerTest.enableSnap) {
 					newX = Math.round((newX)/TowerTest.snapScale) * TowerTest.snapScale;   
 					newY = Math.round((newY)/TowerTest.snapScale) * TowerTest.snapScale;
+					final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
+					final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile.getGlobalTileID());  
+					if(tmxTileProperties.containsTMXProperty("Collidable", "False" ))
+						scene.detachChild(tw);
+					else	
+						tw.setPosition(newX, newY);
+				}	
+					
 				}
-				tw.setPosition(newX, newY);
-			}
+			
 			return true;
 		}
 		return true;
-	}				
+	}
+
 }

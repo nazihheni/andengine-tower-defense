@@ -75,6 +75,9 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	public static boolean enableSnap = true;
 	public static int snapScale = 100;
 	public static boolean collision;
+	public static TMXLayer tmxLayer;
+	public static TMXLayer tmxLayer2;
+	public static TMXTileProperty tmxTileProperty;
 	
 	//for use in situations that 'this' is not accessible
 	TowerTest self = this;
@@ -95,7 +98,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	private HUD hud;
 	private Scene scene;
 	private ProgressBar waveProgress; //add to wave class
-	private TMXTiledMap mTMXTiledMap;
+	public static TMXTiledMap mTMXTiledMap;
 	
 	private Level level0 = new Level();
 	
@@ -272,10 +275,15 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 				Debug.e(e);
 			}
 
-			final TMXLayer tmxLayer = this.mTMXTiledMap.getTMXLayers().get(0);
+			tmxLayer = this.mTMXTiledMap.getTMXLayers().get(0);
+			//tmxTileProperty = this.mTMXTiledMap.getTMXTilePropertiesByGlobalTileID(0));
 			scene.attachChild(tmxLayer);
-			final TMXObjectGroup tmxObjectGroup = this.mTMXTiledMap.getTMXObjectGroups().get(0);
-			if(tmxObjectGroup.getTMXObjectGroupProperties().containsTMXProperty("type", "collision"))
+			
+			
+			
+			
+			//final TMXObjectGroup tmxObjectGroup = this.mTMXTiledMap.getTMXObjectGroups().get(0);
+			//if(tmxObjectGroup.getTMXObjectGroupProperties().containsTMXProperty("type", "collision"))
 			
 			//=====================================
 			//		Interface & HUD
