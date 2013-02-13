@@ -10,11 +10,13 @@ import org.andengine.entity.scene.Scene;
 import org.andengine.extension.tmx.TMXProperties;
 import org.andengine.extension.tmx.TMXTile;
 import org.andengine.extension.tmx.TMXTileProperty;
+import org.andengine.extension.tmx.util.constants.TMXConstants;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.util.Constants;
 
+import android.R.string;
 import android.util.Log;
 /**
  * Used to build a tower when dragged off of the HUD
@@ -70,12 +72,7 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 				createNewTower = false;
 				float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - buildTower.getXHandleOffset();
 				float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - buildTower.getYHandleOffset();
-				//Snaps tower to grid
-				if (TowerTest.enableSnap) {
-					newX = Math.round((newX)/TowerTest.snapScale) * TowerTest.snapScale;   
-					newY = Math.round((newY)/TowerTest.snapScale) * TowerTest.snapScale;
-				}
-				tw = new Tower(bulletTexture,newX,newY,150,150,towerTexture,tvbom)
+				tw = new Tower(bulletTexture,newX,newY,96,96,towerTexture,tvbom)
 				{
 					@Override
 					public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
@@ -94,24 +91,37 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 				//This moves it to it's new position whenever they move their finger
 				float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
 				float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
-		
-				//Snaps tower to grid
+				final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
+				final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile.getGlobalTileID());  
+				final Rectangle currentTileRectangle = new Rectangle(0, 0, TowerTest.mTMXTiledMap.getTileWidth(), TowerTest.mTMXTiledMap.getTileHeight(), this.getVertexBufferObjectManager());
+		      	//Snaps tower to tile
 				if (TowerTest.enableSnap) {
-					newX = Math.round((newX)/TowerTest.snapScale) * TowerTest.snapScale;   
-					newY = Math.round((newY)/TowerTest.snapScale) * TowerTest.snapScale;
-					final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
-					final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile.getGlobalTileID());  
+					//newX = Math.round((newX)/TowerTest.snapScale) * TowerTest.snapScale;   
+					//newY = Math.round((newY)/TowerTest.snapScale) * TowerTest.snapScale;
+					newX = tmxTile.getTileX();
+					newY = tmxTile.getTileY();		
+				}			
 					if(tmxTileProperties.containsTMXProperty("Collidable", "False" ))
-						scene.detachChild(tw);
+					{
+						currentTileRectangle.setColor(1, 0, 0, 0.25f);
+						currentTileRectangle.setPosition(tmxTile.getTileX(), tmxTile.getTileY());
+						scene.attachChild(currentTileRectangle);
+					}
 					else	
+					{
 						tw.setPosition(newX, newY);
-				}	
+						//tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, 31);
+					}
 					
-				}
-			
+				}	
 			return true;
 		}
 		return true;
+	}
+
+	private VertexBufferObjectManager getVertexBufferObjectManager() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -73,11 +73,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	
 	//For Snapping tower to a grid
 	public static boolean enableSnap = true;
-	public static int snapScale = 100;
-	public static boolean collision;
 	public static TMXLayer tmxLayer;
-	public static TMXLayer tmxLayer2;
-	public static TMXTileProperty tmxTileProperty;
 	
 	//for use in situations that 'this' is not accessible
 	TowerTest self = this;
@@ -152,7 +148,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	Text fpsText;
 	static Text creditText;
 	static long credits;
-	final long initialCredits = 200;
+	final long initialCredits = 300;
 	static boolean paused = false;
 	int wave_size = 50; // number of enemies to allow
 	    @Override
@@ -268,8 +264,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 				});
 				//Load the Desert Map
 				Log.i("Location:","TMXMap Loading...");
-				this.mTMXTiledMap = tmxLoader.loadFromAsset("tmx/desert5.tmx");
-				//this.mTMXTiledMap = tmxLoader.loadFromAsset("tmx/test.tmx");
+				this.mTMXTiledMap = tmxLoader.loadFromAsset("tmx/grid.tmx");
 				Log.i("Location:","TMXMap Loaded");		
 			} catch (final TMXLoadException e) {
 				Debug.e(e);
@@ -278,6 +273,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			tmxLayer = this.mTMXTiledMap.getTMXLayers().get(0);
 			//tmxTileProperty = this.mTMXTiledMap.getTMXTilePropertiesByGlobalTileID(0));
 			scene.attachChild(tmxLayer);
+			
+			
 			
 			
 			
@@ -347,7 +344,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			
 			hud.setTouchAreaBindingOnActionDownEnabled(true);
 			//A tower button to build other towers xcoord,ycoord,xsize,ysize
-			buildBasicTower = new Tower(bulletTexture,150,0,150,150,towerTexture,this.getVertexBufferObjectManager());
+			buildBasicTower = new Tower(bulletTexture,150,0,96,96,towerTexture,this.getVertexBufferObjectManager());
 			//TODO add to hud
 			hud.attachChild(buildBasicTower);
 			hud.registerTouchArea(buildBasicTower); // register touch area , so this allows you to drag it
