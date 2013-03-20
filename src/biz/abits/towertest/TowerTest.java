@@ -59,6 +59,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
+import android.content.Context;
 import android.content.Entity;
 import android.graphics.Typeface;
 import android.util.DisplayMetrics;
@@ -118,6 +119,10 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	//========================================
 	BitmapTextureAtlas enImage;
 	TextureRegion enTexture;
+	TextureRegion hitAreaTextureGood;
+	TextureRegion hitAreaTextureBad;
+	final String hitAreaTexGoodStr = "towerRangeGood.png";
+	final String hitAreaTexBadStr = "towerRangeBad.png";
 	Enemy enemy;
 	ArrayList<Enemy> arrayEn;
 	
@@ -196,6 +201,10 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			bulletTexture = Projectile.loadSprite(this.getTextureManager(),this);
 			//==== Enemies
 			enTexture = Enemy.loadSprite(this.getTextureManager(),this);
+			
+			hitAreaTextureGood = TowerRange.loadSprite(this.getTextureManager(), this, hitAreaTexGoodStr);
+			
+			hitAreaTextureBad = TowerRange.loadSprite(this.getTextureManager(), this, hitAreaTexBadStr);
 			
 			//=================================================================================//
 			//								Load Player Textures
@@ -344,13 +353,13 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			
 			hud.setTouchAreaBindingOnActionDownEnabled(true);
 			//A tower button to build other towers xcoord,ycoord,xsize,ysize
-			buildBasicTower = new Tower(bulletTexture,150,0,96,96,towerTexture,this.getVertexBufferObjectManager());
+			buildBasicTower = new Tower(scene, bulletTexture,150,0,96,96,towerTexture, hitAreaTextureGood, hitAreaTextureBad,this.getVertexBufferObjectManager());
 			//TODO add to hud
 			hud.attachChild(buildBasicTower);
 			hud.registerTouchArea(buildBasicTower); // register touch area , so this allows you to drag it
 			//hud.setOnAreaTouchListener();
 			
-			BuildTowerTouchHandler btth = new BuildTowerTouchHandler(buildBasicTower, scene, credits, arrayTower, bulletTexture, towerTexture, self.getVertexBufferObjectManager());
+			BuildTowerTouchHandler btth = new BuildTowerTouchHandler(buildBasicTower, scene, credits, arrayTower, hitAreaTextureGood, hitAreaTextureBad, bulletTexture, towerTexture, self.getVertexBufferObjectManager());
 			//scene.setOnAreaTouchListener(btth);
 			hud.setOnAreaTouchListener(btth);
 			add_enemy(this.getVertexBufferObjectManager()); //timer add enemy every amount of defined secs
@@ -613,5 +622,6 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	public static void togglePauseGame() {
 		paused = !paused;
 	}
+	
 //  END OF CLASS
 }

@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import org.andengine.audio.sound.Sound;
 import org.andengine.audio.sound.SoundFactory;
 import org.andengine.audio.sound.SoundManager;
+import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.Scene;
+import org.andengine.entity.shape.Shape;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.texture.TextureManager;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
@@ -46,7 +48,15 @@ public class Tower extends Sprite{
 	float x,y;
 	float targetX;
 	float targetY;
-
+	private boolean placeError = false;
+	private boolean hitAreaShown = false;
+	private boolean hitAreaGoodShown = false;
+	private boolean hitAreaBadShown = false;
+	TextureRegion hitAreaTextureGood;
+	TextureRegion hitAreaTextureBad;
+	TowerRange towerRangeGood;
+	TowerRange towerRangeBad;
+	//final Rectangle towerRange = new Rectangle(0, 0, TowerTest.mTMXTiledMap.getTileWidth(), TowerTest.mTMXTiledMap.getTileHeight(), this.getVertexBufferObjectManager());
 	boolean moveable = true;
 	Projectile SpriteBullet;
 	//int speed = 500;
@@ -67,14 +77,19 @@ public class Tower extends Sprite{
 	 * @param pTextureRegion I don't think this is even used? :-\
 	 * @param tvbom VertexBufferObjectManager
 	 */
-	public Tower(TextureRegion b,float pX, float pY, float pWidth, float pHeight,
-			TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
+	public Tower(Scene scene, TextureRegion b,float pX, float pY, float pWidth, float pHeight,
+			TextureRegion pTextureRegion, TextureRegion hitAreaTextureGood, TextureRegion hitAreaTextureBad, VertexBufferObjectManager tvbom) {
 		super(pX, pY, pWidth, pHeight, pTextureRegion,tvbom);
+		//towerRangeGood.setPosition(pX, pY);
 		vbom = tvbom;
 		bullet = b; // we need bullet TextureRegion to make one
 		x=pX; //some x n y of the tower
 		y=pY;
 		arrayBullets = new ArrayList<Projectile>(); // create a new ArrayList
+		towerRangeGood = new TowerRange(0, 0, hitAreaTextureGood, vbom);
+		towerRangeBad = new TowerRange(0, 0, hitAreaTextureBad, vbom);
+		towerRangeGood.setPosition(this.getWidth()/2-towerRangeGood.getWidth()/2, this.getHeight()/2-360/2);
+		towerRangeBad.setPosition(this.getWidth()/2-towerRangeBad.getWidth()/2, this.getHeight()/2-towerRangeBad.getHeight()/2);
 		total++;
 	}
 
@@ -257,5 +272,58 @@ public class Tower extends Sprite{
 	/**This gets the Y attachment point (allows you to offset where you grab it at, 0,0 is the upper-left) */
 	public float getYHandleOffset(){
 		return this.getHeight()/2; //default to the middle of the sprite
+	}
+	
+	/**This tells the tower if it is allowed to be placed where it is, when it is being placed */
+	public void setTowerPlaceError(Scene scene, boolean towerPlaceError) {
+		placeError = towerPlaceError;
+		if (hitAreaShown) {
+			//update the hit area to reflect this
+			setHitAreaShown(scene, hitAreaShown);
+		}
+		//update graphics
+	}
+	
+	/**Enables or disables the display of the "hit area" */
+	public void setHitAreaShown(Scene scene, boolean showHitArea) {
+		if (showHitArea) {
+			//we attach it to this sprite, that way it's tied to it!
+			if (placeError) {
+				if (!hitAreaBadShown) {
+					this.attachChild(towerRangeBad);
+					hitAreaBadShown = true;
+				}
+				if (hitAreaGoodShown) {
+					this.detachChild(towerRangeGood);
+					hitAreaGoodShown = false;
+				}
+			} else {
+				if (hitAreaBadShown) {
+					this.detachChild(towerRangeBad);
+					hitAreaBadShown = false;
+				}
+				if (!hitAreaGoodShown) {
+					this.attachChild(towerRangeGood);
+					hitAreaGoodShown = true;
+				}
+			}
+		} else {
+			//detach both!
+			if (hitAreaGoodShown) {
+				this.detachChild(towerRangeGood);
+				hitAreaGoodShown = false;
+			}
+			if (hitAreaBadShown) {
+				this.detachChild(towerRangeBad);
+				hitAreaBadShown = false;
+			}
+			this.detachChild(towerRangeGood);
+		}
+		hitAreaShown = showHitArea;
+	}
+	
+	/**tells us if the tower can be placed where it is */
+	public boolean hasPlaceError() { 
+		return this.placeError; 
 	}
 }

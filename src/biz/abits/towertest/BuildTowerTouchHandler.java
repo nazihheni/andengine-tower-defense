@@ -34,6 +34,8 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 	ArrayList<Tower> arrayTower;
 	TextureRegion bulletTexture;
 	TextureRegion towerTexture;
+	TextureRegion hitAreaTextureGood;
+	TextureRegion hitAreaTextureBad;
 	VertexBufferObjectManager tvbom;
 	/**
 	 * Used to build a tower when dragged off of the HUD
@@ -44,8 +46,10 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 	 * @param btex bullet TextureRegion for tower
 	 * @param ttex Tower TextureRegion
 	 * @param vbom VertexBufferObjectManager
+	 * @param hagtex TextureRegion for tower
+	 * @param habtex TextureRegion for tower
 	 */
-	public BuildTowerTouchHandler(Tower bt, Scene s, long creds, ArrayList<Tower> al, TextureRegion btex, TextureRegion ttex,VertexBufferObjectManager vbom){ //Scene h, 
+	public BuildTowerTouchHandler(Tower bt, Scene s, long creds, ArrayList<Tower> al, TextureRegion hagtex, TextureRegion habtex, TextureRegion btex, TextureRegion ttex,VertexBufferObjectManager vbom){ //Scene h, 
 		scene = s;
 		//hud = h;
 		buildTower = bt;
@@ -53,6 +57,8 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 		bulletTexture = btex;
 		towerTexture = ttex;
 		tvbom = vbom;
+		hitAreaTextureGood = hagtex;
+		hitAreaTextureBad = habtex;
 	}
 
 	@Override
@@ -62,17 +68,25 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 		if (pSceneTouchEvent.isActionUp()) {
 			tw.moveable = false;
 			createNewTower = true;
+			tw.setHitAreaShown(scene, false);
+			if (tw.hasPlaceError() ||  TowerTest.credits < buildTower.getCredits()) {
+				//refund credits and remove tower
+				//TowerTest.addCredits(buildTower.getCredits());
+				scene.detachChild(tw);
+				arrayTower.remove(tw);
+			} else {
+				TowerTest.addCredits(-buildTower.getCredits());
+			}
 			//if location is good continue, else destroy tower and refund cost
 			return true;
 		}
 		if (pSceneTouchEvent.isActionMove()) {
-			if(createNewTower && TowerTest.credits >= buildTower.getCredits()){
+			if(createNewTower){
 				//This is the part that creates the tower when you hit the "creation" tower
-				TowerTest.addCredits(-buildTower.getCredits());
 				createNewTower = false;
 				float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - buildTower.getXHandleOffset();
 				float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - buildTower.getYHandleOffset();
-				tw = new Tower(bulletTexture,newX,newY,96,96,towerTexture,tvbom)
+				tw = new Tower(scene, bulletTexture,newX,newY,96,96,towerTexture, hitAreaTextureGood, hitAreaTextureBad,tvbom)
 				{
 					@Override
 					public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
@@ -84,6 +98,7 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 						return true;
 					}
 				};
+				tw.setHitAreaShown(scene, true);
 				arrayTower.add(tw); // add to array
 				scene.registerTouchArea( tw); // register touch area , so this allows you to drag it
 				scene.attachChild( tw); // add it to the scene
@@ -93,27 +108,25 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 				float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
 				final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
 				final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile.getGlobalTileID());  
-				final Rectangle currentTileRectangle = new Rectangle(0, 0, TowerTest.mTMXTiledMap.getTileWidth(), TowerTest.mTMXTiledMap.getTileHeight(), this.getVertexBufferObjectManager());
+				//final Rectangle currentTileRectangle = new Rectangle(0, 0, TowerTest.mTMXTiledMap.getTileWidth(), TowerTest.mTMXTiledMap.getTileHeight(), this.getVertexBufferObjectManager());
 		      	//Snaps tower to tile
 				if (TowerTest.enableSnap) {
 					//newX = Math.round((newX)/TowerTest.snapScale) * TowerTest.snapScale;   
 					//newY = Math.round((newY)/TowerTest.snapScale) * TowerTest.snapScale;
 					newX = tmxTile.getTileX();
-					newY = tmxTile.getTileY();		
+					newY = tmxTile.getTileY();
 				}			
 					if(tmxTileProperties.containsTMXProperty("Collidable", "False" ))
 					{
-						currentTileRectangle.setColor(1, 0, 0, 0.25f);
-						currentTileRectangle.setPosition(tmxTile.getTileX(), tmxTile.getTileY());
-						scene.attachChild(currentTileRectangle);
+						tw.setTowerPlaceError(scene, true);
 					}
-					else	
+					else
 					{
-						tw.setPosition(newX, newY);
+						tw.setTowerPlaceError(scene, false);
 						//tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, 31);
 					}
-					
-				}	
+					tw.setPosition(newX, newY);
+			}	
 			return true;
 		}
 		return true;
