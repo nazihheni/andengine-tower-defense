@@ -70,11 +70,15 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 			createNewTower = true;
 			tw.setHitAreaShown(scene, false);
 			if (tw.hasPlaceError() ||  TowerTest.credits < buildTower.getCredits()) {
-				//refund credits and remove tower
-				//TowerTest.addCredits(buildTower.getCredits());
+				//refund credits and remove tower, because they can't place it where it is
 				scene.detachChild(tw);
 				arrayTower.remove(tw);
 			} else {
+				float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
+				float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
+				final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
+				tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, 31);
+				//remove the credits, since we're placing it here
 				TowerTest.addCredits(-buildTower.getCredits());
 			}
 			//if location is good continue, else destroy tower and refund cost
@@ -119,11 +123,8 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 					if(tmxTileProperties.containsTMXProperty("Collidable", "False" ))
 					{
 						tw.setTowerPlaceError(scene, true);
-					}
-					else
-					{
+					} else {
 						tw.setTowerPlaceError(scene, false);
-						//tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, 31);
 					}
 					tw.setPosition(newX, newY);
 			}	
