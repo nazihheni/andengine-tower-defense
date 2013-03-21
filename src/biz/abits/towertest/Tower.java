@@ -284,6 +284,10 @@ public class Tower extends Sprite{
 		//update graphics
 	}
 	
+	public boolean getHitAreaShown() {
+		return hitAreaShown; 
+	}
+	
 	/**Enables or disables the display of the "hit area" */
 	public void setHitAreaShown(Scene scene, boolean showHitArea) {
 		if (showHitArea) {

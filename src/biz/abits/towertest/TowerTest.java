@@ -85,6 +85,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	//int CAMERA_HEIGHT = 480;
 	public static int CAMERA_WIDTH = 1280;
 	public static int CAMERA_HEIGHT = 720;
+	public static int TOWER_WIDTH = 96;
+	public static int TOWER_HEIGHT = 96;
 	private static ZoomCamera zoomCamera;
 	//private Camera camera;
 	
@@ -353,7 +355,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			
 			hud.setTouchAreaBindingOnActionDownEnabled(true);
 			//A tower button to build other towers xcoord,ycoord,xsize,ysize
-			buildBasicTower = new Tower(scene, bulletTexture,150,0,96,96,towerTexture, hitAreaTextureGood, hitAreaTextureBad,this.getVertexBufferObjectManager());
+			buildBasicTower = new Tower(scene, bulletTexture,150,0,TOWER_WIDTH,TOWER_HEIGHT,towerTexture, hitAreaTextureGood, hitAreaTextureBad,this.getVertexBufferObjectManager());
 			//TODO add to hud
 			hud.attachChild(buildBasicTower);
 			hud.registerTouchArea(buildBasicTower); // register touch area , so this allows you to drag it

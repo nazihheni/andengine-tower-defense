@@ -3,20 +3,16 @@ package biz.abits.towertest;
 //it breaks as soon as your move off the buildBasiTower sprite
 import java.util.ArrayList;
 
-import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnAreaTouchListener;
 import org.andengine.entity.scene.ITouchArea;
 import org.andengine.entity.scene.Scene;
 import org.andengine.extension.tmx.TMXProperties;
 import org.andengine.extension.tmx.TMXTile;
 import org.andengine.extension.tmx.TMXTileProperty;
-import org.andengine.extension.tmx.util.constants.TMXConstants;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
-import org.andengine.util.Constants;
 
-import android.R.string;
 import android.util.Log;
 /**
  * Used to build a tower when dragged off of the HUD
@@ -25,6 +21,9 @@ import android.util.Log;
  *
  */
 public class BuildTowerTouchHandler implements IOnAreaTouchListener{
+	double distTraveled = 0;
+	float lastX = 0;
+	float lastY = 0;
 	boolean createNewTower;
 	Tower tw;
 	Scene scene;
@@ -83,8 +82,7 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 			}
 			//if location is good continue, else destroy tower and refund cost
 			return true;
-		}
-		if (pSceneTouchEvent.isActionMove()) {
+		} else if (pSceneTouchEvent.isActionMove()) {
 			if(createNewTower){
 				//This is the part that creates the tower when you hit the "creation" tower
 				createNewTower = false;
@@ -96,8 +94,28 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 					public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 						//TODO add code for upgrades, better make a separate class for it, perhaps contained within the Tower class
 						if (pSceneTouchEvent.isActionDown()) {
-							//do upgrade
-							Log.i("Location:","Upgrading Tower");
+							lastX = pSceneTouchEvent.getX();
+							lastY = pSceneTouchEvent.getY();
+							distTraveled = 0;
+						} else if (pSceneTouchEvent.isActionMove()) {
+							distTraveled += Math.sqrt((Math.pow(lastX - pSceneTouchEvent.getX(),2))+(Math.pow(lastY - pSceneTouchEvent.getY(),2)));
+							lastX = pSceneTouchEvent.getX();
+							lastY = pSceneTouchEvent.getY();
+							if (distTraveled < TowerTest.TOWER_HEIGHT) {
+								//Log.i("Location:","Holding it in until they go far enough outside");
+								return true;
+							} else {
+								//Log.i("Location:","Passing touch through");
+								return false;//pass it through if it's already too far
+							}
+						} else if (pSceneTouchEvent.isActionUp()) {
+							if (distTraveled < TowerTest.TOWER_HEIGHT) {
+								//do upgrade
+								Log.i("Location:","Upgrading Tower " + distTraveled);
+								this.setHitAreaShown(scene, !this.getHitAreaShown());
+							} else {
+								//Log.i("Location:","NOT Upgrading Tower" + distTraveled);
+							}
 						}
 						return true;
 					}
@@ -115,27 +133,19 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 				//final Rectangle currentTileRectangle = new Rectangle(0, 0, TowerTest.mTMXTiledMap.getTileWidth(), TowerTest.mTMXTiledMap.getTileHeight(), this.getVertexBufferObjectManager());
 		      	//Snaps tower to tile
 				if (TowerTest.enableSnap) {
-					//newX = Math.round((newX)/TowerTest.snapScale) * TowerTest.snapScale;   
-					//newY = Math.round((newY)/TowerTest.snapScale) * TowerTest.snapScale;
 					newX = tmxTile.getTileX();
 					newY = tmxTile.getTileY();
 				}			
-					if(tmxTileProperties.containsTMXProperty("Collidable", "False" ))
-					{
-						tw.setTowerPlaceError(scene, true);
-					} else {
-						tw.setTowerPlaceError(scene, false);
-					}
-					tw.setPosition(newX, newY);
+				if(tmxTileProperties.containsTMXProperty("Collidable", "False" ))
+				{
+					tw.setTowerPlaceError(scene, true);
+				} else {
+					tw.setTowerPlaceError(scene, false);
+				}
+				tw.setPosition(newX, newY);
 			}	
 			return true;
 		}
 		return true;
 	}
-
-	private VertexBufferObjectManager getVertexBufferObjectManager() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }
