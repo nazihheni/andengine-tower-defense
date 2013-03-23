@@ -6,9 +6,7 @@ import java.util.ArrayList;
 import org.andengine.entity.scene.IOnAreaTouchListener;
 import org.andengine.entity.scene.ITouchArea;
 import org.andengine.entity.scene.Scene;
-import org.andengine.extension.tmx.TMXProperties;
 import org.andengine.extension.tmx.TMXTile;
-import org.andengine.extension.tmx.TMXTileProperty;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
@@ -21,9 +19,11 @@ import android.util.Log;
  *
  */
 public class BuildTowerTouchHandler implements IOnAreaTouchListener{
+	//used to determine if they've moved far enough to start panning (o.w., they might want to tap on the tower instead)
 	double distTraveled = 0;
 	float lastX = 0;
 	float lastY = 0;
+	/** Tells us if we can create a new tower, false = no, not allowed, true = yes, we can make a tower */
 	boolean createNewTower;
 	Tower tw;
 	Scene scene;
@@ -65,9 +65,9 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 		//touchDuration = event.getEventTime() - event.getDownTime();
 		if (pSceneTouchEvent.isActionDown()) { createNewTower = true; }
 		if (pSceneTouchEvent.isActionUp()) {
+			tw.setHitAreaShown(scene, false); //note: we MUST hide the hit area BEFORE setting moveable to false!
 			tw.moveable = false;
 			createNewTower = true;
-			tw.setHitAreaShown(scene, false);
 			if (tw.hasPlaceError() ||  TowerTest.credits < buildTower.getCredits()) {
 				//refund credits and remove tower, because they can't place it where it is
 				scene.detachChild(tw);
@@ -93,6 +93,7 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 					@Override
 					public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 						//TODO add code for upgrades, better make a separate class for it, perhaps contained within the Tower class
+						//TODO there is a problem, if you drag from a tower, it ALWAYS acts like you started dragging from the last tower
 						if (pSceneTouchEvent.isActionDown()) {
 							lastX = pSceneTouchEvent.getX();
 							lastY = pSceneTouchEvent.getY();
@@ -102,47 +103,32 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 							lastX = pSceneTouchEvent.getX();
 							lastY = pSceneTouchEvent.getY();
 							if (distTraveled < TowerTest.TOWER_HEIGHT) {
-								//Log.i("Location:","Holding it in until they go far enough outside");
-								return true;
+								return true; //tell it we handled the touch event, because they haven't gone far enough
 							} else {
-								//Log.i("Location:","Passing touch through");
-								return false;//pass it through if it's already too far
+								return false; //pass it through if it's already too far
 							}
 						} else if (pSceneTouchEvent.isActionUp()) {
 							if (distTraveled < TowerTest.TOWER_HEIGHT) {
 								//do upgrade
 								Log.i("Location:","Upgrading Tower " + distTraveled);
-								this.setHitAreaShown(scene, !this.getHitAreaShown());
+								this.setHitAreaShown(scene, !this.getHitAreaShown()); //toggle hit area circle
 							} else {
-								//Log.i("Location:","NOT Upgrading Tower" + distTraveled);
+								//NOT Upgrading Tower
 							}
 						}
 						return true;
 					}
 				};
+				tw.checkClearSpot(scene, newX, newY);
 				tw.setHitAreaShown(scene, true);
 				arrayTower.add(tw); // add to array
-				scene.registerTouchArea( tw); // register touch area , so this allows you to drag it
-				scene.attachChild( tw); // add it to the scene
+				scene.registerTouchArea(tw); // register touch area , so this allows you to drag it
+				scene.attachChild(tw); // add it to the scene
 			}else if(tw.moveable){
 				//This moves it to it's new position whenever they move their finger
 				float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
 				float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
-				final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
-				final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile.getGlobalTileID());  
-				//final Rectangle currentTileRectangle = new Rectangle(0, 0, TowerTest.mTMXTiledMap.getTileWidth(), TowerTest.mTMXTiledMap.getTileHeight(), this.getVertexBufferObjectManager());
-		      	//Snaps tower to tile
-				if (TowerTest.enableSnap) {
-					newX = tmxTile.getTileX();
-					newY = tmxTile.getTileY();
-				}			
-				if(tmxTileProperties.containsTMXProperty("Collidable", "False" ))
-				{
-					tw.setTowerPlaceError(scene, true);
-				} else {
-					tw.setTowerPlaceError(scene, false);
-				}
-				tw.setPosition(newX, newY);
+				tw.checkClearSpot(scene, newX, newY);
 			}	
 			return true;
 		}

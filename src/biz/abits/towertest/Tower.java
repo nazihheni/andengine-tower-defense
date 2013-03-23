@@ -6,10 +6,11 @@ import java.util.ArrayList;
 import org.andengine.audio.sound.Sound;
 import org.andengine.audio.sound.SoundFactory;
 import org.andengine.audio.sound.SoundManager;
-import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.Scene;
-import org.andengine.entity.shape.Shape;
 import org.andengine.entity.sprite.Sprite;
+import org.andengine.extension.tmx.TMXProperties;
+import org.andengine.extension.tmx.TMXTile;
+import org.andengine.extension.tmx.TMXTileProperty;
 import org.andengine.opengl.texture.TextureManager;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
@@ -45,19 +46,18 @@ public class Tower extends Sprite{
 	TextureRegion bullet;
 	private static String strFire = "tower.ogg"; 
 	private static Sound soundFire;
-	float x,y;
 	float targetX;
 	float targetY;
 	private boolean placeError = false;
 	private boolean hitAreaShown = false;
 	private boolean hitAreaGoodShown = false;
 	private boolean hitAreaBadShown = false;
+	private int zIndex = 1000;
 	TextureRegion hitAreaTextureGood;
 	TextureRegion hitAreaTextureBad;
 	TowerRange towerRangeGood;
 	TowerRange towerRangeBad;
-	//final Rectangle towerRange = new Rectangle(0, 0, TowerTest.mTMXTiledMap.getTileWidth(), TowerTest.mTMXTiledMap.getTileHeight(), this.getVertexBufferObjectManager());
-	boolean moveable = true;
+	public boolean moveable = true;
 	Projectile SpriteBullet;
 	//int speed = 500;
 	VertexBufferObjectManager vbom;
@@ -83,13 +83,14 @@ public class Tower extends Sprite{
 		//towerRangeGood.setPosition(pX, pY);
 		vbom = tvbom;
 		bullet = b; // we need bullet TextureRegion to make one
-		x=pX; //some x n y of the tower
-		y=pY;
+		//x=pX; //some x n y of the tower
+		//y=pY;
 		arrayBullets = new ArrayList<Projectile>(); // create a new ArrayList
 		towerRangeGood = new TowerRange(0, 0, hitAreaTextureGood, vbom);
 		towerRangeBad = new TowerRange(0, 0, hitAreaTextureBad, vbom);
-		towerRangeGood.setPosition(this.getWidth()/2-towerRangeGood.getWidth()/2, this.getHeight()/2-360/2);
+		towerRangeGood.setPosition(this.getWidth()/2-towerRangeGood.getWidth()/2, this.getHeight()/2-towerRangeGood.getHeight()/2);
 		towerRangeBad.setPosition(this.getWidth()/2-towerRangeBad.getWidth()/2, this.getHeight()/2-towerRangeBad.getHeight()/2);
+		this.setZIndex(zIndex); //used to determine the order stuff is drawn in
 		total++;
 	}
 
@@ -274,6 +275,29 @@ public class Tower extends Sprite{
 		return this.getHeight()/2; //default to the middle of the sprite
 	}
 	
+	public boolean checkClearSpot(Scene scene, float newX, float newY) {
+		final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
+		try {
+			final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile.getGlobalTileID());  
+	      	//Snaps tower to tile
+			if (TowerTest.enableSnap) {
+				newX = tmxTile.getTileX();
+				newY = tmxTile.getTileY();
+			}
+			if(tmxTileProperties.containsTMXProperty("Collidable", "False" )) {
+				//set the circle to green
+				this.setTowerPlaceError(scene, true);
+			} else {
+				//set the circle to red
+				this.setTowerPlaceError(scene, false);
+			}
+		} catch (Exception e) { //this happens when it's drug off the map
+			this.setTowerPlaceError(scene, true);
+		}
+		this.setPosition(newX, newY);
+		return true;
+	}	
+	
 	/**This tells the tower if it is allowed to be placed where it is, when it is being placed */
 	public void setTowerPlaceError(Scene scene, boolean towerPlaceError) {
 		placeError = towerPlaceError;
@@ -288,40 +312,71 @@ public class Tower extends Sprite{
 		return hitAreaShown; 
 	}
 	
-	/**Enables or disables the display of the "hit area" */
+	/**Enables or disables the display of the "hit area", also updates color if necessary */
 	public void setHitAreaShown(Scene scene, boolean showHitArea) {
+		if (moveable) {
+			towerRangeGood.setPosition(this.getWidth()/2-towerRangeGood.getWidth()/2, this.getHeight()/2-towerRangeGood.getHeight()/2);
+			towerRangeBad.setPosition(this.getWidth()/2-towerRangeBad.getWidth()/2, this.getHeight()/2-towerRangeBad.getHeight()/2);
+		} else {
+			towerRangeGood.setPosition(this.getX()+this.getWidth()/2-towerRangeGood.getWidth()/2, this.getY()+this.getHeight()/2-towerRangeGood.getHeight()/2);
+			towerRangeBad.setPosition(this.getX()+this.getWidth()/2-towerRangeBad.getWidth()/2, this.getY()+this.getHeight()/2-towerRangeBad.getHeight()/2);
+		}
+
 		if (showHitArea) {
 			//we attach it to this sprite, that way it's tied to it!
 			if (placeError) {
 				if (!hitAreaBadShown) {
-					this.attachChild(towerRangeBad);
+					if (this.moveable) {
+						this.attachChild(towerRangeBad);
+					} else {
+						scene.attachChild(towerRangeBad);
+					}
 					hitAreaBadShown = true;
 				}
 				if (hitAreaGoodShown) {
-					this.detachChild(towerRangeGood);
+					if (this.moveable) {
+						this.detachChild(towerRangeGood);
+					} else {
+						scene.detachChild(towerRangeGood);
+					}
 					hitAreaGoodShown = false;
 				}
 			} else {
 				if (hitAreaBadShown) {
-					this.detachChild(towerRangeBad);
+					if (this.moveable) {
+						this.detachChild(towerRangeBad);
+					} else {
+						scene.detachChild(towerRangeBad);
+					}
 					hitAreaBadShown = false;
 				}
 				if (!hitAreaGoodShown) {
-					this.attachChild(towerRangeGood);
+					if (this.moveable) {
+						this.attachChild(towerRangeGood);
+					} else {
+						scene.attachChild(towerRangeGood);
+					}
 					hitAreaGoodShown = true;
 				}
 			}
 		} else {
 			//detach both!
 			if (hitAreaGoodShown) {
-				this.detachChild(towerRangeGood);
+				if (this.moveable) {
+					this.detachChild(towerRangeGood);
+				} else {
+					scene.detachChild(towerRangeGood);
+				}
 				hitAreaGoodShown = false;
 			}
 			if (hitAreaBadShown) {
-				this.detachChild(towerRangeBad);
+				if (this.moveable) {
+					this.detachChild(towerRangeBad);
+				} else {
+					scene.detachChild(towerRangeBad);
+				}
 				hitAreaBadShown = false;
 			}
-			this.detachChild(towerRangeGood);
 		}
 		hitAreaShown = showHitArea;
 	}
@@ -330,4 +385,40 @@ public class Tower extends Sprite{
 	public boolean hasPlaceError() { 
 		return this.placeError; 
 	}
+	
+	/**
+	 * function for determining the distance to another sprite
+	 * @param s sprite you want the distance to
+	 * @return the distance to said sprite
+	 */
+	public double distanceTo(Sprite s) {
+		return Math.sqrt(Math.pow(this.getX() - s.getX(),2) + Math.pow(this.getY() - s.getY(),2));
+	}
+	
+	/**
+	 * Gives you the range of the tower, based on the size of the towerRangeGood circle
+	 * @return half the height of the towerRangeGood circle
+	 */
+	public float maxRange() {
+		return this.towerRangeGood.getHeight()/2.f;
+	}
+
+	/**
+	 * responsible for freezing any bullets when the game is paused
+	 */
+	public void freezeBullets(Scene scene) {
+		for(int i=0;i<arrayBullets.size();i++){
+			arrayBullets.get(i).freeze();
+		}
+	}
+	
+	/**
+	 * responsible for making any bullets start moving again when the game is un-paused
+	 */
+	public void resumeBullets(Scene scene) {
+		for(int i=0;i<arrayBullets.size();i++){
+			arrayBullets.get(i).shoot();
+		}
+	}
+	
 }

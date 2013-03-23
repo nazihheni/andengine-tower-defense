@@ -1,7 +1,5 @@
 package biz.abits.towertest;
 
-import java.util.ArrayList;
-
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.texture.TextureManager;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
@@ -16,7 +14,6 @@ public class Enemy extends Sprite{
 	//I am Enemy class
 	private int health = 1000;
 	private static int credits = 10;
-	public float x,y;
 	public float speed = 2.0f; //movement speed (distance to move per update)
 	VertexBufferObjectManager vbom;
 	private static String texture = "enemy.png";
@@ -36,8 +33,6 @@ public class Enemy extends Sprite{
 	public Enemy(TextureRegion b,float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
 		super(pX, pY, pWidth, pHeight, pTextureRegion,tvbom);
 		vbom = tvbom;
-		x=pX; //some x n y of the enemy
-		y=pY;
 		path = new Path();
 	}
 	
@@ -55,8 +50,6 @@ public class Enemy extends Sprite{
 	public Enemy(Path p, TextureRegion b,float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
 		super(pX, pY, pWidth, pHeight, pTextureRegion,tvbom);
 		vbom = tvbom;
-		x=pX; //some x n y of the enemy
-		y=pY;
 		path = p;
 	}
 
@@ -70,8 +63,6 @@ public class Enemy extends Sprite{
 	public Enemy(float pX, float pY, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
 		super(pX, pY, pTextureRegion,tvbom);
 		vbom = tvbom;
-		x=pX; //some x n y of the enemy
-		y=pY;
 	}
 	
 	/**
@@ -86,8 +77,6 @@ public class Enemy extends Sprite{
 	public Enemy(Path p, float pX, float pY, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
 		super(pX, pY, pTextureRegion,tvbom);
 		vbom = tvbom;
-		x=pX; //some x n y of the enemy
-		y=pY;
 		path = p;
 	}
 	
