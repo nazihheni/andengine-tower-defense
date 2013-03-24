@@ -118,7 +118,6 @@ public class Projectile extends Sprite{
         	//therefore t = D/r
         	trajectory = new MoveByModifier(dist/Projectile.speed, dX, dY);
         	this.registerEntityModifier(trajectory);
-
         }
         
         /**

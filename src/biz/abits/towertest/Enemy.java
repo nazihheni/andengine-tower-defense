@@ -16,7 +16,7 @@ public class Enemy extends Sprite{
 	//I am Enemy class
 	private int health = 1000;
 	private static int credits = 10;
-	public static float speed = 3.0f; //movement speed (distance to move per update)
+	public static float speed = 100.0f; //movement speed (distance to move per update)
 	VertexBufferObjectManager vbom;
 	private static String texture = "enemy.png";
 	public Path path;
