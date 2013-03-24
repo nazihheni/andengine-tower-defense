@@ -1,5 +1,6 @@
 package biz.abits.towertest;
 
+import org.andengine.entity.modifier.MoveByModifier;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.texture.TextureManager;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
@@ -16,56 +17,11 @@ public class Enemy extends Sprite{
 	//I am Enemy class
 	private int health = 1000;
 	private static int credits = 10;
-	public static float speed = 3.0f; //movement speed (distance to move per update)
+	public static float speed = 100.0f; //movement speed (distance to move per update)
 	VertexBufferObjectManager vbom;
 	private static String texture = "enemy.png";
 	public Path path;
 	//TODO Add waypoints  as ArrayList. make move to waypoint, set waypoint, addWaypoint functions.
-
-	/**
-	 * Create a new enemy with size
-	 * @param b 
-	 * @param pX Xcoord location
-	 * @param pY Ycoord location
-	 * @param pWidth
-	 * @param pHeight
-	 * @param pTextureRegion
-	 * @param tvbom
-	 */
-	public Enemy(TextureRegion b,float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
-		super(pX, pY, pWidth, pHeight, pTextureRegion,tvbom);
-		vbom = tvbom;
-		path = new Path();
-	}
-	
-	/**
-	 * Create a new enemy with size and a set Path list of waypoints
-	 * @param p Path of waypoints
-	 * @param b 
-	 * @param pX Xcoord location
-	 * @param pY Ycoord location
-	 * @param pWidth
-	 * @param pHeight
-	 * @param pTextureRegion
-	 * @param tvbom
-	 */
-	public Enemy(Path p, TextureRegion b,float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
-		super(pX, pY, pWidth, pHeight, pTextureRegion,tvbom);
-		vbom = tvbom;
-		path = p;
-	}
-
-	/**
-	 * Create a new enemy
-	 * @param pX
-	 * @param pY
-	 * @param pTextureRegion
-	 * @param tvbom
-	 */
-	public Enemy(float pX, float pY, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
-		super(pX, pY, pTextureRegion,tvbom);
-		vbom = tvbom;
-	}
 	
 	/**
 	 * Create a new enemy with a set Path list of waypoints
@@ -76,10 +32,17 @@ public class Enemy extends Sprite{
 	 * @param pTextureRegion
 	 * @param tvbom
 	 */
-	public Enemy(Path p, float pX, float pY, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
+	public Enemy(float pX, float pY, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
 		super(pX, pY, pTextureRegion,tvbom);
 		vbom = tvbom;
-		path = p;
+		path = new Path();
+    	float dY = 0;
+        float dX = TowerTest.CAMERA_WIDTH;
+        float dist = (float) Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2));
+        //D=r*t
+        //therefore t = D/r
+        MoveByModifier trajectory = new MoveByModifier(dist/Enemy.speed, dX,  dY);
+        this.registerEntityModifier(trajectory);
 	}
 	
 	/**
@@ -101,10 +64,10 @@ public class Enemy extends Sprite{
 	/**
 	 * move 3 pixels per 5ms i think the 6f is speed i think
 	 */
-	public void move(){
+	/*public void move(){
 		//TODO use waypoints
 		setPosition(getX()+speed,getY()); 
-	}
+	}*/
 	/**
 	 * Deal damage to the enemy, modified by type <br>
 	 * @param amount amount of damage to subtract from helth
@@ -130,14 +93,6 @@ public class Enemy extends Sprite{
 	 */
 	public int getCredits(){
 		return credits;
-	}
-	
-	public float getInterceptX() {
-		return this.getX()+this.getWidth()/2;
-	}
-	
-	public float getInterceptY() {
-		return this.getY()+this.getHeight()/2; //we'll probably modify this later to account for Y movement
 	}
 	
 	public Vector2 getPosition() {

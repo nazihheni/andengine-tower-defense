@@ -488,8 +488,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
                                     tower.checkBullets(scene);
                             }
                     }
-                    if (!paused)
-                    	enemy.move();
+                    //if (!paused)
+                    	//enemy.move();
             }
 	    } else {
 	            //if we have nothing better to do (there's no enemies)
@@ -531,7 +531,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					
 					if(allow_enemy > 0){
 						//TODO fix the last argument here
-						enemy = new Enemy(level0.defaultPath, x, y, enTexture, tvbom);
+						enemy = new Enemy(x, y, enTexture, tvbom);
 						scene.attachChild(enemy);
 						arrayEn.add(enemy);
 						allow_enemy--;

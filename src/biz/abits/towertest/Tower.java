@@ -134,8 +134,8 @@ public class Tower extends Sprite{
 
 	public void fire(Enemy enemy, Scene scene, ArrayList<Enemy> arrayEn){
 		if (!TowerTest.paused) {        	
-			targetX = enemy.getInterceptX(); // simple get the enemy x,y and center it and tell the bullet where to aim and fire
-			targetY = enemy.getInterceptY();
+			targetX = enemy.getMidX(); // simple get the enemy x,y and center it and tell the bullet where to aim and fire
+			targetY = enemy.getMidY();
 			//call fire from the tower
 			boolean fired = this.fire(enemy,this); //Asks the tower to open fire and places the bullet in middle of tower
 			if(fired){
