@@ -22,50 +22,7 @@ public class Enemy extends Sprite{
 	public Path path;
 	//TODO Add waypoints  as ArrayList. make move to waypoint, set waypoint, addWaypoint functions.
 
-	/**
-	 * Create a new enemy with size
-	 * @param b 
-	 * @param pX Xcoord location
-	 * @param pY Ycoord location
-	 * @param pWidth
-	 * @param pHeight
-	 * @param pTextureRegion
-	 * @param tvbom
-	 */
-	public Enemy(TextureRegion b,float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
-		super(pX, pY, pWidth, pHeight, pTextureRegion,tvbom);
-		vbom = tvbom;
-		path = new Path();
-	}
 	
-	/**
-	 * Create a new enemy with size and a set Path list of waypoints
-	 * @param p Path of waypoints
-	 * @param b 
-	 * @param pX Xcoord location
-	 * @param pY Ycoord location
-	 * @param pWidth
-	 * @param pHeight
-	 * @param pTextureRegion
-	 * @param tvbom
-	 */
-	public Enemy(Path p, TextureRegion b,float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
-		super(pX, pY, pWidth, pHeight, pTextureRegion,tvbom);
-		vbom = tvbom;
-		path = p;
-	}
-
-	/**
-	 * Create a new enemy
-	 * @param pX
-	 * @param pY
-	 * @param pTextureRegion
-	 * @param tvbom
-	 */
-	public Enemy(float pX, float pY, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
-		super(pX, pY, pTextureRegion,tvbom);
-		vbom = tvbom;
-	}
 	
 	/**
 	 * Create a new enemy with a set Path list of waypoints
@@ -76,10 +33,10 @@ public class Enemy extends Sprite{
 	 * @param pTextureRegion
 	 * @param tvbom
 	 */
-	public Enemy(Path p, float pX, float pY, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
+	public Enemy(float pX, float pY, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
 		super(pX, pY, pTextureRegion,tvbom);
 		vbom = tvbom;
-		path = p;
+		path = new Path();
 	}
 	
 	/**
@@ -98,13 +55,6 @@ public class Enemy extends Sprite{
 		return tr;
 	}
 	
-	/**
-	 * move 3 pixels per 5ms i think the 6f is speed i think
-	 */
-	public void move(){
-		//TODO use waypoints
-		setPosition(getX()+speed,getY()); 
-	}
 	/**
 	 * Deal damage to the enemy, modified by type <br>
 	 * @param amount amount of damage to subtract from helth

@@ -22,7 +22,7 @@ public class Projectile extends Sprite{
         //I am Enemy class
         Enemy target;
         Tower source;
-        public final static float speed = 6f; //movement speed higher is faster (distance to move per update)
+        public final static float speed = 300f; //movement speed higher is faster (distance to move per update)
         public MoveByModifier trajectory;
         public MoveByModifier targetTrajectory;
         VertexBufferObjectManager vbom;
@@ -111,13 +111,14 @@ public class Projectile extends Sprite{
         	
         	
         	//old code
-        	float gY = target.getMidY() -  this.getMidY(); // some calc about how far the bullet can go, in this case up to the enemy
-            float gX = target.getMidX() - this.getMidX();//+(Math.abs(gY)/Enemy.speed/Projectile.speed);
-            float dist = (float) source.distanceTo(target);
-            //D=r*t
-            //therefore t = D/r
-            trajectory = new MoveByModifier((float) (1/Projectile.speed), gX,  gY);
-            this.registerEntityModifier(trajectory);
+        	float dY = target.getMidY() - this.getMidY(); // some calc about how far the bullet can go, in this case up to the enemy
+        	float dX = target.getMidX() - this.getMidX();//+(Math.abs(gY)/Enemy.speed/Projectile.speed);
+        	float dist = (float) Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2));
+        	//D=r*t
+        	//therefore t = D/r
+        	trajectory = new MoveByModifier(dist/Projectile.speed, dX, dY);
+        	this.registerEntityModifier(trajectory);
+
         }
         
         /**

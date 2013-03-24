@@ -3,6 +3,8 @@ package biz.abits.towertest;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.andengine.entity.modifier.MoveByModifier;
+
 /**
  * Path is a list of waypoints used to travel
  * The ArrayList waypoints is public and can be access directly
@@ -18,6 +20,7 @@ public class Path{
 	public Path(){
 		waypoints = new ArrayList<Waypoint>();
 		iterator = waypoints.iterator();
+		findPath();
 	}
 	
 	/**
@@ -82,5 +85,19 @@ public class Path{
 	 */
 	public Waypoint get(int index){
 		return waypoints.get(index);
+	}
+
+
+	private void findPath()
+	{
+		/**
+		float dY = target.getMidY() - this.getMidY(); // some calc about how far the bullet can go, in this case up to the enemy
+    	float dX = target.getMidX() - this.getMidX();//+(Math.abs(gY)/Enemy.speed/Projectile.speed);
+    	float dist = (float) Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2));
+    	//D=r*t
+    	//therefore t = D/r
+    	trajectory = new MoveByModifier(dist/Projectile.speed, dX, dY);
+    	this.registerEntityModifier(trajectory);
+    	**/
 	}
 }
