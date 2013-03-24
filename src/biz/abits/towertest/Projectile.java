@@ -62,34 +62,34 @@ public class Projectile extends Sprite{
 
         public void shoot() {
         	
-        	/*
+        	
         	//to predict where the enemy will be, we need a parametric equation for the enemy's position
         	//Xt = Xo+Enemy.speed*t
         	//         (1)
         	//Pt =  
-        	
+        	/*
         	double d0 = source.distanceTo(target);
-        	double dy = Math.abs(source.getMidY() - target.getMidY());//vertical distance from tower to enemy
+        	double dY = Math.abs(source.getMidY() - target.getMidY());//vertical distance from tower to enemy
         	//Enemy.speed;
         	//Projectile.speed;
         	
         			
         	//This solves for how long it will take until the bullet hits the target
-        	double t1 = ( (Math.sqrt(Math.pow(Projectile.speed,2) * Math.pow(d0, 2) - Math.pow(dy, 2) * Math.pow(Enemy.speed,2)) - 
-        			Math.sqrt(Math.pow(d0, 2) - Math.pow(dy, 2)) * Enemy.speed) / 
+        	double t1 = ( (Math.sqrt(Math.pow(Projectile.speed,2) * Math.pow(d0, 2) - Math.pow(dY, 2) * Math.pow(Enemy.speed,2)) - 
+        			Math.sqrt(Math.pow(d0, 2) - Math.pow(dY, 2)) * Enemy.speed) / 
         			( Math.pow(Projectile.speed,2) - Math.pow(Enemy.speed, 2) ) );
-        	double t2 = ( -(Math.sqrt(Math.pow(Projectile.speed,2) * Math.pow(d0, 2) - Math.pow(dy, 2) * Math.pow(Enemy.speed,2)) + 
-        			Math.sqrt(Math.pow(d0, 2) - Math.pow(dy, 2)) * Enemy.speed) / 
+        	double t2 = ( -(Math.sqrt(Math.pow(Projectile.speed,2) * Math.pow(d0, 2) - Math.pow(dY, 2) * Math.pow(Enemy.speed,2)) + 
+        			Math.sqrt(Math.pow(d0, 2) - Math.pow(dY, 2)) * Enemy.speed) / 
         			( Math.pow(Projectile.speed,2) - Math.pow(Enemy.speed, 2) ) );
         	
-        	double dx = Math.sqrt(Math.pow(Math.sqrt(t1 - Math.sqrt(Math.pow(d0, 2)-Math.pow(dy, 2))),2)+Math.pow(dy, 2));
+        	double dX = Math.sqrt(Math.pow(Math.sqrt(t1 - Math.sqrt(Math.pow(d0, 2)-Math.pow(dY, 2))),2)+Math.pow(dY, 2));
         	
         	Log.e("Jared","t1 "+t1);
         	Log.e("Jared","t2 "+t2);
-        	Log.e("Jared","dx "+dx);
+        	Log.e("Jared","dx "+dX);
+        	*/
         	
         	
-        	/*
         	Vector2 totarget = target.getPosition().add(source.getPosition());
         	float a = target.getVelocity().dot(target.getVelocity()) - (Projectile.speed * Projectile.speed);
         	float b = 2 * target.getVelocity().dot(totarget);
@@ -107,16 +107,19 @@ public class Projectile extends Sprite{
         	Vector2 aimSpot = target.getPosition().add(target.getVelocity().mul(t));
         	Vector2 bulletPath = aimSpot.sub(source.getPosition());
         	float timeToImpact = bulletPath.len() / Projectile.speed;//speed must be in units per second
-        	*/
+        	
         	
         	
         	//old code
-        	float dY = target.getMidY() -  this.getMidY(); // some calc about how far the bullet can go, in this case up to the enemy
-            float dX = target.getMidX() - this.getMidX();//+(Math.abs(gY)/Enemy.speed/Projectile.speed);
+        	//float dY = target.getMidY() -  this.getMidY(); // some calc about how far the bullet can go, in this case up to the enemy
+            //float dX = target.getMidX() - this.getMidX();//+(Math.abs(gY)/Enemy.speed/Projectile.speed);
+        	float dY = aimSpot.y;
+        	float dX = aimSpot.x;
+        	
             float dist = (float) Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2));
             //D=r*t
             //therefore t = D/r
-            trajectory = new MoveByModifier(dist/Projectile.speed, dX,  dY);
+            trajectory = new MoveByModifier(dist/Projectile.speed, (float) dX,  (float) dY);
             this.registerEntityModifier(trajectory);
         }
         

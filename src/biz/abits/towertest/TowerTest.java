@@ -665,10 +665,18 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	            Tower tower = arrayTower.get(k);
 	            tower.freezeBullets(scene);
 	        }
+	        for(int k = 0; k < arrayEn.size(); k++){//iterate through the towers
+	            Enemy enemy = arrayEn.get(k);
+	            enemy.freeze();
+	        }
 		} else {
 	        for(int k = 0; k < arrayTower.size(); k++){//iterate through the towers
 	            Tower tower = arrayTower.get(k);
 	            tower.resumeBullets(scene);
+	        }
+	        for(int k = 0; k < arrayEn.size(); k++){//iterate through the towers
+	            Enemy enemy = arrayEn.get(k);
+	            enemy.startMoving();
 	        }
 		}
 	}

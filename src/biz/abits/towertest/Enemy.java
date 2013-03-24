@@ -21,6 +21,7 @@ public class Enemy extends Sprite{
 	VertexBufferObjectManager vbom;
 	private static String texture = "enemy.png";
 	public Path path;
+	private MoveByModifier trajectory;
 	//TODO Add waypoints  as ArrayList. make move to waypoint, set waypoint, addWaypoint functions.
 	
 	/**
@@ -36,13 +37,7 @@ public class Enemy extends Sprite{
 		super(pX, pY, pTextureRegion,tvbom);
 		vbom = tvbom;
 		path = new Path();
-    	float dY = 0;
-        float dX = TowerTest.CAMERA_WIDTH;
-        float dist = (float) Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2));
-        //D=r*t
-        //therefore t = D/r
-        MoveByModifier trajectory = new MoveByModifier(dist/Enemy.speed, dX,  dY);
-        this.registerEntityModifier(trajectory);
+		startMoving();
 	}
 	
 	/**
@@ -109,5 +104,19 @@ public class Enemy extends Sprite{
 	
 	public float getMidY() {
 		return this.getY() + this.getHeight()/2;
+	}
+
+	public void freeze() {
+        this.unregisterEntityModifier(trajectory);
+    }
+	
+	public void startMoving() {
+    	float dY = 0;
+        float dX = TowerTest.CAMERA_WIDTH;
+        float dist = (float) Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2));
+        //D=r*t
+        //therefore t = D/r
+        trajectory = new MoveByModifier(dist/Enemy.speed, dX,  dY);
+        this.registerEntityModifier(trajectory);
 	}
 }
