@@ -23,6 +23,8 @@ public class Enemy extends Sprite{
 	public Path path;
 	private MoveByModifier trajectory;
 	//TODO Add waypoints  as ArrayList. make move to waypoint, set waypoint, addWaypoint functions.
+
+	
 	
 	/**
 	 * Create a new enemy with a set Path list of waypoints
@@ -56,13 +58,6 @@ public class Enemy extends Sprite{
 		return tr;
 	}
 	
-	/**
-	 * move 3 pixels per 5ms i think the 6f is speed i think
-	 */
-	/*public void move(){
-		//TODO use waypoints
-		setPosition(getX()+speed,getY()); 
-	}*/
 	/**
 	 * Deal damage to the enemy, modified by type <br>
 	 * @param amount amount of damage to subtract from helth
