@@ -101,6 +101,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	private Scene scene;
 	private ProgressBar waveProgress; //add to wave class
 	public static TMXTiledMap mTMXTiledMap;
+	private ButtonSprite pauseButton;
 	
 	private Level level0 = new Level();
 	
@@ -125,8 +126,12 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	TextureRegion enTexture;
 	TextureRegion hitAreaTextureGood;
 	TextureRegion hitAreaTextureBad;
+	TextureRegion texPause;
+	TextureRegion texPlay;
 	final String hitAreaTexGoodStr = "towerRangeGood.png";
 	final String hitAreaTexBadStr = "towerRangeBad.png";
+	final String texPauseStr = "pause.png";
+	final String texPlayStr = "play.png";
 	Enemy enemy;
 	ArrayList<Enemy> arrayEn;
 	
@@ -211,6 +216,11 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			hitAreaTextureGood = TowerRange.loadSprite(this.getTextureManager(), this, hitAreaTexGoodStr);
 			
 			hitAreaTextureBad = TowerRange.loadSprite(this.getTextureManager(), this, hitAreaTexBadStr);
+			
+			texPause = TowerTest.loadSprite(this.getTextureManager(), this, texPauseStr);
+			
+			texPlay = TowerTest.loadSprite(this.getTextureManager(), this, texPlayStr);
+			
 			
 			//=================================================================================//
 			//								Load Player Textures
@@ -311,7 +321,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			hud.attachChild(creditMask);
 			
 			//Pause button
-			final ButtonSprite pauseButton = new ButtonSprite(TowerTest.CAMERA_WIDTH-140, 20, towerTexture, this.getVertexBufferObjectManager(), pauseListener);
+			pauseButton = new ButtonSprite(TowerTest.CAMERA_WIDTH-140, 20, texPause, this.getVertexBufferObjectManager(), pauseListener);
 			hud.attachChild(pauseButton);
 			hud.registerTouchArea(pauseButton);
 			
@@ -649,6 +659,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		paused = !paused;
 		//freeze all bullets
 		if (paused) {
+			//pauseButton
+			
 	        for(int k = 0; k < arrayTower.size(); k++){//iterate through the towers
 	            Tower tower = arrayTower.get(k);
 	            tower.freezeBullets(scene);
@@ -661,5 +673,14 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		}
 	}
 	
-//  END OF CLASS
+	public static TextureRegion loadSprite(TextureManager tm, Context c, String strtex){
+		TextureRegion tr;
+		BitmapTextureAtlas towerImage;
+		towerImage = new BitmapTextureAtlas(tm,512,512);
+		tr = BitmapTextureAtlasTextureRegionFactory.createFromAsset(towerImage, c, strtex, 0, 0);
+		tm.loadTexture(towerImage);
+		return tr;
+	}
+
+	//  END OF CLASS
 }

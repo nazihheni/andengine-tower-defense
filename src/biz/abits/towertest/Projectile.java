@@ -1,6 +1,7 @@
 package biz.abits.towertest;
 
 import java.util.ArrayList;
+import java.util.Vector;
 
 import org.andengine.entity.modifier.MoveByModifier;
 import org.andengine.entity.scene.Scene;
@@ -11,16 +12,19 @@ import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegion
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
+import com.badlogic.gdx.math.Vector2;
+
 import android.content.Context;
 import android.util.Log;
 //TODO clean up for use in Tower Class
 //TODO extend GenericPool https://jimmaru.wordpress.com/2012/05/19/jimvaders-my-own-invaders-clone-thingie-tutorial/ or make spritebatch or both
 public class Projectile extends Sprite{
         //I am Enemy class
-        public float x,y;
-        public float targetX,targetY;
-        public final float speed = 6f; //movement speed higher is faster
+        Enemy target;
+        Tower source;
+        public final static float speed = 6f; //movement speed higher is faster (distance to move per update)
         public MoveByModifier trajectory;
+        public MoveByModifier targetTrajectory;
         VertexBufferObjectManager vbom;
         public static String texture = "bullet.png";
 
@@ -29,18 +33,16 @@ public class Projectile extends Sprite{
 
                 super(pX, pY, pWidth, pHeight, pTextureRegion,tvbom);
                 vbom = tvbom;
-                x=pX; //some x n y of the projectile
-                y=pY;
         }
 
         /**
          * Set the target location this Projectile is traveling to
-         * @param tx
-         * @param ty
+         * @param Tower t, source bullet came from
+         * @param Enemy t, target we're shooting at 
          */
-        public void setTarget(float tx, float ty){
-                targetX = tx;
-                targetY = ty;
+        public void setTarget(Tower t, Enemy e){
+        	target = e;
+            source = t;
         }
         /**
          * This function sets the texture for the tower type and returns a Texture Region to preload the texture.
@@ -59,10 +61,63 @@ public class Projectile extends Sprite{
         }
 
         public void shoot() {
-                float gY =  targetY -  this.getY(); // some calc about how far the bullet can go, in this case up to the enemy
-                float gX =  targetX - this.getX();
-                trajectory = new MoveByModifier(1/this.speed, gX,  gY);
-                this.registerEntityModifier(trajectory);
+        	
+        	/*
+        	//to predict where the enemy will be, we need a parametric equation for the enemy's position
+        	//Xt = Xo+Enemy.speed*t
+        	//         (1)
+        	//Pt =  
+        	
+        	double d0 = source.distanceTo(target);
+        	double dy = Math.abs(source.getMidY() - target.getMidY());//vertical distance from tower to enemy
+        	//Enemy.speed;
+        	//Projectile.speed;
+        	
+        			
+        	//This solves for how long it will take until the bullet hits the target
+        	double t1 = ( (Math.sqrt(Math.pow(Projectile.speed,2) * Math.pow(d0, 2) - Math.pow(dy, 2) * Math.pow(Enemy.speed,2)) - 
+        			Math.sqrt(Math.pow(d0, 2) - Math.pow(dy, 2)) * Enemy.speed) / 
+        			( Math.pow(Projectile.speed,2) - Math.pow(Enemy.speed, 2) ) );
+        	double t2 = ( -(Math.sqrt(Math.pow(Projectile.speed,2) * Math.pow(d0, 2) - Math.pow(dy, 2) * Math.pow(Enemy.speed,2)) + 
+        			Math.sqrt(Math.pow(d0, 2) - Math.pow(dy, 2)) * Enemy.speed) / 
+        			( Math.pow(Projectile.speed,2) - Math.pow(Enemy.speed, 2) ) );
+        	
+        	double dx = Math.sqrt(Math.pow(Math.sqrt(t1 - Math.sqrt(Math.pow(d0, 2)-Math.pow(dy, 2))),2)+Math.pow(dy, 2));
+        	
+        	Log.e("Jared","t1 "+t1);
+        	Log.e("Jared","t2 "+t2);
+        	Log.e("Jared","dx "+dx);
+        	
+        	
+        	/*
+        	Vector2 totarget = target.getPosition().add(source.getPosition());
+        	float a = target.getVelocity().dot(target.getVelocity()) - (Projectile.speed * Projectile.speed);
+        	float b = 2 * target.getVelocity().dot(totarget);
+        	float c = totarget.dot(totarget);
+        	float p = -b / (2 * a);
+        	float q = (float)Math.sqrt((b * b) - 4 * a * c) / (2 * a);
+        	float t1 = p - q;
+        	float t2 = p + q;
+        	float t;
+        	if (t1 > t2 && t2 > 0) {
+        	    t = t2;
+        	} else {
+        	    t = t1;
+        	}
+        	Vector2 aimSpot = target.getPosition().add(target.getVelocity().mul(t));
+        	Vector2 bulletPath = aimSpot.sub(source.getPosition());
+        	float timeToImpact = bulletPath.len() / Projectile.speed;//speed must be in units per second
+        	*/
+        	
+        	
+        	//old code
+        	float gY = target.getMidY() -  this.getMidY(); // some calc about how far the bullet can go, in this case up to the enemy
+            float gX = target.getMidX() - this.getMidX();//+(Math.abs(gY)/Enemy.speed/Projectile.speed);
+            float dist = (float) source.distanceTo(target);
+            //D=r*t
+            //therefore t = D/r
+            trajectory = new MoveByModifier((float) (1/Projectile.speed), gX,  gY);
+            this.registerEntityModifier(trajectory);
         }
         
         /**
@@ -86,4 +141,12 @@ public class Projectile extends Sprite{
                 return this.trajectory.isFinished();
                 //return (targetX == x && targetY == y);
         }
+
+        public float getMidX() {
+    		return this.getX() + this.getWidth()/2;
+    	}
+    	
+    	public float getMidY() {
+    		return this.getY() + this.getHeight()/2;
+    	}
 }

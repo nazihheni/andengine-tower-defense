@@ -19,6 +19,8 @@ import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.debug.Debug;
 
+import com.badlogic.gdx.math.Vector2;
+
 import android.content.Context;
 import android.util.Log;
 
@@ -104,13 +106,13 @@ public class Tower extends Sprite{
 	 * @param ty location of projectile
 	 * @return boolean True if tower fired (created bullet sprite), else false
 	 */
-	public boolean fire(float targetX,float targetY,float tx,float ty){
+	public boolean fire(Enemy target,Tower source){
 		//TODO move bullet to mouth of cannon
 		long elapsed = System.currentTimeMillis() - lastFire;
 		//only fire if tower is off cool down
 		if( elapsed > cooldown * cdMod && !moveable){ //not on cooldown, and not actively being placed
-			SpriteBullet  = new Projectile(tx,ty, 10f, 10f, bullet,vbom); //READY?!?
-			SpriteBullet.setTarget(targetX, targetY); //AIM...
+			SpriteBullet  = new Projectile(source.getMidX(),source.getMidY(), 10f, 10f, bullet,vbom); //READY?!?
+			SpriteBullet.setTarget(this, target); //AIM...
 			SpriteBullet.shoot(); //FIIIIIRE!!!!
 			arrayBullets.add(SpriteBullet);
 			lastFire = System.currentTimeMillis();
@@ -132,10 +134,10 @@ public class Tower extends Sprite{
 
 	public void fire(Enemy enemy, Scene scene, ArrayList<Enemy> arrayEn){
 		if (!TowerTest.paused) {        	
-			targetX = enemy.getX()+enemy.getWidth()/2; // simple get the enemy x,y and center it and tell the bullet where to aim and fire
-			targetY = enemy.getY()+enemy.getHeight()/2;
+			targetX = enemy.getInterceptX(); // simple get the enemy x,y and center it and tell the bullet where to aim and fire
+			targetY = enemy.getInterceptY();
 			//call fire from the tower
-			boolean fired = this.fire(targetX, targetY,this.getX()+this.getWidth()/2,this.getY()+this.getHeight()/2); //Asks the tower to open fire and places the bullet in middle of tower
+			boolean fired = this.fire(enemy,this); //Asks the tower to open fire and places the bullet in middle of tower
 			if(fired){
 				ArrayList<Projectile> towerBulletList = this.getArrayList(); //gets bullets from Tower class where our bullets are fired from
 				Sprite myBullet = this.getLastBulletSprite();
@@ -275,7 +277,13 @@ public class Tower extends Sprite{
 		return this.getHeight()/2; //default to the middle of the sprite
 	}
 	
-	public boolean checkClearSpot(Scene scene, float newX, float newY) {
+	/**
+	 * Checks to see if the tower can be placed here, and places it, also updates the tower if it should have a placement error
+	 * @param scene
+	 * @param newX x value where we're trying to place the tower
+	 * @param newY y value where we're trying to place the tower
+	 */
+	public void checkClearSpot(Scene scene, float newX, float newY) {
 		final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
 		try {
 			final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile.getGlobalTileID());  
@@ -295,7 +303,6 @@ public class Tower extends Sprite{
 			this.setTowerPlaceError(scene, true);
 		}
 		this.setPosition(newX, newY);
-		return true;
 	}	
 	
 	/**This tells the tower if it is allowed to be placed where it is, when it is being placed */
@@ -391,8 +398,8 @@ public class Tower extends Sprite{
 	 * @param s sprite you want the distance to
 	 * @return the distance to said sprite
 	 */
-	public double distanceTo(Sprite s) {
-		return Math.sqrt(Math.pow(this.getX() - s.getX(),2) + Math.pow(this.getY() - s.getY(),2));
+	public double distanceTo(Enemy s) {
+		return Math.sqrt(Math.pow(this.getMidX() - s.getMidX(),2) + Math.pow(this.getMidY() - s.getMidY(),2));
 	}
 	
 	/**
@@ -421,4 +428,15 @@ public class Tower extends Sprite{
 		}
 	}
 	
+	public Vector2 getPosition() {
+		return new Vector2(this.getX(), this.getY());
+	}
+	
+	public float getMidX() {
+		return this.getX() + this.getWidth()/2;
+	}
+	
+	public float getMidY() {
+		return this.getY() + this.getHeight()/2;
+	}
 }

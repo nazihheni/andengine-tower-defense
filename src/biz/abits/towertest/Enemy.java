@@ -7,6 +7,8 @@ import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegion
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
+import com.badlogic.gdx.math.Vector2;
+
 import android.content.Context;
 import android.util.Log;
 
@@ -14,7 +16,7 @@ public class Enemy extends Sprite{
 	//I am Enemy class
 	private int health = 1000;
 	private static int credits = 10;
-	public float speed = 2.0f; //movement speed (distance to move per update)
+	public static float speed = 3.0f; //movement speed (distance to move per update)
 	VertexBufferObjectManager vbom;
 	private static String texture = "enemy.png";
 	public Path path;
@@ -128,5 +130,29 @@ public class Enemy extends Sprite{
 	 */
 	public int getCredits(){
 		return credits;
+	}
+	
+	public float getInterceptX() {
+		return this.getX()+this.getWidth()/2;
+	}
+	
+	public float getInterceptY() {
+		return this.getY()+this.getHeight()/2; //we'll probably modify this later to account for Y movement
+	}
+	
+	public Vector2 getPosition() {
+		return new Vector2(this.getX(), this.getY());
+	}
+	
+	public Vector2 getVelocity() {
+		return new Vector2(Enemy.speed, 0); //hard-coded to horizontal for now
+	}
+
+	public float getMidX() {
+		return this.getX() + this.getWidth()/2;
+	}
+	
+	public float getMidY() {
+		return this.getY() + this.getHeight()/2;
 	}
 }
