@@ -130,6 +130,8 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 									//pSceneTouchEvent.obtain(firstTouchEvent.getX(), firstTouchEvent.getY(), firstTouchEvent.getAction(), firstTouchEvent.getPointerID(), firstTouchEvent.getMotionEvent());
 									startingOffsetX = firstX - lastX;
 									startingOffsetY = firstY - lastY;
+									TowerTest.currentXoffset = lastX-firstX;
+									TowerTest.currentYoffset = lastY-firstY;
 									//Log.e("Jared", "I modified my touch event!");
 								}
 								//Log.e("Jared","I just set showHitArea to FALSE!");
@@ -137,8 +139,8 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener{
 								return false; //pass it through if it's already too far
 							}
 						} else if (pSceneTouchEvent.isActionUp()) {
-							startingOffsetX = 0;
-							startingOffsetY = 0;
+							TowerTest.currentXoffset = 0;
+							TowerTest.currentYoffset = 0;
 							if (showHitArea) {
 								//Log.e("Jared","showHitArea is "+showHitArea);
 								this.setHitAreaShown(scene, !this.getHitAreaShown()); //toggle hit area circle

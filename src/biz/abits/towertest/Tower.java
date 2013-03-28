@@ -281,10 +281,10 @@ public class Tower extends Sprite{
 				newY = tmxTile.getTileY();
 			}
 			if(tmxTileProperties.containsTMXProperty("Collidable", "False" )) {
-				//set the circle to green
+				//set the circle to red (it has an error)
 				this.setTowerPlaceError(scene, true);
 			} else {
-				//set the circle to red
+				//set the circle to green
 				this.setTowerPlaceError(scene, false);
 			}
 		} catch (Exception e) { //this happens when it's drug off the map

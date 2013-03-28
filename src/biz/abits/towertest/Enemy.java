@@ -36,7 +36,7 @@ public class Enemy extends Sprite{
 	 */
 	public Enemy(float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
 		super(pX, pY, pWidth, pHeight, pTextureRegion,tvbom);
-		path = new Path();
+		path = new Path(this);
 		startMoving();
 	}
 	
@@ -119,5 +119,13 @@ public class Enemy extends Sprite{
         //therefore t = D/r
         trajectory = new MoveByModifier(dist/Enemy.speed, dX,  dY);
         this.registerEntityModifier(trajectory);
+	}
+	
+	public int getCol() {
+		return TowerTest.getColFromX(this.getX());
+	}
+	
+	public int getRow() {
+		return TowerTest.getRowFromY(this.getY());
 	}
 }

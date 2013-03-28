@@ -95,6 +95,10 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	public static int TOWER_WIDTH = 96;
 	public static int TOWER_HEIGHT = 96;
 	private static ZoomCamera zoomCamera;
+	/** used to offset the pan to adjust for panning from a tower */
+	public static float currentXoffset = 0; 
+	/** used to offset the pan to adjust for panning from a tower */
+	public static float currentYoffset = 0;
 	//private Camera camera;
 	
 	private SurfaceScrollDetector mScrollDetector;
@@ -583,8 +587,6 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	//=====================================		
 	//TODO establish limits
 	//static float currentZoom = 1;
-	//static float currentXoffset = 0;
-	//static float currentYoffset = 0;
 
 	/**
 	 * Translates x coordinate from hud coordinates to scene coordinates (used for tower placement)
@@ -628,7 +630,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		//currentZoom = zoomFactor;
 		//currentXoffset = pDistanceX;
 		//currentYoffset = pDistanceY;
-		TowerTest.zoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+		TowerTest.zoomCamera.offsetCenter((-pDistanceX) / zoomFactor-currentXoffset*zoomFactor, (-pDistanceY) / zoomFactor-currentYoffset*zoomFactor);
 	}
 
 	@Override
@@ -637,7 +639,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		//currentZoom = zoomFactor;
 		//currentXoffset = pDistanceX;
 		//currentYoffset = pDistanceY;
-		TowerTest.zoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+		TowerTest.zoomCamera.offsetCenter((-pDistanceX) / zoomFactor-currentXoffset*zoomFactor, (-pDistanceY) / zoomFactor-currentYoffset*zoomFactor);
 	}
 
 	@Override
@@ -646,7 +648,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		//currentZoom = zoomFactor;
 		//currentXoffset = pDistanceX;
 		//currentYoffset = pDistanceY;
-		TowerTest.zoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+		TowerTest.zoomCamera.offsetCenter((-pDistanceX) / zoomFactor-currentXoffset*zoomFactor, (-pDistanceY) / zoomFactor-currentYoffset*zoomFactor);
 	}
 
 	@Override
@@ -712,5 +714,13 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		return tr;
 	}
 
+	public static int getColFromX(float pX) {
+		return Math.round(pX/mTMXTiledMap.getTileWidth());
+	}
+	
+	public static int getRowFromY(float pY) {
+		return Math.round(pY/mTMXTiledMap.getTileHeight());
+	}
+	
 	//  END OF CLASS
 }
