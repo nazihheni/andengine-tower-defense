@@ -17,8 +17,7 @@ public class Enemy extends Sprite{
 	//I am Enemy class
 	private int health = 1000;
 	private static int credits = 10;
-	public static float speed = 100.0f; //movement speed (distance to move per update)
-	VertexBufferObjectManager vbom;
+	public static float speed = 50.0f; //movement speed (distance to move per update)
 	private static String texture = "enemy.png";
 	public Path path;
 	private MoveByModifier trajectory;
@@ -35,9 +34,8 @@ public class Enemy extends Sprite{
 	 * @param pTextureRegion
 	 * @param tvbom
 	 */
-	public Enemy(float pX, float pY, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
-		super(pX, pY, pTextureRegion,tvbom);
-		vbom = tvbom;
+	public Enemy(float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion,VertexBufferObjectManager tvbom) {
+		super(pX, pY, pWidth, pHeight, pTextureRegion,tvbom);
 		path = new Path();
 		startMoving();
 	}
@@ -91,6 +89,14 @@ public class Enemy extends Sprite{
 	
 	public Vector2 getVelocity() {
 		return new Vector2(Enemy.speed, 0); //hard-coded to horizontal for now
+	}
+	
+	public float getXSpeed() {
+		return Enemy.speed;
+	}
+	
+	public float getYSpeed() {
+		return 0;
 	}
 
 	public float getMidX() {

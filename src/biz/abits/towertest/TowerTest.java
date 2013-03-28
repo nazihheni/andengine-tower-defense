@@ -86,6 +86,10 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	///=======================================
 	//int CAMERA_WIDTH = 800;
 	//int CAMERA_HEIGHT = 480;
+	/** maximum they can zoom in = 4 */
+	public static float MAX_ZOOM = 4f;
+	/** maximum they can zoom out = 0.5 */
+	public static float MIN_ZOOM = 0.5f;
 	public static int CAMERA_WIDTH = 1280;
 	public static int CAMERA_HEIGHT = 720;
 	public static int TOWER_WIDTH = 96;
@@ -166,6 +170,10 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	//TODO Jared made this bigger, because it's tiny size made it difficult to test
 	static boolean paused = false;
 	int wave_size = 500; // number of enemies to allow
+	
+	
+	
+	
 	//TODO Jared made this bigger, because it's tiny size made it difficult to test (the game kept ending)
 	    @Override
 	    public EngineOptions onCreateEngineOptions() {
@@ -179,8 +187,11 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			CAMERA_HEIGHT = metrics.heightPixels;
 			CAMERA_WIDTH = metrics.widthPixels;
 			
-			//camera = new Camera(0,0,CAMERA_WIDTH,CAMERA_HEIGHT);
 			zoomCamera = new ZoomCamera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
+			zoomCamera.setBounds(-CAMERA_WIDTH*0.25f, -CAMERA_WIDTH*0.25f, CAMERA_WIDTH*1.25f, CAMERA_HEIGHT*1.25f);
+			zoomCamera.setBoundsEnabled(true);
+			
+			
 
 			EngineOptions mEngine = new EngineOptions(true,ScreenOrientation.LANDSCAPE_SENSOR, new FillResolutionPolicy(),zoomCamera);
 
@@ -192,13 +203,13 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			} else Toast.makeText(this, "Sorry your device does NOT support MultiTouch! Use Zoom Buttons.", Toast.LENGTH_LONG).show();
 			mEngine.getAudioOptions().setNeedsMusic(true).setNeedsSound(true);
 			return mEngine;
-	    }
-
-	    /**
-	     * Load all game resources
-	     */
-	    @Override
-	    protected void onCreateResources() {
+		}
+		
+		/**
+		 * Load all game resources
+		 */
+		@Override
+		protected void onCreateResources() {
 			Log.i("Location:","onCreateResources");
 			BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
 			TextureManager tm =  this.getTextureManager();
@@ -312,6 +323,27 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			//=====================================	
 			this.mScrollDetector = new SurfaceScrollDetector(this);
 			this.mPinchZoomDetector = new PinchZoomDetector(this);
+			mPinchZoomDetector.setEnabled(true);
+			/*{
+			
+				@Override
+				public void onPinchZoom(final PinchZoomDetector pPinchZoomDetector,
+				final TouchEvent pTouchEvent, final float pZoomFactor) {
+					this.mCamera.setZoomFactor(Math.min(
+					Math.max(this.maxZoom, this.mPinchZoomStartedCameraZoomFactor
+					* pZoomFactor), 2));
+				}
+				
+				@Override
+				public void onPinchZoomFinished(final PinchZoomDetector pPinchZoomDetector,
+				final TouchEvent pTouchEvent, final float pZoomFactor) {
+					this.mCamera.setZoomFactor(Math.min(
+					Math.max(this.maxZoom, this.mPinchZoomStartedCameraZoomFactor
+					* pZoomFactor), 2));
+				}
+			};*/
+			
+			
 			this.mEngine.registerUpdateHandler(fpsCounter);
 			//xcoord,ycoord,font,initial text?,length,vbom
 			final Rectangle fpsMask = this.makeColoredRectangle(CAMERA_WIDTH-100, 20, 20 ,100, .8f, .8f, .8f,1f);
@@ -459,45 +491,26 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	//TODO put in a thread
 	public void collision(){
 		//Lets Loop our array of enemies
-		//for(Enemy enemy: arrayEn){
-
 		//***************************************************************
 		//TODO WE SHOULD PROBABLY MULTITHREAD THIS LOOP FO' SHIZZLE!!!!!!
 		//***************************************************************
-        if (arrayEn.size() > 0) {
-            for(int j = 0; j < arrayEn.size();j++){//iterate through the enemies
-                Enemy enemy = arrayEn.get(j);
-
-                    //enemy.setPosition(enemy.getX()+3/6f,enemy.getY());  //you can use to move enemy
-                    //Lets Loop our Towers
-                    //for(Tower tower: arrayTower){
-                    for(int k = 0; k < arrayTower.size(); k++){//iterate through the towers
-                            Tower tower = arrayTower.get(k);
-                                    
-                            //check if they collide The size of the Tower is the range of the tower or something maybe
-                            //TODO, add physics for collision
-                            //if enemy is in tower range
-
-                            if(tower.distanceTo(enemy) < tower.maxRange()){ //if(enemy.collidesWith(tower)){
-                                    tower.fire(enemy, scene, arrayEn);// call fire and pass the tower and enemy to fire
-                                    //Log.i("Location:","Firing on enemy");
-                                    //TODO find a way to end thread?
-                                    //break; //do NOT enable this line or it will only allow ONE tower to fire!
-                            }else{
-                                    //this line is what erases any floating leftover bullets (if the bullet isn't hitting an enemy, technically, this shouldn't ever happen if our targeting doesn't suck)
-                                    tower.checkBullets(scene);
-                            }
-                    }
-                    //if (!paused)
-                    	//enemy.move();
-            }
-	    } else {
-	            //if we have nothing better to do (there's no enemies)
-	            //check for lost, or misguided bullets
-	            for(int k = 0; k < arrayTower.size(); k++)//iterate through the towers
-	                    arrayTower.get(k).checkBullets(scene);
-	    }
-
+		if (arrayEn.size() > 0) {
+			for(int j = 0; j < arrayEn.size();j++){//iterate through the enemies
+				Enemy enemy = arrayEn.get(j);
+				//Lets Loop our Towers
+				for(int k = 0; k < arrayTower.size(); k++){//iterate through the towers
+					Tower tower = arrayTower.get(k);
+					//check if they are in range of the tower
+					//TODO, add physics for collision
+					if(tower.distanceTo(enemy) < tower.maxRange()){ //if(enemy.collidesWith(tower)){
+						tower.fire(enemy, scene, arrayEn, this);// call fire and pass the tower and enemy to fire
+						//Log.i("Location:","Firing on enemy");
+						//TODO find a way to end thread?
+						//break; //do NOT enable this line or it will only allow ONE tower to fire!
+					}
+				}
+			}
+		}
 	}
 	
 	/**
@@ -531,7 +544,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					
 					if(allow_enemy > 0){
 						//TODO fix the last argument here
-						enemy = new Enemy(x, y, enTexture, tvbom);
+						enemy = new Enemy(x, y, 96, 96, enTexture, tvbom);
 						scene.attachChild(enemy);
 						arrayEn.add(enemy);
 						allow_enemy--;
@@ -646,13 +659,22 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	@Override
 	public void onPinchZoom(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
 		//currentZoom = pZoomFactor;
-		TowerTest.zoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
+		//TowerTest.zoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
+		TowerTest.zoomCamera.setZoomFactor(
+		Math.min(
+				Math.max(TowerTest.MIN_ZOOM, this.mPinchZoomStartedCameraZoomFactor * pZoomFactor)
+		, TowerTest.MAX_ZOOM));
+		
 	}
 
 	@Override
 	public void onPinchZoomFinished(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
 		//currentZoom = pZoomFactor;
-		TowerTest.zoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
+		//TowerTest.zoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
+		TowerTest.zoomCamera.setZoomFactor(
+		Math.min(
+				Math.max(TowerTest.MIN_ZOOM, this.mPinchZoomStartedCameraZoomFactor * pZoomFactor)
+		, TowerTest.MAX_ZOOM));
 	}	
 
 	public void togglePauseGame() {
@@ -672,7 +694,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		} else {
 	        for(int k = 0; k < arrayTower.size(); k++){//iterate through the towers
 	            Tower tower = arrayTower.get(k);
-	            tower.resumeBullets(scene);
+	            tower.resumeBullets(scene, arrayEn, this);
 	        }
 	        for(int k = 0; k < arrayEn.size(); k++){//iterate through the towers
 	            Enemy enemy = arrayEn.get(k);

@@ -16,6 +16,7 @@ import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
+import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.debug.Debug;
 
@@ -39,7 +40,7 @@ public class Tower extends Sprite{
 	private long credits = 50; //cost to build tower in credits
 	private int level = 1; //level of tower
 	private int maxLevel = 10; //level of tower
-	public int damage = 100; //Tower damage
+	public final int damage = 100; //Tower damage
 	public String damageType = "normal";
 	private float cdMod = 0.5f;
 	private long lastFire = 0;
@@ -106,14 +107,14 @@ public class Tower extends Sprite{
 	 * @param ty location of projectile
 	 * @return boolean True if tower fired (created bullet sprite), else false
 	 */
-	public boolean fire(Enemy target,Tower source){
+	public boolean fire(Enemy target,Tower source, Scene scene, ArrayList<Enemy> arrayEn, BaseGameActivity myContext){
 		//TODO move bullet to mouth of cannon
 		long elapsed = System.currentTimeMillis() - lastFire;
 		//only fire if tower is off cool down
 		if( elapsed > cooldown * cdMod && !moveable){ //not on cooldown, and not actively being placed
-			SpriteBullet  = new Projectile(source.getMidX(),source.getMidY(), 10f, 10f, bullet,vbom); //READY?!?
+			SpriteBullet  = new Projectile(source.getMidX(),source.getMidY(), 10f, 10f, bullet,vbom, scene); //READY?!?
 			SpriteBullet.setTarget(this, target); //AIM...
-			SpriteBullet.shoot(); //FIIIIIRE!!!!
+			SpriteBullet.shoot(arrayEn, myContext); //FIIIIIRE!!!!
 			arrayBullets.add(SpriteBullet);
 			lastFire = System.currentTimeMillis();
 			//TODO check sound settings
@@ -132,43 +133,30 @@ public class Tower extends Sprite{
 		}
 	}
 
-	public void fire(Enemy enemy, Scene scene, ArrayList<Enemy> arrayEn){
+	public void fire(Enemy enemy, Scene scene, ArrayList<Enemy> arrayEn, BaseGameActivity myContext){
 		if (!TowerTest.paused) {        	
-			targetX = enemy.getMidX(); // simple get the enemy x,y and center it and tell the bullet where to aim and fire
-			targetY = enemy.getMidY();
-			//call fire from the tower
-			boolean fired = this.fire(enemy,this); //Asks the tower to open fire and places the bullet in middle of tower
-			if(fired){
-				ArrayList<Projectile> towerBulletList = this.getArrayList(); //gets bullets from Tower class where our bullets are fired from
-				Sprite myBullet = this.getLastBulletSprite();
-				scene.attachChild(myBullet);
-				//for(Sprite bullet : towerBulletList){
-				for(int i = 0; i < towerBulletList.size(); i++){
-					Projectile bullet;
-					bullet = towerBulletList.get(i);
-					if(bullet.collidesWith(enemy)){
-						//WARNING: This function should be called from within postRunnable(Runnable) which is registered to a Scene or the Engine itself, because otherwise it may throw an IndexOutOfBoundsException in the Update-Thread or the GL-Thread!
-						//bullet.stop();
-						scene.detachChild(bullet); // When else should we remove bullets? Check its range?
-						towerBulletList.remove(bullet);  // also remove it from array so we don't check it again
-						//enemy takes
-						if(enemy.takeDamage(this.damage,this.damageType) < 1){ //then the enemy dies
-							TowerTest.addCredits(enemy.getCredits());
-							scene.detachChild(enemy);
-							arrayEn.remove(enemy);
-							//this.ceaseFire(scene);
-							//TODO play death animation enemy function pass scene to detach
+			try {
+				targetX = enemy.getMidX(); // simple get the enemy x,y and center it and tell the bullet where to aim and fire
+				targetY = enemy.getMidY();
+				//call fire from the tower
+				boolean fired = this.fire(enemy, this, scene, arrayEn, myContext); //Asks the tower to open fire and places the bullet in middle of tower
+				if(fired){
+					ArrayList<Projectile> towerBulletList = this.getArrayList(); //gets bullets from Tower class where our bullets are fired from
+					Sprite myBullet = this.getLastBulletSprite();
+					scene.attachChild(myBullet);
+					//for(Sprite bullet : towerBulletList){
+					/*
+					for(int i = 0; i < towerBulletList.size(); i++){
+						Projectile bullet;
+						bullet = towerBulletList.get(i);
+						if(bullet.isDone()) { //collidesWith(enemy)){
+							//WARNING: This function should be called from within postRunnable(Runnable) which is registered to a Scene or the Engine itself, because otherwise it may throw an IndexOutOfBoundsException in the Update-Thread or the GL-Thread!
+							//nevermind, I threw it in the listener for the bullet onModifierFinished listener!
 						}
-						i = towerBulletList.size();
-						break; // take a break
-						//this else if may be completely useless..... or wrong
-						//I don't think we need this
-						//} else if (bullet.isDone()) {
-						//I disabled it but if we start seeing stray bullets, we should enable it
-						//if the bullet is done moving, AND it's not hitting an enemy, then that means it's done, and should be removed!
-						//bullet.stop(scene, towerBulletList);
-					}
+					}*/
 				}
+			} catch (Exception e) {
+				
 			}
 		}
 	}
@@ -283,7 +271,7 @@ public class Tower extends Sprite{
 	 * @param newX x value where we're trying to place the tower
 	 * @param newY y value where we're trying to place the tower
 	 */
-	public void checkClearSpot(Scene scene, float newX, float newY) {
+	public void checkClearSpotAndPlace(Scene scene, float newX, float newY) {
 		final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
 		try {
 			final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile.getGlobalTileID());  
@@ -422,9 +410,9 @@ public class Tower extends Sprite{
 	/**
 	 * responsible for making any bullets start moving again when the game is un-paused
 	 */
-	public void resumeBullets(Scene scene) {
+	public void resumeBullets(Scene scene, ArrayList<Enemy> arrayEn, BaseGameActivity myContext) {
 		for(int i=0;i<arrayBullets.size();i++){
-			arrayBullets.get(i).shoot();
+			arrayBullets.get(i).shoot(arrayEn, myContext);
 		}
 	}
 	
@@ -438,5 +426,9 @@ public class Tower extends Sprite{
 	
 	public float getMidY() {
 		return this.getY() + this.getHeight()/2;
+	}
+	
+	public void removeBullet(Projectile b) {
+		arrayBullets.remove(b);
 	}
 }
