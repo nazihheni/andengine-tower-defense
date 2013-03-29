@@ -12,6 +12,7 @@ import org.andengine.extension.tmx.TMXTileProperty;
 import org.andengine.util.algorithm.path.ICostFunction;
 import org.andengine.util.algorithm.path.IPathFinderMap;
 import org.andengine.util.algorithm.path.astar.AStarPathFinder;
+import org.andengine.util.algorithm.path.astar.IAStarHeuristic;
 import org.andengine.util.algorithm.path.astar.NullHeuristic;
 
 /**
@@ -22,10 +23,11 @@ import org.andengine.util.algorithm.path.astar.NullHeuristic;
  */
 public class Path{
 	Enemy enemy;
+	TMXLayer tmxlayer;
 	public ArrayList<Waypoint> waypoints;
 	Iterator<Waypoint> iterator;
 	private org.andengine.util.algorithm.path.Path A_Path;
-	
+	private AStarPathFinder<TMXLayer> finder;
 	
 	/**
 	 * initialized the list
@@ -105,10 +107,10 @@ public class Path{
 		return waypoints.get(waypoints.size() - 1);
 	}
 
-	IPathFinderMap<Enemy> PathMap = new IPathFinderMap<Enemy>()
+	IPathFinderMap<TMXLayer> PathMap = new IPathFinderMap<TMXLayer>()
 	{
 		@Override
-		public boolean isBlocked(int pX, int pY, Enemy pEntity) {
+		public boolean isBlocked(int pX, int pY, TMXLayer pEntity) {
 			final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(pX, pY);
 			final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile.getGlobalTileID());  
 			if(tmxTileProperties.containsTMXProperty("Collidable", "False" )) {
@@ -132,18 +134,18 @@ public class Path{
 		}
 	};	
 	
-	NullHeuristic<TMXLayer> Heuristic = new NullHeuristic<TMXLayer>();
+	IAStarHeuristic<TMXLayer> Heuristic = new NullHeuristic<TMXLayer>();
 			
 	private void findPath()
 	{
-		float pXMin = 0;
-		float pYMin = 0;
-		float pXMax = TowerTest.CAMERA_WIDTH;
-		float pYMax = TowerTest.CAMERA_HEIGHT;
+		int pXMin = 0;
+		int pYMin = 0;
+		int pXMax = TowerTest.CAMERA_WIDTH;
+		int pYMax = TowerTest.CAMERA_HEIGHT;
 		boolean allowDiagonal = false;
 		
 		//TODO code a transformation function that gets int's and returns x,y coords
-		A_Path = AStarPathFinder.findPath(PathMap, pXMin, pYMin, pXMax, pYMax, enemy, enemy.getCol(), enemy.getRow(), 
+		A_Path = finder.findPath(PathMap, pXMin, pYMin, pXMax, pYMax, tmxlayer, enemy.getCol(), enemy.getRow(), 
 				TowerTest.getColFromX(getLast().x), TowerTest.getRowFromY(getLast().y), allowDiagonal, Heuristic, CostCallback);
 		/**
 		float dY = target.getMidY() - this.getMidY(); // some calc about how far the bullet can go, in this case up to the enemy

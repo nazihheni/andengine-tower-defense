@@ -6,12 +6,13 @@ public class Level{
 	private TMXTiledMap mTMXTiledMap;
 	public Path defaultPath;
 	public String map = "desert.tmx";
+	Enemy enemy;
 	
 	/**
 	 * Constructor intializes variables
 	 */
 	public Level(){
-		defaultPath = new Path();
+		defaultPath = new Path(enemy);
 		defaultPath.add(new Waypoint(200,0));
 		defaultPath.add(new Waypoint(200,500));
 		defaultPath.add(new Waypoint(500,0));
