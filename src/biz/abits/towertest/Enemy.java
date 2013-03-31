@@ -31,6 +31,9 @@ public class Enemy extends Sprite {
 	private static String texture = "enemy.png";
 	public Path path;
 	private MoveByModifier trajectory;
+	/** used to verify that the target hasn't died yet, makes sure that they don't get duplicate kill credit for more than one bullet hitting target and striking killing blow */
+	public boolean isAlive = true;
+
 	Scene scene;
 
 	// TODO Add waypoints as ArrayList. make move to waypoint, set waypoint,

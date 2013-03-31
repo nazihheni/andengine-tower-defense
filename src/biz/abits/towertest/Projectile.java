@@ -127,7 +127,7 @@ public class Projectile extends Sprite {
 		if (q < 0) {
 			dY = target.getMidY() - this.getMidY();
 			dX = target.getMidX() - this.getMidX();
-			Log.e("Jared", "I'm broken!");
+			Log.e("TowerTest", "Projectile.shoot() could not target!");
 			hadError = true;
 		} else {
 		}
@@ -175,17 +175,20 @@ public class Projectile extends Sprite {
 				source.removeBullet(Projectile.this);
 				// enemy takes damage
 				if (target.takeDamage(source.damage, source.damageType) < 1) { // then the enemy dies
-					TowerTest.addCredits(target.getCredits());
+					if (target.isAlive) {
+						target.isAlive = false;
+						TowerTest.addCredits(target.getCredits());
 
-					myContext.getEngine().runOnUpdateThread(new Runnable() {
-						@Override
-						public void run() {
-							Projectile.this.scene.detachChild(target);
-						}
-					});
-					arrayEn.remove(target);
-					// TODO play death animation enemy function pass scene to
-					// detach
+						myContext.getEngine().runOnUpdateThread(new Runnable() {
+							@Override
+							public void run() {
+								Projectile.this.scene.detachChild(target);
+							}
+						});
+						arrayEn.remove(target);
+						// TODO play death animation enemy function pass scene to
+						// detach
+					}
 				}
 			}
 		});

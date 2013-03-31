@@ -115,7 +115,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 
 	Point lStarts[] = { new Point(0, 0) }; // define where the enemies will start at
 	Point lEnds[] = { new Point(15, 0) }; // define where the enemies will end at
-	int[] waves = { 1, 2, 5, 10, 20, 40, 80 };
+	int[] waves = { 1, 2, 5, 10, 20, 40, 80, 160, 320, 640 };
 
 	private Level currentLevel = new Level(waves, lStarts, lEnds);
 
@@ -531,15 +531,16 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	int currentWaveNum = 0;
 	int currentEnemyCount = 0;
 	int currentDelayBetweenWaves = 0;
+	final float delay = 3f; // delay between adding enemies
+	final int delayBetweenWaves = 5;
+	TimerHandler enemy_handler;
 
 	public void add_enemy(VertexBufferObjectManager vbom) {
-		final float delay = 3f; // delay between adding enemies
-		final int delayBetweenWaves = 20;
 		final VertexBufferObjectManager tvbom = vbom;
-		TimerHandler enemy_handler = new TimerHandler(delay, true, new ITimerCallback() {
+		enemy_handler = new TimerHandler(delay, true, new ITimerCallback() {
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
-				if (!paused) {
+				if ((!paused) && (currentWaveNum < currentLevel.wave.length)) {
 					// =================Code must go here=======================
 					// Log.i("allow_enemy:",""+allow_enemy);
 					Random a = new Random();
@@ -548,12 +549,10 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 
 					float x = 20;
 					float y = CAMERA_HEIGHT / 2;
-					if (currentDelayBetweenWaves >= delayBetweenWaves) {
-						currentEnemyCount = 0;
-						currentDelayBetweenWaves = 0;
-					}
 
 					if (currentLevel.wave[currentWaveNum] > currentEnemyCount) {
+						Log.i("waveProg", "enemy " + currentEnemyCount + "/" + currentLevel.wave[currentWaveNum]
+								+ " of wave " + currentWaveNum);
 						// TODO fix the last argument here
 						enemy = new Enemy(x, y, 96, 96, enTexture, tvbom, currentLevel, scene);
 						enemy.setPathandMove(currentLevel.endLoc[0], TowerTest.this, tmxLayer, arrayEn);
@@ -566,11 +565,19 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					} else if (currentDelayBetweenWaves < delayBetweenWaves) {
 						currentDelayBetweenWaves++;
 					}
+
+					if (currentDelayBetweenWaves >= delayBetweenWaves) {
+						currentEnemyCount = 0;
+						currentDelayBetweenWaves = 0;
+						currentWaveNum++;
+					}
 					// ================= end of code==========================
+				} else if (!paused) {
+					getEngine().unregisterUpdateHandler(enemy_handler);
+					Log.i("waveProg", "I'm done doing waves!");
 				}
 			}
 		});
-
 		getEngine().registerUpdateHandler(enemy_handler);
 
 	}
