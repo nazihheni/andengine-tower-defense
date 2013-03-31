@@ -485,10 +485,12 @@ public class Tower extends Sprite {
 		arrayBullets.remove(b);
 	}
 
+	/** returns which column the tower is in (between 0 for the first column, and 14 for the last column) */
 	public int getCol() {
 		return TowerTest.getColFromX(this.getX());
 	}
 
+	/** returns which row the tower is in (between 0 for the first row, and 6 for the last row) */
 	public int getRow() {
 		return TowerTest.getRowFromY(this.getY());
 	}

@@ -135,10 +135,12 @@ public class Enemy extends Sprite {
 		this.registerEntityModifier(trajectory);
 	}
 
+	/** returns which column the enemy is in (between 0 for the first column, and 14 for the last column) */
 	public int getCol() {
 		return TowerTest.getColFromX(this.getX());
 	}
 
+	/** returns which row the enemy is in (between 0 for the first row, and 6 for the last row) */
 	public int getRow() {
 		return TowerTest.getRowFromY(this.getY());
 	}
