@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.andengine.entity.modifier.MoveByModifier;
+import org.andengine.entity.sprite.Sprite;
 import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.extension.tmx.TMXProperties;
 import org.andengine.extension.tmx.TMXProperty;
@@ -16,145 +17,157 @@ import org.andengine.util.algorithm.path.astar.IAStarHeuristic;
 import org.andengine.util.algorithm.path.astar.NullHeuristic;
 
 /**
- * Path is a list of waypoints used to travel
- * The ArrayList waypoints is public and can be access directly
+ * Path is a list of waypoints used to travel The ArrayList waypoints is public and can be access directly
+ * 
  * @author abinning
- *
+ * 
  */
-public class Path{
+public class Path {
 	Enemy enemy;
 	TMXLayer tmxlayer;
 	public ArrayList<Waypoint> waypoints;
 	Iterator<Waypoint> iterator;
 	private org.andengine.util.algorithm.path.Path A_Path;
-	private AStarPathFinder<TMXLayer> finder;
-	
+	private AStarPathFinder<Enemy> finder;
+	private Point end;
+
 	/**
 	 * initialized the list
 	 */
-	public Path(Enemy en){
+	public Path(Enemy en, Point pEnd, TMXLayer pTmxlayer) {
 		enemy = en;
 		waypoints = new ArrayList<Waypoint>();
 		iterator = waypoints.iterator();
+		end = pEnd;
+		tmxlayer = pTmxlayer;
 		findPath();
 	}
-	
+
 	/**
 	 * Add new Waypoint
+	 * 
 	 * @param wp
 	 */
-	public void add(Waypoint wp){
+	public void add(Waypoint wp) {
 		waypoints.add(wp);
 	}
-	
+
 	/**
 	 * Remove Waypoint
+	 * 
 	 * @param wp
 	 */
-	public void remove(Waypoint wp){
+	public void remove(Waypoint wp) {
 		waypoints.remove(wp);
 	}
 
 	/**
 	 * Add new Waypoint at index
+	 * 
 	 * @param wp
 	 */
-	public void add(int index, Waypoint wp){
+	public void add(int index, Waypoint wp) {
 		waypoints.add(index, wp);
 	}
-	
+
 	/**
 	 * Remove Waypoint at index
+	 * 
 	 * @param wp
 	 */
-	public void remove(int index){
+	public void remove(int index) {
 		waypoints.remove(index);
 	}
-	
+
 	/**
 	 * get iterator
+	 * 
 	 * @param wp
 	 */
-	public Iterator<Waypoint> iterator(){
+	public Iterator<Waypoint> iterator() {
 		return iterator;
 	}
+
 	/**
 	 * Get next waypoint using iterator
+	 * 
 	 * @return
 	 */
-	public Waypoint next(){
+	public Waypoint next() {
 		return iterator.next();
 	}
-	
+
 	/**
 	 * check to see if there is a next waypoint using iterator
+	 * 
 	 * @return
 	 */
-	public boolean hasNext(){
+	public boolean hasNext() {
 		return iterator.hasNext();
 	}
-	
+
 	/**
 	 * Get waypoint by index
+	 * 
 	 * @param index
 	 * @return
 	 */
-	public Waypoint get(int index){
+	public Waypoint get(int index) {
 		return waypoints.get(index);
 	}
 
-	public Waypoint getLast(){
+	public Waypoint getLast() {
 		return waypoints.get(waypoints.size() - 1);
 	}
 
-	IPathFinderMap<TMXLayer> PathMap = new IPathFinderMap<TMXLayer>()
-	{
+	IPathFinderMap<Enemy> PathMap = new IPathFinderMap<Enemy>() {
 		@Override
-		public boolean isBlocked(int pX, int pY, TMXLayer pEntity) {
+		public boolean isBlocked(int pX, int pY, Enemy pEntity) {
 			final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(pX, pY);
-			final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile.getGlobalTileID());  
-			if(tmxTileProperties.containsTMXProperty("Collidable", "False" )) {
-				//set the circle to red
+			final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap
+					.getTMXTileProperties(tmxTile.getGlobalTileID());
+			if (tmxTileProperties.containsTMXProperty("Collidable", "False")) {
+				// set the circle to red
 				return true;
 			} else {
-				//set the circle to green
+				// set the circle to green
 				return false;
 			}
 		}
 	};
-	
-	ICostFunction<TMXLayer> CostCallback = new ICostFunction<TMXLayer>() {
+
+	ICostFunction<Enemy> CostCallback = new ICostFunction<Enemy>() {
 		@Override
-		public float getCost(IPathFinderMap<TMXLayer> pPathFinderMap, int pFromX, int pFromY, int pToX, int pToY, TMXLayer pEntity) {
+		public float getCost(IPathFinderMap<Enemy> pPathFinderMap, int pFromX, int pFromY, int pToX, int pToY,
+				Enemy pEntity) {
 			// Read the cost attribute from the tile at the given position
-			//TODO enable this shizz and add cost to tilemap! (KYLE)
-			//TMXProperty cost = pEntity.getTMXTile(pFromX, pFromY).getTMXTileProperties(mMap.getMap()).get(0);
-			//return Float.parseFloat(cost.getValue());
+			// TODO enable this shizz and add cost to tilemap! (KYLE)
+			// TMXProperty cost = pEntity.getTMXTile(pFromX,
+			// pFromY).getTMXTileProperties(mMap.getMap()).get(0);
+			// return Float.parseFloat(cost.getValue());
 			return 1f;
 		}
-	};	
-	
-	IAStarHeuristic<TMXLayer> Heuristic = new NullHeuristic<TMXLayer>();
-			
-	private void findPath()
-	{
-		int pXMin = 0;
-		int pYMin = 0;
-		int pXMax = TowerTest.CAMERA_WIDTH;
-		int pYMax = TowerTest.CAMERA_HEIGHT;
+	};
+
+	IAStarHeuristic<Enemy> Heuristic = new NullHeuristic<Enemy>();
+
+	private void findPath() {
+		int pColMin = 0;
+		int pRowMin = 0;
+		int pColMax = TowerTest.CAMERA_WIDTH;
+		int pRowMax = TowerTest.CAMERA_HEIGHT;
 		boolean allowDiagonal = false;
-		
-		//TODO code a transformation function that gets int's and returns x,y coords
-		A_Path = finder.findPath(PathMap, pXMin, pYMin, pXMax, pYMax, tmxlayer, enemy.getCol(), enemy.getRow(), 
-				TowerTest.getColFromX(getLast().x), TowerTest.getRowFromY(getLast().y), allowDiagonal, Heuristic, CostCallback);
-		/**
-		float dY = target.getMidY() - this.getMidY(); // some calc about how far the bullet can go, in this case up to the enemy
-    	float dX = target.getMidX() - this.getMidX();//+(Math.abs(gY)/Enemy.speed/Projectile.speed);
-    	float dist = (float) Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2));
-    	//D=r*t
-    	//therefore t = D/r
-    	trajectory = new MoveByModifier(dist/Projectile.speed, dX, dY);
-    	this.registerEntityModifier(trajectory);
-    	**/
+
+		// TODO code a transformation function that gets int's and returns x,y
+		// coords
+		finder = new AStarPathFinder<Enemy>();
+		A_Path = finder.findPath(PathMap, pColMin, pRowMin, pColMax, pRowMax, enemy, enemy.getCol(), enemy.getRow(),
+				end.x, end.y, allowDiagonal, Heuristic, CostCallback);
+
+		/*
+		 * float dY = target.getMidY() - this.getMidY(); // some calc about how far the bullet can go, in this case up to the enemy float dX = target.getMidX() -
+		 * this.getMidX();//+(Math.abs(gY)/Enemy.speed/Projectile.speed); float dist = (float) Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2)); //D=r*t //therefore t = D/r
+		 * trajectory = new MoveByModifier(dist/Projectile.speed, dX, dY); this.registerEntityModifier(trajectory);
+		 */
 	}
 }
