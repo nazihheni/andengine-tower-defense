@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.MoveByModifier;
+import org.andengine.entity.modifier.PathModifier;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.extension.tmx.TMXLayer;
@@ -162,6 +163,12 @@ public class Enemy extends Sprite {
 			}
 		});
 		this.registerEntityModifier(trajectory);
+		//TODO we need to do something like this, to make it follow a path, the only problem is, we have a 
+		//org.andengine.util.algorithm.path.Path A_Path
+		//and the path it wants is a
+		//org.andengine.entity.modifier.PathModifier.Path A_Path
+		//maybe we can convert ours, to their kind?
+		//PathModifier trajectory2 = new PathModifier(dist / Enemy.speed, path.A_Path);
 	}
 
 	/** returns which column the enemy is in (between 0 for the first column, and 14 for the last column) */

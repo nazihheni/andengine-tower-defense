@@ -27,7 +27,7 @@ public class Path {
 	TMXLayer tmxlayer;
 	public ArrayList<Waypoint> waypoints;
 	Iterator<Waypoint> iterator;
-	private org.andengine.util.algorithm.path.Path A_Path;
+	public org.andengine.util.algorithm.path.Path A_Path;
 	private AStarPathFinder<Enemy> finder;
 	private Point end;
 
