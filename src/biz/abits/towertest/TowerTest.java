@@ -555,8 +555,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 
 					if (currentLevel.wave[currentWaveNum] > currentEnemyCount) {
 						// TODO fix the last argument here
-						enemy = new Enemy(x, y, 96, 96, enTexture, tvbom, currentLevel);
-						enemy.setPathandMove(currentLevel.endLoc[0], TowerTest.this, tmxLayer);
+						enemy = new Enemy(x, y, 96, 96, enTexture, tvbom, currentLevel, scene);
+						enemy.setPathandMove(currentLevel.endLoc[0], TowerTest.this, tmxLayer, arrayEn);
 						// TODO make it assign which end location based on the wave
 						scene.attachChild(enemy);
 						arrayEn.add(enemy);
@@ -728,7 +728,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 			for (int k = 0; k < arrayEn.size(); k++) {// iterate through the
 														// towers
 				Enemy enemy = arrayEn.get(k);
-				enemy.startMoving();
+				enemy.startMoving(arrayEn, this);
 			}
 		}
 	}

@@ -1,6 +1,10 @@
 package biz.abits.towertest;
 
+import java.util.ArrayList;
+
+import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.MoveByModifier;
+import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.opengl.texture.TextureManager;
@@ -9,6 +13,8 @@ import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegion
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.BaseGameActivity;
+import org.andengine.util.modifier.IModifier;
+import org.andengine.util.modifier.IModifier.IModifierListener;
 
 import com.badlogic.gdx.math.Vector2;
 
@@ -25,6 +31,7 @@ public class Enemy extends Sprite {
 	private static String texture = "enemy.png";
 	public Path path;
 	private MoveByModifier trajectory;
+	Scene scene;
 
 	// TODO Add waypoints as ArrayList. make move to waypoint, set waypoint,
 	// addWaypoint functions.
@@ -41,13 +48,14 @@ public class Enemy extends Sprite {
 	 * @param level
 	 */
 	public Enemy(float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion,
-			VertexBufferObjectManager tvbom, Level level) {
+			VertexBufferObjectManager tvbom, Level level, Scene sc) {
 		super(pX, pY, pWidth, pHeight, pTextureRegion, tvbom);
+		scene = sc;
 	}
 
-	public void setPathandMove(Point pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer) {
+	public void setPathandMove(Point pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
 		path = new Path(Enemy.this, pEnd, pTmxlayer);
-		startMoving();
+		startMoving(arrayEn, myContext);
 	}
 
 	/**
@@ -125,13 +133,31 @@ public class Enemy extends Sprite {
 		this.unregisterEntityModifier(trajectory);
 	}
 
-	public void startMoving() {
+	public void startMoving(final ArrayList<Enemy> arrayEn, final BaseGameActivity myContext) {
 		float dY = 0;
 		float dX = TowerTest.CAMERA_WIDTH;
 		float dist = (float) Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2));
 		// D=r*t
 		// therefore t = D/r
 		trajectory = new MoveByModifier(dist / Enemy.speed, dX, dY);
+		trajectory.addModifierListener(new IModifierListener<IEntity>() {
+			@Override
+			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+				// Do stuff here if you want to
+
+			}
+
+			@Override
+			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+				myContext.getEngine().runOnUpdateThread(new Runnable() {
+					@Override
+					public void run() {
+						Enemy.this.scene.detachChild(Enemy.this); // When else should we remove bullets? Check its range?
+					}
+				});
+				// enemy takes damage
+			}
+		});
 		this.registerEntityModifier(trajectory);
 	}
 
