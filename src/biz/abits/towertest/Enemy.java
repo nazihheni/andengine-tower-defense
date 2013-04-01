@@ -25,7 +25,7 @@ import android.util.Log;
 
 public class Enemy extends Sprite {
 	// I am Enemy class
-	private int health = 1000;
+	private int health = 5000;
 	private static int credits = 10;
 	public static float speed = 50.0f; // movement speed (distance to move per
 										// update)
@@ -143,32 +143,35 @@ public class Enemy extends Sprite {
 		float dist = (float) Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2));
 		// D=r*t
 		// therefore t = D/r
-		trajectory = new MoveByModifier(dist / Enemy.speed, dX, dY);
-		trajectory.addModifierListener(new IModifierListener<IEntity>() {
-			@Override
-			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-				// Do stuff here if you want to
+		/*
+		 * trajectory = new MoveByModifier(dist / Enemy.speed, dX, dY); trajectory.addModifierListener(new IModifierListener<IEntity>() {
+		 * 
+		 * @Override public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) { // Do stuff here if you want to
+		 * 
+		 * }
+		 * 
+		 * @Override public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) { myContext.getEngine().runOnUpdateThread(new Runnable() {
+		 * 
+		 * @Override public void run() { Enemy.this.scene.detachChild(Enemy.this); // When else should we remove bullets? Check its range? } }); // enemy takes damage } });
+		 */
+		// this.registerEntityModifier(trajectory);
 
-			}
+		// TODO we need to do something like this, to make it follow a path, the only problem is, we have a
+		// org.andengine.util.algorithm.path.Path A_Path
+		// and the path it wants is a
+		// org.andengine.entity.modifier.PathModifier.Path A_Path
+		// maybe we can convert ours, to their kind?
 
-			@Override
-			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-				myContext.getEngine().runOnUpdateThread(new Runnable() {
-					@Override
-					public void run() {
-						Enemy.this.scene.detachChild(Enemy.this); // When else should we remove bullets? Check its range?
-					}
-				});
-				// enemy takes damage
-			}
-		});
-		this.registerEntityModifier(trajectory);
-		//TODO we need to do something like this, to make it follow a path, the only problem is, we have a 
-		//org.andengine.util.algorithm.path.Path A_Path
-		//and the path it wants is a
-		//org.andengine.entity.modifier.PathModifier.Path A_Path
-		//maybe we can convert ours, to their kind?
-		//PathModifier trajectory2 = new PathModifier(dist / Enemy.speed, path.A_Path);
+		// convert our type of path we have to their type of path
+		org.andengine.entity.modifier.PathModifier.Path tempPath = new org.andengine.entity.modifier.PathModifier.Path(
+				path.A_Path.getLength());
+		for (int i = 0; i < path.A_Path.getLength(); i++)
+			tempPath = tempPath.to(TowerTest.getXFromCol(path.A_Path.getX(i)), TowerTest.getYFromRow(path.A_Path
+					.getY(i)));
+
+		// PathModifier trajectory3 = new PathModifier(dist / Enemy.speed, path.A_Path);
+		PathModifier trajectory2 = new PathModifier(dist / Enemy.speed, tempPath);
+		this.registerEntityModifier(trajectory2);
 	}
 
 	/** returns which column the enemy is in (between 0 for the first column, and 14 for the last column) */

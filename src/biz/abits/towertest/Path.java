@@ -16,6 +16,8 @@ import org.andengine.util.algorithm.path.astar.AStarPathFinder;
 import org.andengine.util.algorithm.path.astar.IAStarHeuristic;
 import org.andengine.util.algorithm.path.astar.NullHeuristic;
 
+import android.util.Log;
+
 /**
  * Path is a list of waypoints used to travel The ArrayList waypoints is public and can be access directly
  * 
@@ -123,14 +125,20 @@ public class Path {
 	IPathFinderMap<Enemy> PathMap = new IPathFinderMap<Enemy>() {
 		@Override
 		public boolean isBlocked(int pX, int pY, Enemy pEntity) {
-			final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(pX, pY);
-			final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap
-					.getTMXTileProperties(tmxTile.getGlobalTileID());
-			if (tmxTileProperties.containsTMXProperty("Collidable", "False")) {
-				// set the circle to red
-				return true;
-			} else {
-				// set the circle to green
+			try {
+				TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(TowerTest.getXFromCol(pX), TowerTest.getYFromRow(pY));
+				TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile
+						.getGlobalTileID());
+				if (tmxTileProperties.containsTMXProperty("Collidable", "False")) {
+					// set the circle to red
+					//it is blocked!
+					return true;
+				} else {
+					// set the circle to green
+					return false;
+				}
+			} catch (Exception e) { // this happens when it's drug off the map
+				//its broken! (can't get the value)
 				return false;
 			}
 		}
@@ -154,11 +162,10 @@ public class Path {
 	private void findPath() {
 		int pColMin = 0;
 		int pRowMin = 0;
-		int pColMax = TowerTest.CAMERA_WIDTH;
-		int pRowMax = TowerTest.CAMERA_HEIGHT;
+		int pColMax = tmxlayer.getTileColumns()-1;
+		int pRowMax = tmxlayer.getTileRows()-1;
 		boolean allowDiagonal = false;
 
-		// TODO code a transformation function that gets int's and returns x,y
 		// coords
 		finder = new AStarPathFinder<Enemy>();
 		A_Path = finder.findPath(PathMap, pColMin, pRowMin, pColMax, pRowMax, enemy, enemy.getCol(), enemy.getRow(),

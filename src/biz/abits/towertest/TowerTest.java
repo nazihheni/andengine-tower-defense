@@ -114,7 +114,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	private ButtonSprite pauseButton;
 
 	Point lStarts[] = { new Point(0, 0) }; // define where the enemies will start at
-	Point lEnds[] = { new Point(15, 0) }; // define where the enemies will end at
+	Point lEnds[] = { new Point(14, 3) }; // define where the enemies will end at
 	int[] waves = { 1, 2, 5, 10, 20, 40, 80, 160, 320, 640 };
 
 	private Level currentLevel = new Level(waves, lStarts, lEnds);
@@ -547,14 +547,11 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					// int x = a.nextInt(CAMERA_WIDTH-60)+20;
 					// int y = a.nextInt(CAMERA_HEIGHT-60)+20;
 
-					float x = 20;
-					float y = CAMERA_HEIGHT / 2;
-
 					if (currentLevel.wave[currentWaveNum] > currentEnemyCount) {
 						Log.i("waveProg", "enemy " + currentEnemyCount + "/" + currentLevel.wave[currentWaveNum]
 								+ " of wave " + currentWaveNum);
-						// TODO fix the last argument here
-						enemy = new Enemy(x, y, 96, 96, enTexture, tvbom, currentLevel, scene);
+						// TODO fix the last argument here and make startLoc compatible with multiple starting locations
+						enemy = new Enemy(TowerTest.getXFromCol(currentLevel.startLoc[0].x), TowerTest.getXFromCol(currentLevel.startLoc[0].y), 96, 96, enTexture, tvbom, currentLevel, scene);
 						enemy.setPathandMove(currentLevel.endLoc[0], TowerTest.this, tmxLayer, arrayEn);
 						// TODO make it assign which end location based on the wave
 						scene.attachChild(enemy);
@@ -755,6 +752,14 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 
 	public static int getRowFromY(float pY) {
 		return Math.round(pY / mTMXTiledMap.getTileHeight());
+	}
+
+	public static float getXFromCol(int pC) {
+		return Math.round(pC * mTMXTiledMap.getTileWidth());
+	}
+
+	public static float getYFromRow(int pR) {
+		return Math.round(pR * mTMXTiledMap.getTileHeight());
 	}
 
 	// END OF CLASS
