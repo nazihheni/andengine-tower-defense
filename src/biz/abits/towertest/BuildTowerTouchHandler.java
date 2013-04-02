@@ -140,34 +140,27 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 																	// up
 								return true;
 							} else {
-								Log.e("Jared", "I happened!");
+								Log.w("onSceneTouchEvent", "I had two down touch events witout an up!");
 								return true;
 							}
 						} else if (pSceneTouchEvent.isActionMove()) {
 							distTraveled += Math.sqrt((Math.pow(lastX - pSceneTouchEvent.getX(), 2))
-									+ (Math.pow(lastY - pSceneTouchEvent.getY(), 2)));
+									+ (Math.pow(lastY - pSceneTouchEvent.getY(), 2))) * TowerTest.zoomCamera.getZoomFactor();
 							// store x and y for next move event
 							lastX = pSceneTouchEvent.getX();
 							lastY = pSceneTouchEvent.getY();
 							if (distTraveled < TowerTest.TOWER_HEIGHT) {
-								return true; // tell it we handled the touch
-												// event, because they haven't
-												// gone far enough (should be
-												// true)
+								//Log.e("Jared","distTraveled:"+distTraveled+"<TOWER_HEIGHT:"+TowerTest.TOWER_HEIGHT);
+								return true; // tell it we handled the touch event, because they haven't gone far enough (should be true)
 							} else {
-								if (showHitArea) { // that means it's the first
-													// time we've ran this, so..
-									// pSceneTouchEvent.obtain(firstTouchEvent.getX(),
-									// firstTouchEvent.getY(),
-									// firstTouchEvent.getAction(),
-									// firstTouchEvent.getPointerID(),
+								if (showHitArea) { // that means it's the first time we've ran this, so..
+									// pSceneTouchEvent.obtain(firstTouchEvent.getX(), firstTouchEvent.getY(), firstTouchEvent.getAction(), firstTouchEvent.getPointerID(),
 									// firstTouchEvent.getMotionEvent());
 									startingOffsetX = firstX - lastX;
 									startingOffsetY = firstY - lastY;
 									TowerTest.currentXoffset = lastX - firstX;
 									TowerTest.currentYoffset = lastY - firstY;
-									// Log.e("Jared",
-									// "I modified my touch event!");
+									// Log.e("Jared", "I modified my touch event!");
 								}
 								// Log.e("Jared","I just set showHitArea to FALSE!");
 								showHitArea = false;
@@ -206,8 +199,7 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 				scene.registerTouchArea(tw); // register touch area , so this allows you to drag it
 				scene.attachChild(tw); // add it to the scene
 			} else if (tw.moveable) {
-				// This moves it to it's new position whenever they move their
-				// finger
+				// This moves it to it's new position whenever they move their finger
 				float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
 				float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
 				tw.checkClearSpotAndPlace(scene, newX, newY);

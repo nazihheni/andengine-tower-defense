@@ -2,6 +2,7 @@ package biz.abits.towertest;
 
 import java.util.ArrayList;
 
+import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.MoveByModifier;
 import org.andengine.entity.modifier.PathModifier;
 import org.andengine.entity.scene.Scene;
@@ -13,6 +14,8 @@ import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegion
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.BaseGameActivity;
+import org.andengine.util.modifier.IModifier;
+import org.andengine.util.modifier.IModifier.IModifierListener;
 
 import android.content.Context;
 import android.util.Log;
@@ -32,9 +35,6 @@ public class Enemy extends Sprite {
 	public boolean isAlive = true;
 
 	Scene scene;
-
-	// TODO Add waypoints as ArrayList. make move to waypoint, set waypoint,
-	// addWaypoint functions.
 
 	/**
 	 * Create a new enemy with a set Path list of waypoints
@@ -139,24 +139,8 @@ public class Enemy extends Sprite {
 		float dist = (float) Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2));
 		// D=r*t
 		// therefore t = D/r
-		/*
-		 * trajectory = new MoveByModifier(dist / Enemy.speed, dX, dY); trajectory.addModifierListener(new IModifierListener<IEntity>() {
-		 * 
-		 * @Override public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) { // Do stuff here if you want to
-		 * 
-		 * }
-		 * 
-		 * @Override public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) { myContext.getEngine().runOnUpdateThread(new Runnable() {
-		 * 
-		 * @Override public void run() { Enemy.this.scene.detachChild(Enemy.this); // When else should we remove bullets? Check its range? } }); // enemy takes damage } });
-		 */
+		// trajectory = new MoveByModifier(dist / Enemy.speed, dX, dY);
 		// this.registerEntityModifier(trajectory);
-
-		// TODO we need to do something like this, to make it follow a path, the only problem is, we have a
-		// org.andengine.util.algorithm.path.Path A_Path
-		// and the path it wants is a
-		// org.andengine.entity.modifier.PathModifier.Path A_Path
-		// maybe we can convert ours, to their kind?
 
 		// convert our type of path we have to their type of path
 		org.andengine.entity.modifier.PathModifier.Path tempPath = new org.andengine.entity.modifier.PathModifier.Path(
@@ -165,8 +149,27 @@ public class Enemy extends Sprite {
 			tempPath = tempPath.to(TowerTest.getXFromCol(path.A_Path.getX(i)), TowerTest.getYFromRow(path.A_Path
 					.getY(i)));
 
-		// PathModifier trajectory3 = new PathModifier(dist / Enemy.speed, path.A_Path);
 		PathModifier trajectory2 = new PathModifier(dist / Enemy.speed, tempPath);
+		trajectory2.addModifierListener(new IModifierListener<IEntity>() {
+
+			@Override
+			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) { // Do stuff here if you want to
+
+			}
+
+			@Override
+			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+				myContext.getEngine().runOnUpdateThread(new Runnable() {
+
+					@Override
+					public void run() {
+						Enemy.this.scene.detachChild(Enemy.this);
+						// TODO add code here to subtract a life, since the enemy got through without dieing!
+					}
+				}); // enemy takes damage
+			}
+		});
+
 		this.registerEntityModifier(trajectory2);
 	}
 
