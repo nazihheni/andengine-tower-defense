@@ -27,16 +27,18 @@ public class Path {
 	public org.andengine.util.algorithm.path.Path A_Path;
 	private AStarPathFinder<Enemy> finder;
 	private Waypoint end;
+	private Level level;
 
 	/**
 	 * initialized the list
 	 */
-	public Path(Enemy en, Waypoint pEnd, TMXLayer pTmxlayer) {
+	public Path(Enemy en, Waypoint pEnd, TMXLayer pTmxlayer, Level plevel) {
 		enemy = en;
 		waypoints = new ArrayList<Waypoint>();
 		iterator = waypoints.iterator();
 		end = pEnd;
 		tmxlayer = pTmxlayer;
+		level = plevel;
 		findPath();
 	}
 
@@ -134,7 +136,17 @@ public class Path {
 				}
 			} catch (Exception e) { // this happens when it's drug off the map
 				// its broken! (can't get the value)
-				return false;
+				for (int i = 0; i < level.endLoc.length; i++) {
+					if ((pX == level.endLoc[i].x) && (pY == level.endLoc[i].y)) {
+						return false;
+					}
+				}
+				for (int i = 0; i < level.startLoc.length; i++) {
+					if ((pX == level.startLoc[0].x) && (pY == level.startLoc[0].y)) {
+						return false;
+					}
+				}
+				return true;
 			}
 		}
 	};
@@ -155,10 +167,10 @@ public class Path {
 	IAStarHeuristic<Enemy> Heuristic = new NullHeuristic<Enemy>();
 
 	private void findPath() {
-		int pColMin = 0;
-		int pRowMin = 0;
-		int pColMax = tmxlayer.getTileColumns() - 1;
-		int pRowMax = tmxlayer.getTileRows() - 1;
+		int pColMin = -1;
+		int pRowMin = -1;
+		int pColMax = tmxlayer.getTileColumns() - 1 + 1;
+		int pRowMax = tmxlayer.getTileRows() - 1 + 1;
 		boolean allowDiagonal = false;
 
 		// coords

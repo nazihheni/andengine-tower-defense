@@ -33,6 +33,7 @@ public class Enemy extends Sprite {
 	private MoveByModifier trajectory;
 	/** used to verify that the target hasn't died yet, makes sure that they don't get duplicate kill credit for more than one bullet hitting target and striking killing blow */
 	public boolean isAlive = true;
+	private Level level;
 
 	Scene scene;
 
@@ -48,13 +49,14 @@ public class Enemy extends Sprite {
 	 * @param level
 	 */
 	public Enemy(float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion,
-			VertexBufferObjectManager tvbom, Level level, Scene sc) {
+			VertexBufferObjectManager tvbom, Level plevel, Scene sc) {
 		super(pX, pY, pWidth, pHeight, pTextureRegion, tvbom);
 		scene = sc;
+		level = plevel;
 	}
 
 	public void setPathandMove(Waypoint pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
-		path = new Path(Enemy.this, pEnd, pTmxlayer);
+		path = new Path(Enemy.this, pEnd, pTmxlayer, level);
 		startMoving(arrayEn, myContext);
 	}
 

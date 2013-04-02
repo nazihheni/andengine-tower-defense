@@ -97,8 +97,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	public static TMXTiledMap mTMXTiledMap;
 	private ButtonSprite pauseButton;
 
-	Waypoint lStarts[] = { new Waypoint(0, 0) }; // define where the enemies will start at
-	Waypoint lEnds[] = { new Waypoint(14, 3) }; // define where the enemies will end at
+	Waypoint lStarts[] = { new Waypoint(-1, 0) }; // define where the enemies will start at (can be 1 block off the map, and still be good)
+	Waypoint lEnds[] = { new Waypoint(15, 3) }; // define where the enemies will end at (can be 1 block off the map, and still be good)
 	int[] waves = { 1, 2, 5, 10, 20, 40, 80, 160, 320, 640 };
 
 	private final Level currentLevel = new Level(waves, lStarts, lEnds);

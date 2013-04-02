@@ -123,9 +123,6 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 						// TODO add code for upgrades, better make a separate
 						// class for it, perhaps contained within the Tower
 						// class
-						// TODO there is a problem, if you drag from a tower, it
-						// ALWAYS acts like you started dragging from the last
-						// tower
 						if (pSceneTouchEvent.isActionDown()) {
 							if (!currentlyDragging) {
 								lastX = pSceneTouchEvent.getX();
