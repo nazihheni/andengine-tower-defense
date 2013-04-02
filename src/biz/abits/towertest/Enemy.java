@@ -17,9 +17,6 @@ import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.util.modifier.IModifier;
 import org.andengine.util.modifier.IModifier.IModifierListener;
 
-import android.content.Context;
-import android.util.Log;
-
 import com.badlogic.gdx.math.Vector2;
 
 public class Enemy extends Sprite {
@@ -30,7 +27,7 @@ public class Enemy extends Sprite {
 										// update)
 	public static String texture = "enemy.png";
 	public Path path;
-	private MoveByModifier trajectory;
+	private ExtendedPathModifier trajectory;
 	/** used to verify that the target hasn't died yet, makes sure that they don't get duplicate kill credit for more than one bullet hitting target and striking killing blow */
 	public boolean isAlive = true;
 	private Level level;
@@ -116,7 +113,13 @@ public class Enemy extends Sprite {
 
 	public void freeze() {
 		this.unregisterEntityModifier(trajectory);
+		//trajectory.pauseModifier();
 	}
+
+	//public void resume(final BaseGameActivity myContext) {
+		//this.startMoving(this, myContext)
+		//trajectory.resumeModifier();
+	//}
 
 	public void startMoving(final ArrayList<Enemy> arrayEn, final BaseGameActivity myContext) {
 		float dY = 0;
@@ -134,8 +137,8 @@ public class Enemy extends Sprite {
 			tempPath = tempPath.to(TowerTest.getXFromCol(path.A_Path.getX(i)), TowerTest.getYFromRow(path.A_Path
 					.getY(i)));
 
-		PathModifier trajectory2 = new PathModifier(dist / Enemy.speed, tempPath);
-		trajectory2.addModifierListener(new IModifierListener<IEntity>() {
+		trajectory = new ExtendedPathModifier(dist / Enemy.speed, tempPath);
+		trajectory.addModifierListener(new IModifierListener<IEntity>() {
 
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) { // Do stuff here if you want to
@@ -155,7 +158,7 @@ public class Enemy extends Sprite {
 			}
 		});
 
-		this.registerEntityModifier(trajectory2);
+		this.registerEntityModifier(trajectory);
 	}
 
 	/** returns which column the enemy is in (between 0 for the first column, and 14 for the last column) */
