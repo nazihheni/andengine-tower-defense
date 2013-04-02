@@ -26,21 +26,4 @@ public class TowerRange extends Sprite {
 		this.setZIndex(zIndex);
 	}
 
-	/**
-	 * This function sets the texture for the tower type and returns a Texture Region to preload the texture.
-	 * 
-	 * @param tm Texture manager; usually passed in as this.getTextureManager()
-	 * @param c Context; usually passed in as this
-	 * @param strtex ; the texture to put (bad/good range)
-	 * @return TextureRegion to load
-	 */
-	public static TextureRegion loadSprite(TextureManager tm, Context c, String strtex) {
-		TextureRegion tr;
-		BitmapTextureAtlas towerImage;
-		towerImage = new BitmapTextureAtlas(tm, 512, 512);
-		texture = strtex;
-		tr = BitmapTextureAtlasTextureRegionFactory.createFromAsset(towerImage, c, texture, 0, 0);
-		tm.loadTexture(towerImage);
-		return tr;
-	}
 }

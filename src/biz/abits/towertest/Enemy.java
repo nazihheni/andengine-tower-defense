@@ -28,7 +28,7 @@ public class Enemy extends Sprite {
 	private static int credits = 10;
 	public static float speed = 50.0f; // movement speed (distance to move per
 										// update)
-	private static String texture = "enemy.png";
+	public static String texture = "enemy.png";
 	public Path path;
 	private MoveByModifier trajectory;
 	/** used to verify that the target hasn't died yet, makes sure that they don't get duplicate kill credit for more than one bullet hitting target and striking killing blow */
@@ -58,23 +58,6 @@ public class Enemy extends Sprite {
 	public void setPathandMove(Waypoint pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
 		path = new Path(Enemy.this, pEnd, pTmxlayer, level);
 		startMoving(arrayEn, myContext);
-	}
-
-	/**
-	 * This function sets the texture for the tower type and returns a Texture Region to preload the texture.
-	 * 
-	 * @param tm Texture manager; usually passed in as this.getTextureManager()
-	 * @param c Context; usually passed in as this
-	 * @return TextureRegion to load
-	 */
-	public static TextureRegion loadSprite(TextureManager tm, Context c) {
-		TextureRegion tr;
-		Log.i("Location:", "Enemy loadSprite");
-		BitmapTextureAtlas towerImage;
-		towerImage = new BitmapTextureAtlas(tm, 512, 512);
-		tr = BitmapTextureAtlasTextureRegionFactory.createFromAsset(towerImage, c, texture, 0, 0);
-		tm.loadTexture(towerImage);
-		return tr;
 	}
 
 	/**

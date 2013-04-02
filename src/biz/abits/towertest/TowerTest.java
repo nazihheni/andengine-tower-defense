@@ -42,6 +42,10 @@ import org.andengine.opengl.texture.TextureManager;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
+import org.andengine.opengl.texture.atlas.bitmap.BuildableBitmapTextureAtlas;
+import org.andengine.opengl.texture.atlas.bitmap.source.IBitmapTextureAtlasSource;
+import org.andengine.opengl.texture.atlas.buildable.builder.BlackPawnTextureAtlasBuilder;
+import org.andengine.opengl.texture.atlas.buildable.builder.ITextureAtlasBuilder.TextureAtlasBuilderException;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
@@ -161,6 +165,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	static Text creditText;
 	static long credits;
 	final long initialCredits = 3000;
+	private BuildableBitmapTextureAtlas mBitmapTextureAtlas;
 	// TODO Jared made this bigger, because it's tiny size made it difficult to
 	// test
 	static boolean paused = false;
@@ -205,25 +210,27 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	protected void onCreateResources() {
 		Log.i("Location:", "onCreateResources");
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
-		final TextureManager tm = getTextureManager();
 
 		// =================================================================================//
 		// Load Textures
 		// ================================================================================//
 		// ==== Towers
-		towerTexture = Tower.loadSprite(getTextureManager(), this);
+		mBitmapTextureAtlas = new BuildableBitmapTextureAtlas(getTextureManager(), 1024, 1024);
+		towerTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, Tower.texture);
 		// ==== Projectiles
-		bulletTexture = Projectile.loadSprite(getTextureManager(), this);
+		bulletTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, Projectile.texture);
 		// ==== Enemies
-		enTexture = Enemy.loadSprite(getTextureManager(), this);
-
-		hitAreaTextureGood = TowerRange.loadSprite(getTextureManager(), this, hitAreaTexGoodStr);
-
-		hitAreaTextureBad = TowerRange.loadSprite(getTextureManager(), this, hitAreaTexBadStr);
-
-		texPause = TowerTest.loadSprite(getTextureManager(), this, texPauseStr);
-
-		texPlay = TowerTest.loadSprite(getTextureManager(), this, texPlayStr);
+		enTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, Enemy.texture);
+		hitAreaTextureGood = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, hitAreaTexGoodStr);
+		hitAreaTextureBad = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, hitAreaTexBadStr);
+		texPause = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, texPauseStr);//TowerTest.loadSprite(getTextureManager(), this, texPauseStr);
+		texPlay = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, texPlayStr);//TowerTest.loadSprite(getTextureManager(), this, texPlayStr);
+		try {
+			this.mBitmapTextureAtlas.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 0, 0));
+			this.mBitmapTextureAtlas.load();
+		} catch (TextureAtlasBuilderException e) {
+			Debug.e(e);
+		}
 
 		// =================================================================================//
 		// Load Player Textures
@@ -345,8 +352,9 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		hud.attachChild(creditMask);
 
 		// Pause button
-		pauseButton = new ButtonSprite(TowerTest.CAMERA_WIDTH - 140, 20, texPause, getVertexBufferObjectManager(),
-				pauseListener);
+		pauseButton = new ButtonSprite(TowerTest.CAMERA_WIDTH - 140, 20, texPause, texPlay, 
+				getVertexBufferObjectManager(), pauseListener);
+		//pauseButton.setCurrentTileIndex(1);
 		hud.attachChild(pauseButton);
 		hud.registerTouchArea(pauseButton);
 
@@ -410,9 +418,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		return scene;
 	}
 
-	
 	private boolean isZooming = false;
-	
+
 	/**
 	 * This gets called when the screen is touched
 	 */
@@ -422,18 +429,18 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		if (mPinchZoomDetector.isZooming()) {
 			mScrollDetector.setEnabled(false);
 			isZooming = true;
-			//Log.e("Location:", "I'm really ZOOMING!!!");
-		} else if (!isZooming){
-			//I added the || !mScrollDetector.isEnabled() and the !isZooming because otherwise it didn't always grab the panning
+			// Log.e("Location:", "I'm really ZOOMING!!!");
+		} else if (!isZooming) {
+			// I added the || !mScrollDetector.isEnabled() and the !isZooming because otherwise it didn't always grab the panning
 			if (pSceneTouchEvent.isActionDown() || !mScrollDetector.isEnabled()) {
-				//Log.i("Location:", "Scroll Starting!");
+				// Log.i("Location:", "Scroll Starting!");
 				mScrollDetector.setEnabled(true);
 			} else {
-				//Log.i("Location:", "continued scrolling!");
+				// Log.i("Location:", "continued scrolling!");
 			}
 			mScrollDetector.onTouchEvent(pSceneTouchEvent);
 		}
-		if (pSceneTouchEvent.isActionUp()) { 
+		if (pSceneTouchEvent.isActionUp()) {
 			isZooming = false;
 		}
 		/*
@@ -648,8 +655,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		// Log.e("Jared", "currentXoffset:"+currentXoffset);
 		// Log.e("Jared", "currentYoffset:"+currentYoffset);
 
-		//Log.e("Jared", "pDistanceX:"+pDistanceX);
-		//Log.e("Jared", "pDistanceY:"+pDistanceY);
+		// Log.e("Jared", "pDistanceX:"+pDistanceX);
+		// Log.e("Jared", "pDistanceY:"+pDistanceY);
 
 	}
 
@@ -697,9 +704,10 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	public void togglePauseGame() {
 		paused = !paused;
 		// freeze all bullets
+		//pauseButton.setCurrentTileIndex((pauseButton.getCurrentTileIndex() == 0) ? 1 : 0);		
 		if (paused) {
 			// pauseButton
-
+			pauseButton.setCurrentTileIndex(1);
 			for (int k = 0; k < arrayTower.size(); k++) {// iterate through the
 															// towers
 				final Tower tower = arrayTower.get(k);
@@ -711,6 +719,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 				enemy.freeze();
 			}
 		} else {
+			pauseButton.setCurrentTileIndex(0);
 			for (int k = 0; k < arrayTower.size(); k++) {// iterate through the
 															// towers
 				final Tower tower = arrayTower.get(k);

@@ -35,7 +35,7 @@ import android.util.Log;
 public class Tower extends Sprite {
 	// I am Tower class and have my own bullets //
 	// TODO fire range, acquisition range, pattern/type.
-	private static String texture = "tower.png";
+	public static String texture = "tower.png";
 	private long cooldown = 500; // in milliseconds | 1 sec = 1,000 millisec
 	private long credits = 50; // cost to build tower in credits
 	private int level = 1; // level of tower
@@ -187,23 +187,6 @@ public class Tower extends Sprite {
 	 */
 	public void setCDMod(long cdm) {
 		cdMod = cdm;
-	}
-
-	/**
-	 * This function sets the texture for the tower type and returns a Texture Region to preload the texture.
-	 * 
-	 * @param tm Texture manager; usually passed in as this.getTextureManager()
-	 * @param c Context; usually passed in as this
-	 * @return TextureRegion to load
-	 */
-	public static TextureRegion loadSprite(TextureManager tm, Context c) {
-		TextureRegion tr;
-		Log.i("Location:", "Tower loadSprite");
-		BitmapTextureAtlas towerImage;
-		towerImage = new BitmapTextureAtlas(tm, 512, 512);
-		tr = BitmapTextureAtlasTextureRegionFactory.createFromAsset(towerImage, c, texture, 0, 0);
-		tm.loadTexture(towerImage);
-		return tr;
 	}
 
 	/**

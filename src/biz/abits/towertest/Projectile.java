@@ -50,23 +50,6 @@ public class Projectile extends Sprite {
 		source = t;
 	}
 
-	/**
-	 * This function sets the texture for the tower type and returns a Texture Region to preload the texture.
-	 * 
-	 * @param tm Texture manager; usually passed in as this.getTextureManager()
-	 * @param c Context; usually passed in as this
-	 * @return TextureRegion to load
-	 */
-	public static TextureRegion loadSprite(TextureManager tm, Context c) {
-		TextureRegion tr;
-		Log.i("Location:", "Enemy loadSprite");
-		BitmapTextureAtlas towerImage;
-		towerImage = new BitmapTextureAtlas(tm, 512, 512);
-		tr = BitmapTextureAtlasTextureRegionFactory.createFromAsset(towerImage, c, texture, 0, 0);
-		tm.loadTexture(towerImage);
-		return tr;
-	}
-
 	public void shoot(final ArrayList<Enemy> arrayEn, final BaseGameActivity myContext) {
 		boolean hadError = false;
 
