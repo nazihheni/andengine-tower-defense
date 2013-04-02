@@ -3,11 +3,8 @@ package biz.abits.towertest;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.andengine.entity.modifier.MoveByModifier;
-import org.andengine.entity.sprite.Sprite;
 import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.extension.tmx.TMXProperties;
-import org.andengine.extension.tmx.TMXProperty;
 import org.andengine.extension.tmx.TMXTile;
 import org.andengine.extension.tmx.TMXTileProperty;
 import org.andengine.util.algorithm.path.ICostFunction;
@@ -15,8 +12,6 @@ import org.andengine.util.algorithm.path.IPathFinderMap;
 import org.andengine.util.algorithm.path.astar.AStarPathFinder;
 import org.andengine.util.algorithm.path.astar.IAStarHeuristic;
 import org.andengine.util.algorithm.path.astar.NullHeuristic;
-
-import android.util.Log;
 
 /**
  * Path is a list of waypoints used to travel The ArrayList waypoints is public and can be access directly
@@ -131,14 +126,14 @@ public class Path {
 						.getGlobalTileID());
 				if (tmxTileProperties.containsTMXProperty("Collidable", "False")) {
 					// set the circle to red
-					//it is blocked!
+					// it is blocked!
 					return true;
 				} else {
 					// set the circle to green
 					return false;
 				}
 			} catch (Exception e) { // this happens when it's drug off the map
-				//its broken! (can't get the value)
+				// its broken! (can't get the value)
 				return false;
 			}
 		}
@@ -162,8 +157,8 @@ public class Path {
 	private void findPath() {
 		int pColMin = 0;
 		int pRowMin = 0;
-		int pColMax = tmxlayer.getTileColumns()-1;
-		int pRowMax = tmxlayer.getTileRows()-1;
+		int pColMax = tmxlayer.getTileColumns() - 1;
+		int pRowMax = tmxlayer.getTileRows() - 1;
 		boolean allowDiagonal = false;
 
 		// coords

@@ -1,9 +1,7 @@
 package biz.abits.towertest;
 
-import org.andengine.extension.tmx.TMXTiledMap;
 
 public class Level {
-	private TMXTiledMap mTMXTiledMap;
 	public String map = "desert.tmx";
 	/** Locations where Enemies should enter the map */
 	public Waypoint[] startLoc;

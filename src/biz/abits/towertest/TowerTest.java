@@ -551,7 +551,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 						Log.i("waveProg", "enemy " + currentEnemyCount + "/" + currentLevel.wave[currentWaveNum]
 								+ " of wave " + currentWaveNum);
 						// TODO fix the last argument here and make startLoc compatible with multiple starting locations
-						enemy = new Enemy(TowerTest.getXFromCol(currentLevel.startLoc[0].x), TowerTest.getXFromCol(currentLevel.startLoc[0].y), 96, 96, enTexture, tvbom, currentLevel, scene);
+						enemy = new Enemy(TowerTest.getXFromCol(currentLevel.startLoc[0].x), TowerTest
+								.getXFromCol(currentLevel.startLoc[0].y), 96, 96, enTexture, tvbom, currentLevel, scene);
 						enemy.setPathandMove(currentLevel.endLoc[0], TowerTest.this, tmxLayer, arrayEn);
 						// TODO make it assign which end location based on the wave
 						scene.attachChild(enemy);

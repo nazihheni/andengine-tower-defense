@@ -2,7 +2,6 @@ package biz.abits.towertest;
 
 import java.util.ArrayList;
 
-import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.MoveByModifier;
 import org.andengine.entity.modifier.PathModifier;
 import org.andengine.entity.scene.Scene;
@@ -14,14 +13,11 @@ import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegion
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.BaseGameActivity;
-import org.andengine.util.modifier.IModifier;
-import org.andengine.util.modifier.IModifier.IModifierListener;
-
-import com.badlogic.gdx.math.Vector2;
 
 import android.content.Context;
-import android.location.Location;
 import android.util.Log;
+
+import com.badlogic.gdx.math.Vector2;
 
 public class Enemy extends Sprite {
 	// I am Enemy class
