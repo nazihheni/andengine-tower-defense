@@ -31,12 +31,12 @@ public class Path {
 	Iterator<Waypoint> iterator;
 	public org.andengine.util.algorithm.path.Path A_Path;
 	private AStarPathFinder<Enemy> finder;
-	private Point end;
+	private Waypoint end;
 
 	/**
 	 * initialized the list
 	 */
-	public Path(Enemy en, Point pEnd, TMXLayer pTmxlayer) {
+	public Path(Enemy en, Waypoint pEnd, TMXLayer pTmxlayer) {
 		enemy = en;
 		waypoints = new ArrayList<Waypoint>();
 		iterator = waypoints.iterator();

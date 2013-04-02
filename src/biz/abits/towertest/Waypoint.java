@@ -7,7 +7,7 @@ package biz.abits.towertest;
  * 
  */
 public class Waypoint {
-	public float x, y;
+	public int x, y;
 
 	/**
 	 * Create a new Waypoint with coords
@@ -15,7 +15,7 @@ public class Waypoint {
 	 * @param fx
 	 * @param fy
 	 */
-	public Waypoint(float fx, float fy) {
+	public Waypoint(int fx, int fy) {
 		x = fx;
 		y = fy;
 	}
@@ -26,7 +26,7 @@ public class Waypoint {
 	 * @param fx
 	 * @param fy
 	 */
-	public void setCoords(float fx, float fy) {
+	public void setCoords(int fx, int fy) {
 		x = fx;
 		y = fy;
 	}
@@ -36,7 +36,7 @@ public class Waypoint {
 	 * 
 	 * @return float X
 	 */
-	public float getX() {
+	public int getX() {
 		return x;
 	}
 
@@ -45,7 +45,7 @@ public class Waypoint {
 	 * 
 	 * @return float Y
 	 */
-	public float getY() {
+	public int getY() {
 		return y;
 	}
 }

@@ -6,9 +6,9 @@ public class Level {
 	private TMXTiledMap mTMXTiledMap;
 	public String map = "desert.tmx";
 	/** Locations where Enemies should enter the map */
-	public Point[] startLoc;
+	public Waypoint[] startLoc;
 	/** Locations where the Enemies should want to leave */
-	public Point[] endLoc;
+	public Waypoint[] endLoc;
 	Enemy enemy;
 	public int[] wave;
 
@@ -17,7 +17,7 @@ public class Level {
 	 * 
 	 * @param waves
 	 */
-	public Level(int[] waves, Point[] lStarts, Point[] lEnds) {
+	public Level(int[] waves, Waypoint[] lStarts, Waypoint[] lEnds) {
 		startLoc = lStarts;
 		endLoc = lEnds;
 		wave = waves;
