@@ -96,7 +96,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	private float mPinchZoomStartedCameraZoomFactor;
 
 	private HUD hud;
-	private Scene scene;
+	private PauseableScene scene;
 	private ProgressBar waveProgress; // add to wave class
 	public static TMXTiledMap mTMXTiledMap;
 	private ButtonSprite pauseButton;
@@ -216,17 +216,25 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		// ================================================================================//
 		// ==== Towers
 		mBitmapTextureAtlas = new BuildableBitmapTextureAtlas(getTextureManager(), 1024, 1024);
-		towerTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, Tower.texture);
+		towerTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this,
+				Tower.texture);
 		// ==== Projectiles
-		bulletTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, Projectile.texture);
+		bulletTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this,
+				Projectile.texture);
 		// ==== Enemies
-		enTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, Enemy.texture);
-		hitAreaTextureGood = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, hitAreaTexGoodStr);
-		hitAreaTextureBad = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, hitAreaTexBadStr);
-		texPause = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, texPauseStr);//TowerTest.loadSprite(getTextureManager(), this, texPauseStr);
-		texPlay = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, texPlayStr);//TowerTest.loadSprite(getTextureManager(), this, texPlayStr);
+		enTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this,
+				Enemy.texture);
+		hitAreaTextureGood = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this,
+				hitAreaTexGoodStr);
+		hitAreaTextureBad = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this,
+				hitAreaTexBadStr);
+		texPause = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, texPauseStr);// TowerTest.loadSprite(getTextureManager(), this,
+																														// texPauseStr);
+		texPlay = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, texPlayStr);// TowerTest.loadSprite(getTextureManager(), this,
+																														// texPlayStr);
 		try {
-			this.mBitmapTextureAtlas.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 0, 0));
+			this.mBitmapTextureAtlas
+					.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 0, 0));
 			this.mBitmapTextureAtlas.load();
 		} catch (TextureAtlasBuilderException e) {
 			Debug.e(e);
@@ -284,7 +292,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	protected Scene onCreateScene() {
 		Log.i("Location:", "onCreateScene");
 		mEngine.registerUpdateHandler(new FPSLogger());
-		scene = new Scene();
+		scene = new PauseableScene();
 		// HUD does not move with camera, it is stationary
 		hud = new HUD();
 		// number of enemies remaining
@@ -352,9 +360,9 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		hud.attachChild(creditMask);
 
 		// Pause button
-		pauseButton = new ButtonSprite(TowerTest.CAMERA_WIDTH - 140, 20, texPause, texPlay, 
+		pauseButton = new ButtonSprite(TowerTest.CAMERA_WIDTH - 140, 20, texPause, texPlay,
 				getVertexBufferObjectManager(), pauseListener);
-		//pauseButton.setCurrentTileIndex(1);
+		// pauseButton.setCurrentTileIndex(1);
 		hud.attachChild(pauseButton);
 		hud.registerTouchArea(pauseButton);
 
@@ -704,32 +712,24 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	public void togglePauseGame() {
 		paused = !paused;
 		// freeze all bullets
-		//pauseButton.setCurrentTileIndex((pauseButton.getCurrentTileIndex() == 0) ? 1 : 0);		
+		// pauseButton.setCurrentTileIndex((pauseButton.getCurrentTileIndex() == 0) ? 1 : 0);
 		if (paused) {
-			// pauseButton
+			scene.setPaused(true);
+			// set it to the play button
 			pauseButton.setCurrentTileIndex(1);
-			for (int k = 0; k < arrayTower.size(); k++) {// iterate through the
-															// towers
-				final Tower tower = arrayTower.get(k);
-				tower.freezeBullets(scene);
-			}
-			for (int k = 0; k < arrayEn.size(); k++) {// iterate through the
-														// towers
-				final Enemy enemy = arrayEn.get(k);
-				enemy.freeze();
-			}
+			// scene.setChildScene(pChildScene, pModalDraw, pModalUpdate, pModalTouch)
+			/*
+			 * for (int k = 0; k < arrayTower.size(); k++) {// iterate through the // towers final Tower tower = arrayTower.get(k); tower.freezeBullets(scene); } for (int k =
+			 * 0; k < arrayEn.size(); k++) {// iterate through the // towers final Enemy enemy = arrayEn.get(k); enemy.freeze(); }
+			 */
 		} else {
+			scene.setPaused(false);
+			// set it to the pause button
 			pauseButton.setCurrentTileIndex(0);
-			for (int k = 0; k < arrayTower.size(); k++) {// iterate through the
-															// towers
-				final Tower tower = arrayTower.get(k);
-				tower.resumeBullets(scene, arrayEn, this);
-			}
-			for (int k = 0; k < arrayEn.size(); k++) {// iterate through the
-														// towers
-				final Enemy enemy = arrayEn.get(k);
-				enemy.startMoving(arrayEn, this);
-			}
+			/*
+			 * for (int k = 0; k < arrayTower.size(); k++) {// iterate through the // towers final Tower tower = arrayTower.get(k); tower.resumeBullets(scene, arrayEn, this);
+			 * } for (int k = 0; k < arrayEn.size(); k++) {// iterate through the // towers final Enemy enemy = arrayEn.get(k); enemy.startMoving(arrayEn, this); }
+			 */
 		}
 	}
 
