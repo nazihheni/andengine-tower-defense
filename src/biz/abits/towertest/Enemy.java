@@ -19,8 +19,7 @@ public class Enemy extends Sprite {
 	// I am Enemy class
 	private int health = 5000;
 	private static int credits = 10;
-	public static float speed = 50.0f; // movement speed (distance to move per
-										// update)
+	public static float speed = 50.0f; // movement speed (distance to move per update)
 	public static String texture = "enemy.png";
 	public Path path;
 	private PathModifier trajectory;
@@ -47,9 +46,14 @@ public class Enemy extends Sprite {
 		scene = sc;
 		level = plevel;
 	}
+	
+	public void createPath(Waypoint pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
+		path = new Path(Enemy.this, pEnd, pTmxlayer, level);
+	}
 
 	public void setPathandMove(Waypoint pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
-		path = new Path(Enemy.this, pEnd, pTmxlayer, level);
+		this.createPath(pEnd, myContext, pTmxlayer, arrayEn);
+		//path = new Path(Enemy.this, pEnd, pTmxlayer, level);
 		startMoving(arrayEn, myContext);
 	}
 
