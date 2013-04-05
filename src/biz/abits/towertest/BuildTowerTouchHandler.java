@@ -66,7 +66,6 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 	public BuildTowerTouchHandler(Tower bt, Scene s, long creds, ArrayList<Tower> al, TextureRegion hagtex,
 			TextureRegion habtex, TextureRegion btex, TextureRegion ttex, VertexBufferObjectManager vbom) { // Scene h,
 		scene = s;
-		// hud = h;
 		buildTower = bt;
 		arrayTower = al;
 		bulletTexture = btex;

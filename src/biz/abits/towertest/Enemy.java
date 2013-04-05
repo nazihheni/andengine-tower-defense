@@ -3,14 +3,10 @@ package biz.abits.towertest;
 import java.util.ArrayList;
 
 import org.andengine.entity.IEntity;
-import org.andengine.entity.modifier.MoveByModifier;
 import org.andengine.entity.modifier.PathModifier;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.extension.tmx.TMXLayer;
-import org.andengine.opengl.texture.TextureManager;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.BaseGameActivity;
@@ -27,10 +23,10 @@ public class Enemy extends Sprite {
 										// update)
 	public static String texture = "enemy.png";
 	public Path path;
-	private ExtendedPathModifier trajectory;
+	private PathModifier trajectory;
 	/** used to verify that the target hasn't died yet, makes sure that they don't get duplicate kill credit for more than one bullet hitting target and striking killing blow */
 	public boolean isAlive = true;
-	private Level level;
+	private final Level level;
 
 	Scene scene;
 
@@ -88,7 +84,7 @@ public class Enemy extends Sprite {
 	}
 
 	public Vector2 getPosition() {
-		return new Vector2(this.getX(), this.getY());
+		return new Vector2(getX(), getY());
 	}
 
 	public Vector2 getVelocity() {
@@ -104,32 +100,14 @@ public class Enemy extends Sprite {
 	}
 
 	public float getMidX() {
-		return this.getX() + this.getWidth() / 2;
+		return getX() + getWidth() / 2;
 	}
 
 	public float getMidY() {
-		return this.getY() + this.getHeight() / 2;
+		return getY() + getHeight() / 2;
 	}
-
-	public void freeze() {
-		this.unregisterEntityModifier(trajectory);
-		//trajectory.pauseModifier();
-	}
-
-	//public void resume(final BaseGameActivity myContext) {
-		//this.startMoving(this, myContext)
-		//trajectory.resumeModifier();
-	//}
 
 	public void startMoving(final ArrayList<Enemy> arrayEn, final BaseGameActivity myContext) {
-		float dY = 0;
-		float dX = TowerTest.CAMERA_WIDTH;
-		float dist = (float) Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2));
-		// D=r*t
-		// therefore t = D/r
-		// trajectory = new MoveByModifier(dist / Enemy.speed, dX, dY);
-		// this.registerEntityModifier(trajectory);
-
 		// convert our type of path we have to their type of path
 		org.andengine.entity.modifier.PathModifier.Path tempPath = new org.andengine.entity.modifier.PathModifier.Path(
 				path.A_Path.getLength());
@@ -137,37 +115,40 @@ public class Enemy extends Sprite {
 			tempPath = tempPath.to(TowerTest.getXFromCol(path.A_Path.getX(i)), TowerTest.getYFromRow(path.A_Path
 					.getY(i)));
 
-		trajectory = new ExtendedPathModifier(dist / Enemy.speed, tempPath);
-		trajectory.addModifierListener(new IModifierListener<IEntity>() {
+		// now find the total length of the path
+		final float dist = tempPath.getLength();
 
+		// D=r*t
+		// therefore t = D/r
+		trajectory = new PathModifier(dist / Enemy.speed, tempPath);
+		trajectory.addModifierListener(new IModifierListener<IEntity>() {
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) { // Do stuff here if you want to
-
 			}
 
 			@Override
 			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
 				myContext.getEngine().runOnUpdateThread(new Runnable() {
-
 					@Override
 					public void run() {
-						Enemy.this.scene.detachChild(Enemy.this);
-						// TODO add code here to subtract a life, since the enemy got through without dieing!
+						scene.detachChild(Enemy.this);
+						arrayEn.remove(Enemy.this);
+						//subtract a life
+						TowerTest.subtractLives(1);
 					}
 				}); // enemy takes damage
 			}
 		});
-
-		this.registerEntityModifier(trajectory);
+		registerEntityModifier(trajectory);
 	}
 
 	/** returns which column the enemy is in (between 0 for the first column, and 14 for the last column) */
 	public int getCol() {
-		return TowerTest.getColFromX(this.getX());
+		return TowerTest.getColFromX(getX());
 	}
 
 	/** returns which row the enemy is in (between 0 for the first row, and 6 for the last row) */
 	public int getRow() {
-		return TowerTest.getRowFromY(this.getY());
+		return TowerTest.getRowFromY(getY());
 	}
 }

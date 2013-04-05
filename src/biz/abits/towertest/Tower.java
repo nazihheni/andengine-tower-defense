@@ -11,9 +11,6 @@ import org.andengine.entity.sprite.Sprite;
 import org.andengine.extension.tmx.TMXProperties;
 import org.andengine.extension.tmx.TMXTile;
 import org.andengine.extension.tmx.TMXTileProperty;
-import org.andengine.opengl.texture.TextureManager;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.BaseGameActivity;
@@ -22,8 +19,6 @@ import org.andengine.util.debug.Debug;
 
 import com.badlogic.gdx.math.Vector2;
 
-import android.content.Context;
-import android.util.Log;
 
 /**
  * Basic Tower class contains it's own projectiles and provides methods for firing
@@ -127,15 +122,6 @@ public class Tower extends Sprite {
 			return true;
 		} else
 			return false;
-	}
-
-	/**
-	 * This function will remove all current bullets
-	 */
-	public void ceaseFire(Scene scene) {
-		for (int i = 0; i < arrayBullets.size(); i++) {
-			arrayBullets.get(i).stop(scene, arrayBullets);
-		}
 	}
 
 	public void fire(Enemy enemy, Scene scene, ArrayList<Enemy> arrayEn, BaseGameActivity myContext) {
@@ -260,17 +246,6 @@ public class Tower extends Sprite {
 	public long sell() {
 		total--;
 		return credits;
-	}
-
-	/**
-	 * This checks through all the bullets that the tower has, to make sure any non-moving bullets get erased
-	 * 
-	 * @param scene
-	 */
-	public void checkBullets(Scene scene) {
-		for (int i = 0; i < arrayBullets.size(); i++)
-			if (arrayBullets.get(i).isDone())
-				arrayBullets.get(i).stop(scene, arrayBullets);
 	}
 
 	/**
@@ -432,24 +407,6 @@ public class Tower extends Sprite {
 	 */
 	public float maxRange() {
 		return this.towerRangeGood.getHeight() / 2.f;
-	}
-
-	/**
-	 * responsible for freezing any bullets when the game is paused
-	 */
-	public void freezeBullets(Scene scene) {
-		for (int i = 0; i < arrayBullets.size(); i++) {
-			arrayBullets.get(i).freeze();
-		}
-	}
-
-	/**
-	 * responsible for making any bullets start moving again when the game is un-paused
-	 */
-	public void resumeBullets(Scene scene, ArrayList<Enemy> arrayEn, BaseGameActivity myContext) {
-		for (int i = 0; i < arrayBullets.size(); i++) {
-			arrayBullets.get(i).shoot(arrayEn, myContext);
-		}
 	}
 
 	public Vector2 getPosition() {

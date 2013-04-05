@@ -64,6 +64,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	// I am Main class//
 	// TODO use accelerometer to pan screen around
 	// TODO Use SpriteBatch class for bullets, enemies, towers.
+	// TODO make compatible with OUYA
 
 	// For Snapping tower to a grid
 	public static boolean enableSnap = true;
@@ -101,11 +102,11 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	public static TMXTiledMap mTMXTiledMap;
 	private ButtonSprite pauseButton;
 
-	Waypoint lStarts[] = { new Waypoint(-1, 0) }; // define where the enemies will start at (can be 1 block off the map, and still be good)
-	Waypoint lEnds[] = { new Waypoint(15, 3) }; // define where the enemies will end at (can be 1 block off the map, and still be good)
-	int[] waves = { 1, 2, 5, 10, 20, 40, 80, 160, 320, 640 };
+	static Waypoint lStarts[] = { new Waypoint(-1, 1) }; // define where the enemies will start at (can be 1 block off the map, and still be good)
+	static Waypoint lEnds[] = { new Waypoint(15, 1) }; // define where the enemies will end at (can be 1 block off the map, and still be good)
+	static int[] waves = { 80, 2, 5, 10, 20, 40, 80, 160, 320, 640 };
 
-	private final Level currentLevel = new Level(waves, lStarts, lEnds);
+	public final static Level currentLevel = new Level(waves, lStarts, lEnds);
 
 	// ========================================
 	// Tower in Arrays
@@ -163,8 +164,13 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	final FPSCounter fpsCounter = new FPSCounter();
 	Text fpsText;
 	static Text creditText;
+	static Text livesText;
+	static Rectangle creditMask;
+	static Rectangle livesMask;
 	static long credits;
+	static long lives;
 	final long initialCredits = 3000;
+	final long initialLives = 30;
 	private BuildableBitmapTextureAtlas mBitmapTextureAtlas;
 	// TODO Jared made this bigger, because it's tiny size made it difficult to
 	// test
@@ -356,24 +362,31 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		hud.attachChild(fpsMask);
 		fpsText = new Text(CAMERA_WIDTH - 100, 20, font20, "FPS:", "FPS: xxx.xx".length(),
 				getVertexBufferObjectManager());
-		final Rectangle creditMask = makeColoredRectangle(20, 20, 40, 100, .8f, .8f, .8f, 1f);
+		creditMask = makeColoredRectangle(20, 20, 40, 100, .8f, .8f, .8f, 1f);
 		hud.attachChild(creditMask);
 
 		// Pause button
-		pauseButton = new ButtonSprite(TowerTest.CAMERA_WIDTH - 140, 20, texPause, texPlay,
+		pauseButton = new ButtonSprite(TowerTest.CAMERA_WIDTH - 180, 20, texPause, texPlay,
 				getVertexBufferObjectManager(), pauseListener);
 		// pauseButton.setCurrentTileIndex(1);
 		hud.attachChild(pauseButton);
 		hud.registerTouchArea(pauseButton);
 
 		creditText = new Text(20, 20, font40, "$", 12, getVertexBufferObjectManager());
+		livesText = new Text(20, 30 + creditText.getHeight(), font40, "", 12, getVertexBufferObjectManager());
+		livesMask = makeColoredRectangle(20, 30 + creditText.getHeight(), 40, 100, .8f, .8f, .8f, 1f);
+		hud.attachChild(livesMask);
 
 		// final Entity rectangleGroup = new Entity(CAMERA_WIDTH / 2,
 		// CAMERA_HEIGHT / 2); //group shapes together
 
 		// Initialize the credits they have to display it at first
 		credits = initialCredits;
-		creditText.setText("$" + credits);
+		addCredits(0); // initialize the value
+
+		lives = initialLives;
+		subtractLives(0); // initialize the value
+
 		// maybe use this for HUD
 		/*
 		 * scene.registerUpdateHandler(new TimerHandler(1 / 10.0f, true, new ITimerCallback() {
@@ -387,6 +400,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		// scene.attachChild(creditText);
 		hud.attachChild(fpsText);
 		hud.attachChild(creditText);
+		hud.attachChild(livesText);
 
 		// TODO setup build buttons in HUD
 
@@ -533,15 +547,25 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	public static void addCredits(long enCredits) {
 		credits += enCredits;
 		creditText.setText("$" + credits);
+		creditMask.setWidth(creditText.getWidth());
 		// update screen to reflect new score
+	}
+
+	public static void subtractLives(long pLives) {
+		lives -= pLives;
+		if (lives < 0) {
+			lives = 0;
+		}
+		livesText.setText(lives + " lives");
+		livesMask.setWidth(livesText.getWidth());
 	}
 
 	// break this all out to a wave class, also use SpriteBatch
 	int currentWaveNum = 0;
 	int currentEnemyCount = 0;
 	int currentDelayBetweenWaves = 0;
-	final float delay = 3f; // delay between adding enemies
-	final int delayBetweenWaves = 5;
+	final float delay = 4; // delay between adding enemies
+	final int delayBetweenWaves = 3;
 	TimerHandler enemy_handler;
 
 	public void add_enemy(VertexBufferObjectManager vbom) {
@@ -711,26 +735,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 
 	public void togglePauseGame() {
 		paused = !paused;
-		// freeze all bullets
-		// pauseButton.setCurrentTileIndex((pauseButton.getCurrentTileIndex() == 0) ? 1 : 0);
-		if (paused) {
-			scene.setPaused(true);
-			// set it to the play button
-			pauseButton.setCurrentTileIndex(1);
-			// scene.setChildScene(pChildScene, pModalDraw, pModalUpdate, pModalTouch)
-			/*
-			 * for (int k = 0; k < arrayTower.size(); k++) {// iterate through the // towers final Tower tower = arrayTower.get(k); tower.freezeBullets(scene); } for (int k =
-			 * 0; k < arrayEn.size(); k++) {// iterate through the // towers final Enemy enemy = arrayEn.get(k); enemy.freeze(); }
-			 */
-		} else {
-			scene.setPaused(false);
-			// set it to the pause button
-			pauseButton.setCurrentTileIndex(0);
-			/*
-			 * for (int k = 0; k < arrayTower.size(); k++) {// iterate through the // towers final Tower tower = arrayTower.get(k); tower.resumeBullets(scene, arrayEn, this);
-			 * } for (int k = 0; k < arrayEn.size(); k++) {// iterate through the // towers final Enemy enemy = arrayEn.get(k); enemy.startMoving(arrayEn, this); }
-			 */
-		}
+		pauseButton.setCurrentTileIndex((paused) ? 1 : 0);
+		scene.setPaused(paused);
 	}
 
 	public static TextureRegion loadSprite(TextureManager tm, Context c, String strtex) {

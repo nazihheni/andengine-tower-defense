@@ -6,19 +6,11 @@ import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.MoveByModifier;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
-import org.andengine.opengl.texture.TextureManager;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.util.modifier.IModifier;
 import org.andengine.util.modifier.IModifier.IModifierListener;
-
-import android.content.Context;
-import android.util.Log;
-//TODO clean up for use in Tower Class
-//TODO extend GenericPool https://jimmaru.wordpress.com/2012/05/19/jimvaders-my-own-invaders-clone-thingie-tutorial/ or make spritebatch or both
 
 public class Projectile extends Sprite {
 	// I am Enemy class
@@ -51,100 +43,25 @@ public class Projectile extends Sprite {
 	}
 
 	public void shoot(final ArrayList<Enemy> arrayEn, final BaseGameActivity myContext) {
-		boolean hadError = false;
-
 		// to predict where the enemy will be, we need a parametric equation for
 		// the enemy's position
-		// Xt = Xo+Enemy.speed*t
-		// (1)
-		// Pt =
-
-		double dY;
-		double dX;
-		/*
-		 * double d0 = source.distanceTo(target); dY = target.getMidY() - source.getMidY();//vertical distance from tower to enemy //Enemy.speed; //Projectile.speed;
-		 * 
-		 * 
-		 * //This solves for how long it will take until the bullet hits the target double t1 = ( (Math.sqrt(Math.pow(Projectile.speed,2) * Math.pow(d0, 2) - Math.pow(dY, 2) *
-		 * Math.pow(Enemy.speed,2)) - Math.sqrt(Math.pow(d0, 2) - Math.pow(dY, 2)) * Enemy.speed) / ( Math.pow(Projectile.speed,2) - Math.pow(Enemy.speed, 2) ) ); double t2 =
-		 * ( -(Math.sqrt(Math.pow(Projectile.speed,2) * Math.pow(d0, 2) - Math.pow(dY, 2) * Math.pow(Enemy.speed,2)) + Math.sqrt(Math.pow(d0, 2) - Math.pow(dY, 2)) *
-		 * Enemy.speed) / ( Math.pow(Projectile.speed,2) - Math.pow(Enemy.speed, 2) ) ); dX = Math.sqrt(Math.pow(Math.sqrt(t1 - Math.sqrt(Math.pow(d0, 2)-Math.pow(dY,
-		 * 2))),2)+Math.pow(dY, 2));
-		 * 
-		 * t1 = (Math.sqrt((Math.pow(Projectile.speed,2) * Math.pow(d0, 2)) - (Math.pow(dY, 2) * Math.pow(Enemy.speed,2))) - Math.sqrt(Math.pow(d0, 2) - (Math.pow(dY, 2)) *
-		 * Enemy.speed)) / ( Math.pow(Projectile.speed,2) - Math.pow(Enemy.speed, 2) ) ; //dX = Math.sqrt(Math.pow(Math.sqrt(t1 - Math.sqrt(Math.pow(d0, 2)-Math.pow(dY,
-		 * 2))),2)+Math.pow(dY, 2)); dX = Enemy.speed*t1 - Math.sqrt( Math.pow(d0, 2)-Math.pow(dY, 2) );
-		 * 
-		 * t2 = 0;
-		 * 
-		 * 
-		 * 
-		 * Log.e("Jared","t1 "+t1); Log.e("Jared","t2 "+t2);
-		 */
-
-		/*
-		 * Vector2 totarget = target.getPosition().add(source.getPosition()); float a = target.getVelocity().dot(target.getVelocity()) - (Projectile.speed * Projectile.speed);
-		 * float b = 2 * target.getVelocity().dot(totarget); float c = totarget.dot(totarget); float p = -b / (2 * a); float q = (float)Math.sqrt((b * b) - 4 * a * c) / (2 *
-		 * a); float t1 = p - q; float t2 = p + q; float t; if (t1 > t2 && t2 > 0) { t = t2; } else { t = t1; } Vector2 aimSpot =
-		 * target.getPosition().add(target.getVelocity().mul(t)); Vector2 bulletPath = aimSpot.sub(source.getPosition()); float timeToImpact = bulletPath.len() /
-		 * Projectile.speed;//speed must be in units per second
-		 */
-
-		// old code
-		// float dY = target.getMidY() - this.getMidY(); // some calc about how
-		// far the bullet can go, in this case up to the enemy
-		// float dX = target.getMidX() -
-		// this.getMidX();//+(Math.abs(gY)/Enemy.speed/Projectile.speed);
-		// dY = aimSpot.y;
-		// dX = aimSpot.x;
-		dY = target.getMidY() - this.getMidY();
-		dX = target.getMidX() - this.getMidX();
-
-		double a = target.getXSpeed() * target.getXSpeed() + target.getYSpeed() * target.getYSpeed() - Projectile.speed
-				* Projectile.speed;
-		double b = 2 * (target.getXSpeed() * dX + target.getYSpeed() * dY);
-		double c = dX * dX + dY * dY;
-
-		// Check we're not breaking into complex numbers
-		double q = b * b - 4 * a * c;
-		if (q < 0) {
-			dY = target.getMidY() - this.getMidY();
-			dX = target.getMidX() - this.getMidX();
-			Log.e("TowerTest", "Projectile.shoot() could not target!");
-			hadError = true;
-		} else {
-		}
-
-		// The time that we will hit the target
-		double t = ((a < 0 ? -1 : 1) * Math.sqrt(q) - b) / (2 * a);
-
-		// Aim for where the target will be after time t
-		dX = t * target.getXSpeed();
-		dY = t * target.getYSpeed();
-		double theta = Math.atan2(dY, dX);
-
-		/*
-		 * if (dY>0 && dX>0) { }else if (dY>0 && dX>0) { }else if (dY>0 && dX>0) { }else if (dY>0 && dX>0) { }
-		 */
-
-		// bullet.hitPoint = new Point(targ.x + targ.vx * t, targ.y + targ.vy *
-		// t);
-		dX = t * Projectile.speed * Math.cos(theta);
-		dY = t * Projectile.speed * Math.sin(theta);
-
-		dY = target.getMidY() - this.getMidY();
-		// dX = (target.getMidX() - this.getMidX())/Math.abs(target.getMidX() -
-		// this.getMidX())*dX;
-
-		float dist = (float) Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2));
+		final double y0 = target.getMidY() - getMidY(); // starting y distance to target
+		final double x0 = getMidX() - target.getMidX(); // starting x distance to target
+		final double d0 = Math.sqrt(Math.pow(x0, 2) + Math.pow(y0, 2)); // starting distance
+		// this quadratic equation is based on the law of cosines, just FYI
+		final double a = Math.pow(Enemy.speed, 2) - Math.pow(Projectile.speed, 2);
+		final double b = -2 * Enemy.speed * x0;
+		final double c = Math.pow(d0, 2);
+		final double t = (-b - Math.sqrt(Math.pow(b, 2) - 4 * a * c)) / (2 * a); // quadratic formula wee!
+		final double dist = Projectile.speed * t;
 		// D=r*t
 		// therefore t = D/r
-		trajectory = new MoveByModifier(dist / Projectile.speed, (float) dX, (float) dY);
+		trajectory = new MoveByModifier((float) (dist / Projectile.speed),
+				(float) ((Enemy.speed * t + target.getMidX()) - getMidX()), (target.getMidY() - getMidY()));
 		trajectory.addModifierListener(new IModifierListener<IEntity>() {
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
 				// Do stuff here if you want to
-
 			}
 
 			@Override
@@ -152,7 +69,7 @@ public class Projectile extends Sprite {
 				myContext.getEngine().runOnUpdateThread(new Runnable() {
 					@Override
 					public void run() {
-						Projectile.this.scene.detachChild(Projectile.this); // When else should we remove bullets? Check its range?
+						scene.detachChild(Projectile.this); // When else should we remove bullets? Check its range?
 					}
 				});
 				source.removeBullet(Projectile.this);
@@ -161,11 +78,10 @@ public class Projectile extends Sprite {
 					if (target.isAlive) {
 						target.isAlive = false;
 						TowerTest.addCredits(target.getCredits());
-
 						myContext.getEngine().runOnUpdateThread(new Runnable() {
 							@Override
 							public void run() {
-								Projectile.this.scene.detachChild(target);
+								scene.detachChild(target);
 							}
 						});
 						arrayEn.remove(target);
@@ -175,47 +91,14 @@ public class Projectile extends Sprite {
 				}
 			}
 		});
-
-		this.registerEntityModifier(trajectory);
-		if (!hadError) {
-			/*
-			 * Log.e("Jared","dx "+dX); //Log.e("Jared","dy "+dY); Log.e("Jared","theta "+theta);
-			 */
-		}
-	}
-
-	/**
-	 * Stops this bullet if it is in motion still
-	 */
-	public void stop(Scene scene, ArrayList<Projectile> arrayBullets) {
-		this.unregisterEntityModifier(trajectory);
-		scene.detachChild(this);
-		arrayBullets.remove(this);
-	}
-
-	public void freeze() {
-		this.unregisterEntityModifier(trajectory);
-	}
-
-	/**
-	 * Tells you if the bullet has reached the end of it's trajectory
-	 * 
-	 * @return
-	 */
-	public boolean isDone() {
-		return this.trajectory.isFinished();
-		// return (targetX == x && targetY == y);
+		registerEntityModifier(trajectory);
 	}
 
 	public float getMidX() {
-		return this.getX() + this.getWidth() / 2;
+		return getX() + getWidth() / 2;
 	}
 
 	public float getMidY() {
-		return this.getY() + this.getHeight() / 2;
-	}
-
-	public Enemy getTarget() {
-		return target;
+		return getY() + getHeight() / 2;
 	}
 }
