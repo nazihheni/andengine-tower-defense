@@ -51,9 +51,14 @@ public class Enemy extends Sprite {
 		scene = sc;
 		level = plevel;
 	}
+	
+	public void createPath(Waypoint pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
+		path = new Path(Enemy.this, pEnd, pTmxlayer, level);
+	}
 
 	public void setPathandMove(Waypoint pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
-		path = new Path(Enemy.this, pEnd, pTmxlayer, level);
+		this.createPath(pEnd, myContext, pTmxlayer, arrayEn);
+		//path = new Path(Enemy.this, pEnd, pTmxlayer, level);
 		startMoving(arrayEn, myContext);
 	}
 

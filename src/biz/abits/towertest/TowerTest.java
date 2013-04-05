@@ -50,6 +50,7 @@ import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
+import org.andengine.util.algorithm.path.astar.AStarPathFinder;
 import org.andengine.util.debug.Debug;
 
 import android.content.Context;
@@ -101,11 +102,11 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	public static TMXTiledMap mTMXTiledMap;
 	private ButtonSprite pauseButton;
 
-	Waypoint lStarts[] = { new Waypoint(-1, 0) }; // define where the enemies will start at (can be 1 block off the map, and still be good)
-	Waypoint lEnds[] = { new Waypoint(15, 3) }; // define where the enemies will end at (can be 1 block off the map, and still be good)
-	int[] waves = { 1, 2, 5, 10, 20, 40, 80, 160, 320, 640 };
+	static Waypoint lStarts[] = { new Waypoint(-1, 0) }; // define where the enemies will start at (can be 1 block off the map, and still be good)
+	static Waypoint lEnds[] = { new Waypoint(15, 3) }; // define where the enemies will end at (can be 1 block off the map, and still be good)
+	static int[] waves = { 1, 2, 5, 10, 20, 40, 80, 160, 320, 640 };
 
-	private final Level currentLevel = new Level(waves, lStarts, lEnds);
+	public static Level currentLevel = new Level(waves, lStarts, lEnds);
 
 	// ========================================
 	// Tower in Arrays
@@ -135,6 +136,14 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	final String texPauseStr = "pause.png";
 	final String texPlayStr = "play.png";
 	Enemy enemy;
+	public static Enemy enemyClone;
+	VertexBufferObjectManager vbom;
+	public static AStarPathFinder<Enemy> finder;
+	public static int pColMin = -1;
+	public static int pRowMin = -1;
+	public static int pColMax;
+	public static int pRowMax;
+	public static boolean allowDiagonal = false;
 	ArrayList<Enemy> arrayEn;
 
 	// ========================================
@@ -169,6 +178,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	// TODO Jared made this bigger, because it's tiny size made it difficult to
 	// test
 	static boolean paused = false;
+	Level level;
 
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -325,6 +335,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		}
 
 		tmxLayer = TowerTest.mTMXTiledMap.getTMXLayers().get(0);
+		pColMax = tmxLayer.getTileColumns() - 1 + 1;
+		pRowMax = tmxLayer.getTileRows() - 1 + 1;
 		// tmxTileProperty =
 		// this.mTMXTiledMap.getTMXTilePropertiesByGlobalTileID(0));
 		scene.attachChild(tmxLayer);
@@ -397,7 +409,12 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		// arrayBullet = new ArrayList<Sprite>(); //useless // we have array of
 		// bullets in Tower class
 		arrayEn = new ArrayList<Enemy>();
-
+		final VertexBufferObjectManager tvbom = vbom;
+		finder = new AStarPathFinder<Enemy>();
+		enemyClone = new Enemy(getXFromCol(currentLevel.startLoc[0].x), getXFromCol(currentLevel.startLoc[0].y), 
+				96, 96, enTexture, tvbom, currentLevel, scene);
+		enemyClone.createPath(currentLevel.endLoc[0], this, tmxLayer, arrayEn);
+		
 		Log.i("Location:", "registerUpdateHandler");
 		scene.registerUpdateHandler(hudLoop);
 		// hud.setOnSceneTouchListener(this); //TODO enable these two lines
@@ -418,7 +435,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		// hud.setTouchAreaBindingEnabled(true);
 
 		final BuildTowerTouchHandler btth = new BuildTowerTouchHandler(buildBasicTower, scene, credits, arrayTower,
-				hitAreaTextureGood, hitAreaTextureBad, bulletTexture, towerTexture, self.getVertexBufferObjectManager());
+				hitAreaTextureGood, hitAreaTextureBad, bulletTexture, towerTexture, level, arrayEn, self.getVertexBufferObjectManager());
 		hud.setOnAreaTouchListener(btth);
 		// scene.setOnAreaTouchListener(btth);
 
@@ -555,13 +572,12 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					final Random a = new Random();
 					// int x = a.nextInt(CAMERA_WIDTH-60)+20;
 					// int y = a.nextInt(CAMERA_HEIGHT-60)+20;
-
 					if (currentLevel.wave[currentWaveNum] > currentEnemyCount) {
 						Log.i("waveProg", "enemy " + currentEnemyCount + "/" + currentLevel.wave[currentWaveNum]
 								+ " of wave " + currentWaveNum);
 						// TODO fix the last argument here and make startLoc compatible with multiple starting locations
-						enemy = new Enemy(TowerTest.getXFromCol(currentLevel.startLoc[0].x), TowerTest
-								.getXFromCol(currentLevel.startLoc[0].y), 96, 96, enTexture, tvbom, currentLevel, scene);
+						enemy = new Enemy(getXFromCol(currentLevel.startLoc[0].x), getXFromCol(currentLevel.startLoc[0].y), 
+								96, 96, enTexture, tvbom, currentLevel, scene);
 						enemy.setPathandMove(currentLevel.endLoc[0], TowerTest.this, tmxLayer, arrayEn);
 						// TODO make it assign which end location based on the wave
 						scene.attachChild(enemy);

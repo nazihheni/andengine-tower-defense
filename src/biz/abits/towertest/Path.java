@@ -25,7 +25,6 @@ public class Path {
 	public ArrayList<Waypoint> waypoints;
 	Iterator<Waypoint> iterator;
 	public org.andengine.util.algorithm.path.Path A_Path;
-	private AStarPathFinder<Enemy> finder;
 	private Waypoint end;
 	private Level level;
 
@@ -167,16 +166,10 @@ public class Path {
 	IAStarHeuristic<Enemy> Heuristic = new NullHeuristic<Enemy>();
 
 	private void findPath() {
-		int pColMin = -1;
-		int pRowMin = -1;
-		int pColMax = tmxlayer.getTileColumns() - 1 + 1;
-		int pRowMax = tmxlayer.getTileRows() - 1 + 1;
-		boolean allowDiagonal = false;
-
+		
 		// coords
-		finder = new AStarPathFinder<Enemy>();
-		A_Path = finder.findPath(PathMap, pColMin, pRowMin, pColMax, pRowMax, enemy, enemy.getCol(), enemy.getRow(),
-				end.x, end.y, allowDiagonal, Heuristic, CostCallback);
+		A_Path = TowerTest.finder.findPath(PathMap, TowerTest.pColMin, TowerTest.pRowMin, TowerTest.pColMax, TowerTest.pRowMax, enemy, enemy.getCol(), enemy.getRow(),
+				end.x, end.y, TowerTest.allowDiagonal, Heuristic, CostCallback);
 
 		/*
 		 * float dY = target.getMidY() - this.getMidY(); // some calc about how far the bullet can go, in this case up to the enemy float dX = target.getMidX() -

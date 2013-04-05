@@ -39,7 +39,9 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 	boolean showHitArea;
 	boolean currentlyDragging = false;
 	Tower tw;
+	Path path;
 	Scene scene;
+	Level level;
 	// Scene hud;
 	// float touchX, touchY;
 	Tower buildTower;
@@ -48,6 +50,7 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 	TextureRegion towerTexture;
 	TextureRegion hitAreaTextureGood;
 	TextureRegion hitAreaTextureBad;
+	ArrayList<Enemy> arrayEn;
 	VertexBufferObjectManager tvbom;
 
 	/**
@@ -64,7 +67,7 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 	 * @param habtex TextureRegion for tower
 	 */
 	public BuildTowerTouchHandler(Tower bt, Scene s, long creds, ArrayList<Tower> al, TextureRegion hagtex,
-			TextureRegion habtex, TextureRegion btex, TextureRegion ttex, VertexBufferObjectManager vbom) { // Scene h,
+			TextureRegion habtex, TextureRegion btex, TextureRegion ttex, Level pLevel, ArrayList<Enemy> pArrayEn, VertexBufferObjectManager vbom) { // Scene h,
 		scene = s;
 		// hud = h;
 		buildTower = bt;
@@ -74,6 +77,9 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 		tvbom = vbom;
 		hitAreaTextureGood = hagtex;
 		hitAreaTextureBad = habtex;
+		level = pLevel;
+		arrayEn = pArrayEn;
+		
 	}
 
 	@Override
@@ -98,7 +104,40 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 				float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
 				float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
 				final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
+				int backupTileID = tmxTile.getGlobalTileID();
+
 				tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, 31);
+				//crazy loop action
+				for(Enemy enemy:arrayEn) {
+					//if the tower is on this enemy's path, then, check if the enemy can find a new one
+					if (enemy.path.A_Path.contains(TowerTest.getColFromX(newX), TowerTest.getRowFromY(newY))) {
+						scene.detachChild(tw);
+						//only then, should we check pathfinding!
+						path = new Path(enemy, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, level);
+						if (path == null) {
+							//they can't put it here!
+							scene.detachChild(tw);
+							arrayTower.remove(tw);
+							tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, backupTileID);
+						} else {
+							enemy.path = path;
+						}
+					}
+				}
+				//also, check the starting points!
+				if (TowerTest.enemyClone.path.A_Path.contains(TowerTest.getColFromX(newX), TowerTest.getColFromX(newY))) {
+					path = new Path(TowerTest.enemyClone, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, level);
+					if (path == null) {
+						//they can't put it here!
+						scene.detachChild(tw);
+						arrayTower.remove(tw);
+						tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, backupTileID);
+					} else {
+						TowerTest.enemyClone.path = path;
+					}
+				}
+			//TODO add logic to not subtract credits if removed!!!!!!!
+				
 				// remove the credits, since we're placing it here
 				TowerTest.addCredits(-buildTower.getCredits());
 				Log.e("Jared", "getCol:" + tw.getCol());
@@ -189,7 +228,6 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 						}
 					}
 				}; // end of tower definition
-
 				tw.checkClearSpotAndPlace(scene, newX, newY);
 				tw.setHitAreaShown(scene, true);
 				arrayTower.add(tw); // add to array
