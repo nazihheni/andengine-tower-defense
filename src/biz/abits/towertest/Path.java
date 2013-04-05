@@ -135,6 +135,13 @@ public class Path {
 				}
 			} catch (Exception e) { // this happens when it's drug off the map
 				// its broken! (can't get the value)
+
+				
+				
+				//TODO this next line crashes, I'm pretty sure it's because level.endLoc is undefined somehow????
+				
+				
+				
 				for (int i = 0; i < level.endLoc.length; i++) {
 					if ((pX == level.endLoc[i].x) && (pY == level.endLoc[i].y)) {
 						return false;

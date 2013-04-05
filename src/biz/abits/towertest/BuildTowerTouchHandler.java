@@ -110,7 +110,6 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 				for(Enemy enemy:arrayEn) {
 					//if the tower is on this enemy's path, then, check if the enemy can find a new one
 					if (enemy.path.A_Path.contains(TowerTest.getColFromX(newX), TowerTest.getRowFromY(newY))) {
-						scene.detachChild(tw);
 						//only then, should we check pathfinding!
 						path = new Path(enemy, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, level);
 						if (path == null) {
