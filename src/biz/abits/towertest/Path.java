@@ -13,6 +13,8 @@ import org.andengine.util.algorithm.path.astar.AStarPathFinder;
 import org.andengine.util.algorithm.path.astar.IAStarHeuristic;
 import org.andengine.util.algorithm.path.astar.NullHeuristic;
 
+import android.util.Log;
+
 /**
  * Path is a list of waypoints used to travel The ArrayList waypoints is public and can be access directly
  * 
@@ -136,12 +138,8 @@ public class Path {
 			} catch (Exception e) { // this happens when it's drug off the map
 				// its broken! (can't get the value)
 
-				
-				
-				//TODO this next line crashes, I'm pretty sure it's because level.endLoc is undefined somehow????
-				
-				
-				
+				// TODO this next line crashes, I'm pretty sure it's because level.endLoc is undefined somehow????
+
 				for (int i = 0; i < level.endLoc.length; i++) {
 					if ((pX == level.endLoc[i].x) && (pY == level.endLoc[i].y)) {
 						return false;
@@ -173,10 +171,11 @@ public class Path {
 	IAStarHeuristic<Enemy> Heuristic = new NullHeuristic<Enemy>();
 
 	private void findPath() {
-		
+
 		// coords
-		A_Path = TowerTest.finder.findPath(PathMap, TowerTest.pColMin, TowerTest.pRowMin, TowerTest.pColMax, TowerTest.pRowMax, enemy, enemy.getCol(), enemy.getRow(),
-				end.x, end.y, TowerTest.allowDiagonal, Heuristic, CostCallback);
+		A_Path = TowerTest.finder.findPath(PathMap, TowerTest.pColMin, TowerTest.pRowMin, TowerTest.pColMax,
+				TowerTest.pRowMax, enemy, enemy.getCol(), enemy.getRow(), end.x, end.y, TowerTest.allowDiagonal,
+				Heuristic, CostCallback);
 
 		/*
 		 * float dY = target.getMidY() - this.getMidY(); // some calc about how far the bullet can go, in this case up to the enemy float dX = target.getMidX() -
@@ -184,20 +183,41 @@ public class Path {
 		 * trajectory = new MoveByModifier(dist/Projectile.speed, dX, dY); this.registerEntityModifier(trajectory);
 		 */
 	}
-	
-	public boolean isOnPath(int pX, int pY){
-		for (int i = 0; i < A_Path.getLength() - 1; i++){
-			//Vertical
-			if(A_Path.getX(i) == A_Path.getX(i+1)){
-				if(pX == A_Path.getX(i))
-					if((A_Path.getY(i) <= pY && A_Path.getY(i+1) >= pY) || ((A_Path.getY(i+1) <= pY) && A_Path.getY(i) >= pY))
+
+	public boolean isOnPath(int pX, int pY) {
+		for (int i = 0; i < A_Path.getLength() - 1; i++) { // flip through all the segments to check
+			if (A_Path.getX(i) == A_Path.getX(i + 1)) { // Vertical segment
+				if (pX == A_Path.getX(i))
+					if (((A_Path.getY(i) <= pY) && (pY <= A_Path.getY(i + 1)))
+							|| ((A_Path.getY(i + 1) <= pY) && (pY <= A_Path.getY(i)))) {
+						Log.e("Jared","I'm AM on the path");
 						return true;
-			} else {//Horizontal
-				//if(A_Path.getY(i) == A_Path.getY(i+1)){
-					if(pY == A_Path.getY(i))
-						if((A_Path.getX(i) <= pX && A_Path.getX(i+1) >= pX) || ((A_Path.getX(i+1) <= pX) && A_Path.getX(i) >= pX))
-							return true;
-				//}
+					}
+			} else { // Horizontal segment //if(A_Path.getY(i) == A_Path.getY(i+1)){
+				if (pY == A_Path.getY(i))
+					if (((A_Path.getX(i) <= pX) && (pX <= A_Path.getX(i + 1)))
+							|| ((A_Path.getX(i + 1) <= pX) && (pX <= A_Path.getX(i)))) {
+						Log.e("Jared","I'm AM on the path");
+						return true;
+					}
+			}
+		}
+		Log.e("Jared", "I'm NOT on the path");
+		for (int i = 0; i < A_Path.getLength() - 1; i++) { // flip through all the segments to check
+			if (A_Path.getX(i) == A_Path.getX(i + 1)) { // Vertical segment
+				if (pX == A_Path.getX(i))
+					if (((A_Path.getY(i) <= pY) && (pY <= A_Path.getY(i + 1)))
+							|| ((A_Path.getY(i + 1) <= pY) && (pY <= A_Path.getY(i)))) {
+						Log.e("Jared","I'm AM on the path");
+						return true;
+					}
+			} else { // Horizontal segment //if(A_Path.getY(i) == A_Path.getY(i+1)){
+				if (pY == A_Path.getY(i))
+					if (((A_Path.getX(i) <= pX) && (pX <= A_Path.getX(i + 1)))
+							|| ((A_Path.getX(i + 1) <= pX) && (pX <= A_Path.getX(i)))) {
+						Log.e("Jared","I'm AM on the path");
+						return true;
+					}
 			}
 		}
 		return false;

@@ -581,7 +581,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	int currentWaveNum = 0;
 	int currentEnemyCount = 0;
 	int currentDelayBetweenWaves = 0;
-	final float delay = 4; // delay between adding enemies
+	final float delay = 8; // delay between adding enemies
 	final int delayBetweenWaves = 3;
 	TimerHandler enemy_handler;
 
@@ -765,11 +765,12 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	}
 
 	public static int getColFromX(float pX) {
-		return Math.round(pX / mTMXTiledMap.getTileWidth());
+		
+		return (int) Math.floor(pX / mTMXTiledMap.getTileWidth());
 	}
 
 	public static int getRowFromY(float pY) {
-		return Math.round(pY / mTMXTiledMap.getTileHeight());
+		return (int) Math.floor(pY / mTMXTiledMap.getTileHeight());
 	}
 
 	public static float getXFromCol(int pC) {
