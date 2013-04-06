@@ -11,6 +11,7 @@ import org.andengine.extension.tmx.TMXTile;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
+import org.andengine.ui.activity.BaseGameActivity;
 
 import android.util.Log;
 
@@ -52,6 +53,8 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 	TextureRegion hitAreaTextureBad;
 	ArrayList<Enemy> arrayEn;
 	VertexBufferObjectManager tvbom;
+	BaseGameActivity myContext;
+
 
 	/**
 	 * Used to build a tower when dragged off of the HUD
@@ -67,7 +70,7 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 	 * @param habtex TextureRegion for tower
 	 */
 	public BuildTowerTouchHandler(Tower bt, Scene s, long creds, ArrayList<Tower> al, TextureRegion hagtex,
-			TextureRegion habtex, TextureRegion btex, TextureRegion ttex, Level pLevel, ArrayList<Enemy> pArrayEn, VertexBufferObjectManager vbom) { // Scene h,
+			TextureRegion habtex, TextureRegion btex, TextureRegion ttex, Level pLevel, ArrayList<Enemy> pArrayEn, BaseGameActivity pMyContext, VertexBufferObjectManager vbom) { // Scene h,
 		scene = s;
 		buildTower = bt;
 		arrayTower = al;
@@ -78,6 +81,7 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 		hitAreaTextureBad = habtex;
 		level = pLevel;
 		arrayEn = pArrayEn;
+		myContext = pMyContext;
 		
 	}
 
@@ -109,9 +113,9 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 				//crazy loop action
 				for(Enemy enemy:arrayEn) {
 					//if the tower is on this enemy's path, then, check if the enemy can find a new one
-					if (enemy.path.A_Path.contains(TowerTest.getColFromX(newX), TowerTest.getRowFromY(newY))) {
+					if (enemy.isOnPath(TowerTest.getColFromX(newX), TowerTest.getRowFromY(newY))) {
 						//only then, should we check pathfinding!
-						path = new Path(enemy, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, level);
+						path = new Path(enemy, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
 						if (path == null) {
 							//they can't put it here!
 							scene.detachChild(tw);
@@ -119,10 +123,14 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 							tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, backupTileID);
 						} else {
 							enemy.path = path;
+							enemy.stop();
+							enemy.setPathandMove(TowerTest.currentLevel.endLoc[0], myContext, TowerTest.tmxLayer, arrayEn);
 						}
 					}
+					
 				}
 				//also, check the starting points!
+				/*
 				if (TowerTest.enemyClone.path.A_Path.contains(TowerTest.getColFromX(newX), TowerTest.getColFromX(newY))) {
 					path = new Path(TowerTest.enemyClone, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, level);
 					if (path == null) {
@@ -134,6 +142,7 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 						TowerTest.enemyClone.path = path;
 					}
 				}
+				*/
 			//TODO add logic to not subtract credits if removed!!!!!!!
 				
 				// remove the credits, since we're placing it here

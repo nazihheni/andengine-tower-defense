@@ -49,6 +49,7 @@ import org.andengine.opengl.texture.atlas.buildable.builder.ITextureAtlasBuilder
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
+import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.algorithm.path.astar.AStarPathFinder;
 import org.andengine.util.debug.Debug;
@@ -184,7 +185,6 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	// TODO Jared made this bigger, because it's tiny size made it difficult to
 	// test
 	static boolean paused = false;
-	Level level;
 
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -447,9 +447,9 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		hud.registerTouchArea(buildBasicTower); // register touch area , so this
 												// allows you to drag it
 		// hud.setTouchAreaBindingEnabled(true);
-
 		final BuildTowerTouchHandler btth = new BuildTowerTouchHandler(buildBasicTower, scene, credits, arrayTower,
-				hitAreaTextureGood, hitAreaTextureBad, bulletTexture, towerTexture, level, arrayEn, self.getVertexBufferObjectManager());
+				hitAreaTextureGood, hitAreaTextureBad, bulletTexture, towerTexture, currentLevel, arrayEn, this, self.getVertexBufferObjectManager());
+
 		hud.setOnAreaTouchListener(btth);
 		// scene.setOnAreaTouchListener(btth);
 
