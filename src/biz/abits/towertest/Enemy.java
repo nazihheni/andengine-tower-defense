@@ -61,25 +61,6 @@ public class Enemy extends Sprite {
 		this.unregisterEntityModifier(trajectory);		
 	}
 	
-	public boolean isOnPath(int pX, int pY){
-		for (int i = 0; i < path.A_Path.getLength() - 1; i++){
-			//Vertical
-			if(path.A_Path.getX(i) == path.A_Path.getX(i+1)){
-				if(pX == path.A_Path.getX(i))
-					if((path.A_Path.getY(i) <= pY && path.A_Path.getY(i+1) >= pY) || ((path.A_Path.getY(i+1) <= pY) && path.A_Path.getY(i) >= pY))
-						return true;
-			} else {//Horizontal
-				//if(path.A_Path.getY(i) == path.A_Path.getY(i+1)){
-					if(pY == path.A_Path.getY(i))
-						if((path.A_Path.getX(i) <= pX && path.A_Path.getX(i+1) >= pX) || ((path.A_Path.getX(i+1) <= pX) && path.A_Path.getX(i) >= pX))
-							return true;
-				//}
-			}
-		}
-		return false;
-	}
-
-
 	/**
 	 * Deal damage to the enemy, modified by type <br>
 	 * 

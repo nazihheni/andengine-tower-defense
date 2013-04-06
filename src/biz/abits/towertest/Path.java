@@ -184,4 +184,22 @@ public class Path {
 		 * trajectory = new MoveByModifier(dist/Projectile.speed, dX, dY); this.registerEntityModifier(trajectory);
 		 */
 	}
+	
+	public boolean isOnPath(int pX, int pY){
+		for (int i = 0; i < A_Path.getLength() - 1; i++){
+			//Vertical
+			if(A_Path.getX(i) == A_Path.getX(i+1)){
+				if(pX == A_Path.getX(i))
+					if((A_Path.getY(i) <= pY && A_Path.getY(i+1) >= pY) || ((A_Path.getY(i+1) <= pY) && A_Path.getY(i) >= pY))
+						return true;
+			} else {//Horizontal
+				//if(A_Path.getY(i) == A_Path.getY(i+1)){
+					if(pY == A_Path.getY(i))
+						if((A_Path.getX(i) <= pX && A_Path.getX(i+1) >= pX) || ((A_Path.getX(i+1) <= pX) && A_Path.getX(i) >= pX))
+							return true;
+				//}
+			}
+		}
+		return false;
+	}
 }
