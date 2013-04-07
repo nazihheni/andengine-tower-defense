@@ -7,6 +7,7 @@ import org.andengine.entity.modifier.PathModifier;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.extension.tmx.TMXLayer;
+import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.BaseGameActivity;
@@ -36,31 +37,31 @@ public class Enemy extends Sprite {
 	 * @param b
 	 * @param pX Xcoord location
 	 * @param pY Ycoord location
-	 * @param pTextureRegion
+	 * @param iTextureRegion
 	 * @param tvbom
 	 * @param level
 	 */
-	public Enemy(float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion,
+	public Enemy(float pX, float pY, float pWidth, float pHeight, ITextureRegion iTextureRegion,
 			VertexBufferObjectManager tvbom, Level plevel, Scene sc) {
-		super(pX, pY, pWidth, pHeight, pTextureRegion, tvbom);
+		super(pX, pY, pWidth, pHeight, iTextureRegion, tvbom);
 		scene = sc;
 		level = plevel;
 	}
-	
+
 	public void createPath(Waypoint pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
 		path = new Path(Enemy.this, pEnd, pTmxlayer, level);
 	}
 
 	public void setPathandMove(Waypoint pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
 		this.createPath(pEnd, myContext, pTmxlayer, arrayEn);
-		//path = new Path(Enemy.this, pEnd, pTmxlayer, level);
+		// path = new Path(Enemy.this, pEnd, pTmxlayer, level);
 		startMoving(arrayEn, myContext);
 	}
-	
+
 	public void stop() {
-		this.unregisterEntityModifier(trajectory);		
+		this.unregisterEntityModifier(trajectory);
 	}
-	
+
 	/**
 	 * Deal damage to the enemy, modified by type <br>
 	 * 
@@ -117,15 +118,11 @@ public class Enemy extends Sprite {
 
 	public void startMoving(final ArrayList<Enemy> arrayEn, final BaseGameActivity myContext) {
 		// convert our type of path we have to their type of path
-		org.andengine.entity.modifier.PathModifier.Path tempPath = new org.andengine.entity.modifier.PathModifier.Path(
-				path.A_Path.getLength());
-		for (int i = 0; i < path.A_Path.getLength(); i++)
-			tempPath = tempPath.to(TowerTest.getXFromCol(path.A_Path.getX(i)), TowerTest.getYFromRow(path.A_Path
-					.getY(i)));
+		org.andengine.entity.modifier.PathModifier.Path tempPath = path.getEntityPath();
 
 		// now find the total length of the path
 		final float dist = tempPath.getLength();
-
+		
 		// D=r*t
 		// therefore t = D/r
 		trajectory = new PathModifier(dist / Enemy.speed, tempPath);
@@ -141,7 +138,7 @@ public class Enemy extends Sprite {
 					public void run() {
 						scene.detachChild(Enemy.this);
 						arrayEn.remove(Enemy.this);
-						//subtract a life
+						// subtract a life
 						TowerTest.subtractLives(1);
 					}
 				}); // enemy takes damage
@@ -158,5 +155,11 @@ public class Enemy extends Sprite {
 	/** returns which row the enemy is in (between 0 for the first row, and 6 for the last row) */
 	public int getRow() {
 		return TowerTest.getRowFromY(getY());
+	}
+	
+	public Enemy clone(){
+		Enemy returnEnemy = new Enemy(this.getX(), this.getY(),this.getWidth(), this.getHeight(), this.getTextureRegion(), this.getVertexBufferObjectManager(), level, scene);
+		returnEnemy.path = path.clone(returnEnemy);
+		return returnEnemy;
 	}
 }

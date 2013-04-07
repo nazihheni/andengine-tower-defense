@@ -55,7 +55,6 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 	VertexBufferObjectManager tvbom;
 	BaseGameActivity myContext;
 
-
 	/**
 	 * Used to build a tower when dragged off of the HUD
 	 * 
@@ -70,7 +69,8 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 	 * @param habtex TextureRegion for tower
 	 */
 	public BuildTowerTouchHandler(Tower bt, Scene s, long creds, ArrayList<Tower> al, TextureRegion hagtex,
-			TextureRegion habtex, TextureRegion btex, TextureRegion ttex, Level pLevel, ArrayList<Enemy> pArrayEn, BaseGameActivity pMyContext, VertexBufferObjectManager vbom) { // Scene h,
+			TextureRegion habtex, TextureRegion btex, TextureRegion ttex, Level pLevel, ArrayList<Enemy> pArrayEn,
+			BaseGameActivity pMyContext, VertexBufferObjectManager vbom) { // Scene h,
 		scene = s;
 		buildTower = bt;
 		arrayTower = al;
@@ -82,7 +82,7 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 		level = pLevel;
 		arrayEn = pArrayEn;
 		myContext = pMyContext;
-		
+
 	}
 
 	@Override
@@ -110,31 +110,32 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 				int backupTileID = tmxTile.getGlobalTileID();
 
 				tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, 31);
-				//crazy loop action
-				for(Enemy enemy:arrayEn) {
-					//if the tower is on this enemy's path, then, check if the enemy can find a new one
-					if (enemy.path.isOnPath(TowerTest.getColFromX(newX), TowerTest.getRowFromY(newY))) {
-						//only then, should we check pathfinding!
-						path = new Path(enemy, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
+				// crazy loop action
+				for (Enemy enemy : arrayEn) {
+					// if the tower is on this enemy's path, then, check if the enemy can find a new one
+					if (enemy.path.checkRemainingPath(TowerTest.getColFromX(newX), TowerTest.getRowFromY(newY))) {
+						// only then, should we check pathfinding!
+						path = new Path(enemy, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer,
+								TowerTest.currentLevel);
 						if (path == null) {
-							//they can't put it here!
+							// they can't put it here!
 							scene.detachChild(tw);
 							arrayTower.remove(tw);
 							tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, backupTileID);
 						} else {
 							enemy.path = path;
 							enemy.stop();
-							enemy.setPathandMove(TowerTest.currentLevel.endLoc[0], myContext, TowerTest.tmxLayer, arrayEn);
+							enemy.startMoving(arrayEn, myContext);
 						}
 					}
-					
+
 				}
-				//also, check the starting points!
-				/*
+				// also, check the starting points!
+
 				if (TowerTest.enemyClone.path.A_Path.contains(TowerTest.getColFromX(newX), TowerTest.getColFromX(newY))) {
 					path = new Path(TowerTest.enemyClone, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, level);
 					if (path == null) {
-						//they can't put it here!
+						// they can't put it here!
 						scene.detachChild(tw);
 						arrayTower.remove(tw);
 						tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, backupTileID);
@@ -142,9 +143,9 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 						TowerTest.enemyClone.path = path;
 					}
 				}
-				*/
-			//TODO add logic to not subtract credits if removed!!!!!!!
-				
+
+				// TODO add logic to not subtract credits if removed!!!!!!!
+
 				// remove the credits, since we're placing it here
 				TowerTest.addCredits(-buildTower.getCredits());
 				Log.e("Jared", "getCol:" + tw.getCol());
@@ -188,12 +189,13 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 							}
 						} else if (pSceneTouchEvent.isActionMove()) {
 							distTraveled += Math.sqrt((Math.pow(lastX - pSceneTouchEvent.getX(), 2))
-									+ (Math.pow(lastY - pSceneTouchEvent.getY(), 2))) * TowerTest.zoomCamera.getZoomFactor();
+									+ (Math.pow(lastY - pSceneTouchEvent.getY(), 2)))
+									* TowerTest.zoomCamera.getZoomFactor();
 							// store x and y for next move event
 							lastX = pSceneTouchEvent.getX();
 							lastY = pSceneTouchEvent.getY();
 							if (distTraveled < TowerTest.TOWER_HEIGHT) {
-								//Log.e("Jared","distTraveled:"+distTraveled+"<TOWER_HEIGHT:"+TowerTest.TOWER_HEIGHT);
+								// Log.e("Jared","distTraveled:"+distTraveled+"<TOWER_HEIGHT:"+TowerTest.TOWER_HEIGHT);
 								return true; // tell it we handled the touch event, because they haven't gone far enough (should be true)
 							} else {
 								if (showHitArea) { // that means it's the first time we've ran this, so..
