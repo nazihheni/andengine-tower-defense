@@ -6,8 +6,7 @@ package biz.abits.towertest;
 import org.andengine.entity.scene.Scene;
 
 /**
- * @author jared meadows
- * Simple extension of the scene class that allows you to pause it
+ * @author jared meadows Simple extension of the scene class that allows you to pause it
  */
 public class PauseableScene extends Scene {
 
@@ -26,7 +25,7 @@ public class PauseableScene extends Scene {
 			return;
 		super.onManagedUpdate(pSecondsElapsed);
 	}
-	
+
 	public void setPaused(boolean p) {
 		isPaused = p;
 	}

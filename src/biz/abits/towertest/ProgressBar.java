@@ -28,8 +28,7 @@ public class ProgressBar extends HUD {
 	// ===========================================================
 	// Constructors
 	// ===========================================================
-	public ProgressBar(final Camera pCamera, final float pX, final float pY, final float pWidth, final float pHeight,
-			VertexBufferObjectManager tvbom) {
+	public ProgressBar(final Camera pCamera, final float pX, final float pY, final float pWidth, final float pHeight, VertexBufferObjectManager tvbom) {
 		super();
 		super.setCamera(pCamera);
 		vbom = tvbom;

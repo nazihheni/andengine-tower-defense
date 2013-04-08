@@ -19,16 +19,38 @@ import com.badlogic.gdx.math.Vector2;
 public class Enemy extends Sprite {
 	// I am Enemy class
 	private int health = 5000;
-	private static int credits = 10;
-	public static float speed = 50.0f; // movement speed (distance to move per update)
-	public static String texture = "enemy.png";
+	private int credits = 10;
+	public float speed = 50.0f; // movement speed (distance to move per ?)
+	public final static String texture = "enemy.png";
 	public Path path;
 	private PathModifier trajectory;
 	/** used to verify that the target hasn't died yet, makes sure that they don't get duplicate kill credit for more than one bullet hitting target and striking killing blow */
 	public boolean isAlive = true;
-	private final Level level;
+	// static (only set once) area
+	public static ArrayList<Enemy> arrayEn;
+	private static Scene scene;
+	private static Level level;
 
-	Scene scene;
+	/**
+	 * Create a new enemy with a set Path list of waypoints (also sets static variables)
+	 * 
+	 * @param p Path of waypoints
+	 * @param b
+	 * @param pX Xcoord location
+	 * @param pY Ycoord location
+	 * @param iTextureRegion
+	 * @param tvbom
+	 * @param plevel
+	 * @param sc
+	 * @param pArrayEn
+	 */
+	public Enemy(float pX, float pY, float pWidth, float pHeight, ITextureRegion iTextureRegion, VertexBufferObjectManager tvbom, Level plevel, Scene sc,
+			ArrayList<Enemy> pArrayEn) {
+		super(pX, pY, pWidth, pHeight, iTextureRegion, tvbom);
+		scene = sc;
+		level = plevel;
+		arrayEn = pArrayEn;
+	}
 
 	/**
 	 * Create a new enemy with a set Path list of waypoints
@@ -39,13 +61,9 @@ public class Enemy extends Sprite {
 	 * @param pY Ycoord location
 	 * @param iTextureRegion
 	 * @param tvbom
-	 * @param level
 	 */
-	public Enemy(float pX, float pY, float pWidth, float pHeight, ITextureRegion iTextureRegion,
-			VertexBufferObjectManager tvbom, Level plevel, Scene sc) {
+	public Enemy(float pX, float pY, float pWidth, float pHeight, ITextureRegion iTextureRegion, VertexBufferObjectManager tvbom) {
 		super(pX, pY, pWidth, pHeight, iTextureRegion, tvbom);
-		scene = sc;
-		level = plevel;
 	}
 
 	public void createPath(Waypoint pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
@@ -55,7 +73,7 @@ public class Enemy extends Sprite {
 	public void setPathandMove(Waypoint pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
 		this.createPath(pEnd, myContext, pTmxlayer, arrayEn);
 		// path = new Path(Enemy.this, pEnd, pTmxlayer, level);
-		startMoving(arrayEn, myContext);
+		startMoving(myContext);
 	}
 
 	public void stop() {
@@ -97,11 +115,11 @@ public class Enemy extends Sprite {
 	}
 
 	public Vector2 getVelocity() {
-		return new Vector2(Enemy.speed, 0); // hard-coded to horizontal for now
+		return new Vector2(speed, 0); // hard-coded to horizontal for now
 	}
 
 	public float getXSpeed() {
-		return Enemy.speed;
+		return speed;
 	}
 
 	public float getYSpeed() {
@@ -116,16 +134,16 @@ public class Enemy extends Sprite {
 		return getY() + getHeight() / 2;
 	}
 
-	public void startMoving(final ArrayList<Enemy> arrayEn, final BaseGameActivity myContext) {
+	public void startMoving(final BaseGameActivity myContext) {
 		// convert our type of path we have to their type of path
 		org.andengine.entity.modifier.PathModifier.Path tempPath = path.getEntityPath();
 
 		// now find the total length of the path
 		final float dist = tempPath.getLength();
-		
+
 		// D=r*t
 		// therefore t = D/r
-		trajectory = new PathModifier(dist / Enemy.speed, tempPath);
+		trajectory = new PathModifier(dist / speed, tempPath);
 		trajectory.addModifierListener(new IModifierListener<IEntity>() {
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) { // Do stuff here if you want to
@@ -136,7 +154,8 @@ public class Enemy extends Sprite {
 				myContext.getEngine().runOnUpdateThread(new Runnable() {
 					@Override
 					public void run() {
-						scene.detachChild(Enemy.this);
+						// scene.detachChild(Enemy.this);
+						Enemy.this.detachSelf();
 						arrayEn.remove(Enemy.this);
 						// subtract a life
 						TowerTest.subtractLives(1);
@@ -156,9 +175,10 @@ public class Enemy extends Sprite {
 	public int getRow() {
 		return TowerTest.getRowFromY(getY());
 	}
-	
-	public Enemy clone(){
-		Enemy returnEnemy = new Enemy(this.getX(), this.getY(),this.getWidth(), this.getHeight(), this.getTextureRegion(), this.getVertexBufferObjectManager(), level, scene);
+
+	public Enemy clone() {
+		// no need to use the other constructor, since those are already set
+		Enemy returnEnemy = new Enemy(this.getX(), this.getY(), this.getWidth(), this.getHeight(), this.getTextureRegion(), this.getVertexBufferObjectManager());
 		returnEnemy.path = path.clone(returnEnemy);
 		return returnEnemy;
 	}

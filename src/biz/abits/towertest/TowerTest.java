@@ -61,8 +61,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 @SuppressWarnings("unused")
-public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchListener, IScrollDetectorListener,
-		IPinchZoomDetectorListener {
+public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchListener, IScrollDetectorListener, IPinchZoomDetectorListener {
 	// I am Main class//
 	// TODO use accelerometer to pan screen around
 	// TODO Use SpriteBatch class for bullets, enemies, towers.
@@ -202,19 +201,15 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		zoomCamera.setBounds(-CAMERA_WIDTH * 0.25f, -CAMERA_WIDTH * 0.25f, CAMERA_WIDTH * 1.25f, CAMERA_HEIGHT * 1.25f);
 		zoomCamera.setBoundsEnabled(true);
 
-		final EngineOptions mEngine = new EngineOptions(true, ScreenOrientation.LANDSCAPE_SENSOR,
-				new FillResolutionPolicy(), zoomCamera);
+		final EngineOptions mEngine = new EngineOptions(true, ScreenOrientation.LANDSCAPE_SENSOR, new FillResolutionPolicy(), zoomCamera);
 
 		if (MultiTouch.isSupported(this)) {
 			if (MultiTouch.isSupportedDistinct(this))
 				Toast.makeText(this, "MultiTouch detected Pinch Zoom will work properly!", Toast.LENGTH_SHORT).show();
 			else
-				Toast.makeText(this,
-						"MultiTouch detected, but your device has problems distinguishing between fingers",
-						Toast.LENGTH_LONG).show();
+				Toast.makeText(this, "MultiTouch detected, but your device has problems distinguishing between fingers", Toast.LENGTH_LONG).show();
 		} else
-			Toast.makeText(this, "Sorry your device does NOT support MultiTouch! Use Zoom Buttons.", Toast.LENGTH_LONG)
-					.show();
+			Toast.makeText(this, "Sorry your device does NOT support MultiTouch! Use Zoom Buttons.", Toast.LENGTH_LONG).show();
 		mEngine.getAudioOptions().setNeedsMusic(true).setNeedsSound(true);
 		return mEngine;
 	}
@@ -232,25 +227,19 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		// ================================================================================//
 		// ==== Towers
 		mBitmapTextureAtlas = new BuildableBitmapTextureAtlas(getTextureManager(), 1024, 1024);
-		towerTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this,
-				Tower.texture);
+		towerTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, Tower.texture);
 		// ==== Projectiles
-		bulletTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this,
-				Projectile.texture);
+		bulletTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, Projectile.texture);
 		// ==== Enemies
-		enTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this,
-				Enemy.texture);
-		hitAreaTextureGood = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this,
-				hitAreaTexGoodStr);
-		hitAreaTextureBad = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this,
-				hitAreaTexBadStr);
+		enTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, Enemy.texture);
+		hitAreaTextureGood = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, hitAreaTexGoodStr);
+		hitAreaTextureBad = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, hitAreaTexBadStr);
 		texPause = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, texPauseStr);// TowerTest.loadSprite(getTextureManager(), this,
 																														// texPauseStr);
 		texPlay = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, texPlayStr);// TowerTest.loadSprite(getTextureManager(), this,
 																														// texPlayStr);
 		try {
-			this.mBitmapTextureAtlas
-					.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 0, 0));
+			this.mBitmapTextureAtlas.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 0, 0));
 			this.mBitmapTextureAtlas.load();
 		} catch (TextureAtlasBuilderException e) {
 			Debug.e(e);
@@ -288,12 +277,9 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		 * //this.font20 = new StrokeFont(this.getFontManager(), strokeOnlyFontTexture, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 20, true, Color.BLACK, 2,
 		 * Color.WHITE, true);
 		 */
-		font10 = FontFactory.create(getFontManager(), getTextureManager(), 256, 256, TextureOptions.BILINEAR, Typeface
-				.create(Typeface.DEFAULT, Typeface.BOLD), 10);
-		font20 = FontFactory.create(getFontManager(), getTextureManager(), 256, 256, TextureOptions.BILINEAR, Typeface
-				.create(Typeface.DEFAULT, Typeface.BOLD), 20);
-		font40 = FontFactory.create(getFontManager(), getTextureManager(), 256, 256, TextureOptions.BILINEAR, Typeface
-				.create(Typeface.DEFAULT, Typeface.BOLD), 40);
+		font10 = FontFactory.create(getFontManager(), getTextureManager(), 256, 256, TextureOptions.BILINEAR, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 10);
+		font20 = FontFactory.create(getFontManager(), getTextureManager(), 256, 256, TextureOptions.BILINEAR, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 20);
+		font40 = FontFactory.create(getFontManager(), getTextureManager(), 256, 256, TextureOptions.BILINEAR, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 40);
 
 		font10.load();
 		font20.load();
@@ -313,8 +299,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		hud = new HUD();
 		// number of enemies remaining
 		waveProgress = new ProgressBar(zoomCamera, 20, 64, 100, 10, getVertexBufferObjectManager());
-		waveProgress.setProgressColor(1.0f, 0.0f, 0.0f, 1.0f).setFrameColor(0.4f, 0.4f, 0.4f, 1.0f).setBackColor(0.0f,
-				0.0f, 0.0f, 0.2f);
+		waveProgress.setProgressColor(1.0f, 0.0f, 0.0f, 1.0f).setFrameColor(0.4f, 0.4f, 0.4f, 1.0f).setBackColor(0.0f, 0.0f, 0.0f, 0.2f);
 		// waveProgress.setMax(wave_size);
 		zoomCamera.setHUD(hud);
 		// zoomCamera.setHUD(waveProgress); //TODO fix this
@@ -323,12 +308,10 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		// =====================================
 		Log.i("Location:", "TMXMap block");
 		try {
-			final TMXLoader tmxLoader = new TMXLoader(getAssets(), mEngine.getTextureManager(),
-					TextureOptions.BILINEAR_PREMULTIPLYALPHA, getVertexBufferObjectManager(),
+			final TMXLoader tmxLoader = new TMXLoader(getAssets(), mEngine.getTextureManager(), TextureOptions.BILINEAR_PREMULTIPLYALPHA, getVertexBufferObjectManager(),
 					new ITMXTilePropertiesListener() {
 						@Override
-						public void onTMXTileWithPropertiesCreated(final TMXTiledMap pTMXTiledMap,
-								final TMXLayer pTMXLayer, final TMXTile pTMXTile,
+						public void onTMXTileWithPropertiesCreated(final TMXTiledMap pTMXTiledMap, final TMXLayer pTMXLayer, final TMXTile pTMXTile,
 								final TMXProperties<TMXTileProperty> pTMXTileProperties) {
 						}
 					});
@@ -372,14 +355,12 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		// xcoord,ycoord,font,initial text?,length,vbom
 		final Rectangle fpsMask = makeColoredRectangle(CAMERA_WIDTH - 100, 20, 20, 100, .8f, .8f, .8f, 1f);
 		hud.attachChild(fpsMask);
-		fpsText = new Text(CAMERA_WIDTH - 100, 20, font20, "FPS:", "FPS: xxx.xx".length(),
-				getVertexBufferObjectManager());
+		fpsText = new Text(CAMERA_WIDTH - 100, 20, font20, "FPS:", "FPS: xxx.xx".length(), getVertexBufferObjectManager());
 		creditMask = makeColoredRectangle(20, 20, 40, 100, .8f, .8f, .8f, 1f);
 		hud.attachChild(creditMask);
 
 		// Pause button
-		pauseButton = new ButtonSprite(TowerTest.CAMERA_WIDTH - 180, 20, texPause, texPlay,
-				getVertexBufferObjectManager(), pauseListener);
+		pauseButton = new ButtonSprite(TowerTest.CAMERA_WIDTH - 180, 20, texPause, texPlay, getVertexBufferObjectManager(), pauseListener);
 		// pauseButton.setCurrentTileIndex(1);
 		hud.attachChild(pauseButton);
 		hud.registerTouchArea(pauseButton);
@@ -425,10 +406,9 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		arrayEn = new ArrayList<Enemy>();
 		final VertexBufferObjectManager tvbom = vbom;
 		finder = new AStarPathFinder<Enemy>();
-		enemyClone = new Enemy(getXFromCol(currentLevel.startLoc[0].x), getXFromCol(currentLevel.startLoc[0].y), 
-				96, 96, enTexture, tvbom, currentLevel, scene);
+		enemyClone = new Enemy(getXFromCol(currentLevel.startLoc[0].x), getXFromCol(currentLevel.startLoc[0].y), 96, 96, enTexture, tvbom, currentLevel, scene, arrayEn);
 		enemyClone.createPath(currentLevel.endLoc[0], this, tmxLayer, arrayEn);
-		
+
 		Log.i("Location:", "registerUpdateHandler");
 		scene.registerUpdateHandler(hudLoop);
 		// hud.setOnSceneTouchListener(this); //TODO enable these two lines
@@ -440,15 +420,15 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 
 		hud.setTouchAreaBindingOnActionDownEnabled(true);
 		// A tower button to build other towers xcoord,ycoord,xsize,ysize
-		buildBasicTower = new Tower(scene, bulletTexture, 150, 0, TOWER_WIDTH, TOWER_HEIGHT, towerTexture,
-				hitAreaTextureGood, hitAreaTextureBad, getVertexBufferObjectManager());
+		buildBasicTower = new Tower(bulletTexture, 150, 0, TOWER_WIDTH, TOWER_HEIGHT, towerTexture, hitAreaTextureGood, hitAreaTextureBad, scene, arrayTower,
+				getVertexBufferObjectManager());
 		// TODO add to hud
 		hud.attachChild(buildBasicTower);
 		hud.registerTouchArea(buildBasicTower); // register touch area , so this
 												// allows you to drag it
 		// hud.setTouchAreaBindingEnabled(true);
-		final BuildTowerTouchHandler btth = new BuildTowerTouchHandler(buildBasicTower, scene, credits, arrayTower,
-				hitAreaTextureGood, hitAreaTextureBad, bulletTexture, towerTexture, currentLevel, arrayEn, this, self.getVertexBufferObjectManager());
+		final BuildTowerTouchHandler btth = new BuildTowerTouchHandler(buildBasicTower, scene, credits, arrayTower, hitAreaTextureGood, hitAreaTextureBad, bulletTexture,
+				towerTexture, currentLevel, arrayEn, this, self.getVertexBufferObjectManager());
 
 		hud.setOnAreaTouchListener(btth);
 		// scene.setOnAreaTouchListener(btth);
@@ -581,7 +561,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	int currentWaveNum = 0;
 	int currentEnemyCount = 0;
 	int currentDelayBetweenWaves = 0;
-	final float delay = 8; // delay between adding enemies
+	final float delay = 32; // delay between adding enemies
 	final int delayBetweenWaves = 3;
 	TimerHandler enemy_handler;
 
@@ -597,12 +577,12 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					// int x = a.nextInt(CAMERA_WIDTH-60)+20;
 					// int y = a.nextInt(CAMERA_HEIGHT-60)+20;
 					if (currentLevel.wave[currentWaveNum] > currentEnemyCount) {
-						Log.i("waveProg", "enemy " + currentEnemyCount + "/" + currentLevel.wave[currentWaveNum]
-								+ " of wave " + currentWaveNum);
+						Log.i("waveProg", "enemy " + currentEnemyCount + "/" + currentLevel.wave[currentWaveNum] + " of wave " + currentWaveNum);
 						// TODO fix the last argument here and make startLoc compatible with multiple starting locations
-						enemy = enemyClone.clone();//new Enemy(getXFromCol(currentLevel.startLoc[0].x), getXFromCol(currentLevel.startLoc[0].y),96, 96, enTexture, tvbom, currentLevel, scene);
-						//enemy.setPathandMove(currentLevel.endLoc[0], TowerTest.this, tmxLayer, arrayEn);
-						enemy.startMoving(arrayEn, TowerTest.this);
+						enemy = enemyClone.clone();// new Enemy(getXFromCol(currentLevel.startLoc[0].x), getXFromCol(currentLevel.startLoc[0].y),96, 96, enTexture, tvbom,
+													// currentLevel, scene);
+						// enemy.setPathandMove(currentLevel.endLoc[0], TowerTest.this, tmxLayer, arrayEn);
+						enemy.startMoving(TowerTest.this);
 						// TODO make it assign which end location based on the wave
 						scene.attachChild(enemy);
 						arrayEn.add(enemy);
@@ -642,8 +622,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	 * @param pAlpha color Alpha value
 	 * @return
 	 */
-	private Rectangle makeColoredRectangle(final float pX, final float pY, final float pWidth, final float pHeight,
-			final float pRed, final float pGreen, final float pBlue, final float pAlpha) {
+	private Rectangle makeColoredRectangle(final float pX, final float pY, final float pWidth, final float pHeight, final float pRed, final float pGreen, final float pBlue,
+			final float pAlpha) {
 
 		final Rectangle coloredRect = new Rectangle(pX, pY, pHeight, pWidth, getVertexBufferObjectManager());
 		coloredRect.setColor(pRed, pGreen, pBlue, pAlpha);
@@ -696,8 +676,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 
 	private void scenePan(float pDistanceX, float pDistanceY) {
 		final float zoomFactor = TowerTest.zoomCamera.getZoomFactor();
-		TowerTest.zoomCamera.offsetCenter((-pDistanceX) / zoomFactor - currentXoffset, (-pDistanceY) / zoomFactor
-				- currentYoffset);
+		TowerTest.zoomCamera.offsetCenter((-pDistanceX) / zoomFactor - currentXoffset, (-pDistanceY) / zoomFactor - currentYoffset);
 		currentXoffset = 0;
 		currentYoffset = 0;
 		// Log.e("Jared", "currentXoffset:"+currentXoffset);
@@ -709,20 +688,17 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	}
 
 	@Override
-	public void onScrollStarted(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX,
-			final float pDistanceY) {
+	public void onScrollStarted(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
 		scenePan(pDistanceX, pDistanceY);
 	}
 
 	@Override
-	public void onScroll(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX,
-			final float pDistanceY) {
+	public void onScroll(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
 		scenePan(pDistanceX, pDistanceY);
 	}
 
 	@Override
-	public void onScrollFinished(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX,
-			final float pDistanceY) {
+	public void onScrollFinished(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
 		scenePan(pDistanceX, pDistanceY);
 	}
 
@@ -735,18 +711,14 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	}
 
 	@Override
-	public void onPinchZoom(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent,
-			final float pZoomFactor) {
-		TowerTest.zoomCamera.setZoomFactor(Math.min(Math.max(TowerTest.MIN_ZOOM, mPinchZoomStartedCameraZoomFactor
-				* pZoomFactor), TowerTest.MAX_ZOOM));
+	public void onPinchZoom(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
+		TowerTest.zoomCamera.setZoomFactor(Math.min(Math.max(TowerTest.MIN_ZOOM, mPinchZoomStartedCameraZoomFactor * pZoomFactor), TowerTest.MAX_ZOOM));
 
 	}
 
 	@Override
-	public void onPinchZoomFinished(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent,
-			final float pZoomFactor) {
-		TowerTest.zoomCamera.setZoomFactor(Math.min(Math.max(TowerTest.MIN_ZOOM, mPinchZoomStartedCameraZoomFactor
-				* pZoomFactor), TowerTest.MAX_ZOOM));
+	public void onPinchZoomFinished(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
+		TowerTest.zoomCamera.setZoomFactor(Math.min(Math.max(TowerTest.MIN_ZOOM, mPinchZoomStartedCameraZoomFactor * pZoomFactor), TowerTest.MAX_ZOOM));
 	}
 
 	public void togglePauseGame() {
@@ -765,7 +737,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	}
 
 	public static int getColFromX(float pX) {
-		
+
 		return (int) Math.floor(pX / mTMXTiledMap.getTileWidth());
 	}
 

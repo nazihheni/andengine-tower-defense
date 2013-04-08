@@ -24,8 +24,7 @@ public class Projectile extends Sprite {
 	VertexBufferObjectManager vbom;
 	public static String texture = "bullet.png";
 
-	public Projectile(float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion,
-			VertexBufferObjectManager tvbom, Scene sc) {
+	public Projectile(float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion, VertexBufferObjectManager tvbom, Scene sc) {
 		super(pX, pY, pWidth, pHeight, pTextureRegion, tvbom);
 		vbom = tvbom;
 		scene = sc;
@@ -49,15 +48,14 @@ public class Projectile extends Sprite {
 		final double x0 = getMidX() - target.getMidX(); // starting x distance to target
 		final double d0 = Math.sqrt(Math.pow(x0, 2) + Math.pow(y0, 2)); // starting distance
 		// this quadratic equation is based on the law of cosines, just FYI
-		final double a = Math.pow(Enemy.speed, 2) - Math.pow(Projectile.speed, 2);
-		final double b = -2 * Enemy.speed * x0;
+		final double a = Math.pow(target.speed, 2) - Math.pow(Projectile.speed, 2);
+		final double b = -2 * target.speed * x0;
 		final double c = Math.pow(d0, 2);
 		final double t = (-b - Math.sqrt(Math.pow(b, 2) - 4 * a * c)) / (2 * a); // quadratic formula wee!
 		final double dist = Projectile.speed * t;
 		// D=r*t
 		// therefore t = D/r
-		trajectory = new MoveByModifier((float) (dist / Projectile.speed),
-				(float) ((Enemy.speed * t + target.getMidX()) - getMidX()), (target.getMidY() - getMidY()));
+		trajectory = new MoveByModifier((float) (dist / Projectile.speed), (float) ((target.speed * t + target.getMidX()) - getMidX()), (target.getMidY() - getMidY()));
 		trajectory.addModifierListener(new IModifierListener<IEntity>() {
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
@@ -69,28 +67,19 @@ public class Projectile extends Sprite {
 				myContext.getEngine().runOnUpdateThread(new Runnable() {
 					@Override
 					public void run() {
-						scene.detachChild(Projectile.this); // When else should we remove bullets? Check its range?
+						// scene.detachChild(Projectile.this); // When else should we remove bullets? Check its range?
+						Projectile.this.detachSelf();
 					}
 				});
 				source.removeBullet(Projectile.this);
 				// enemy takes damage
 				/*
-				if (target.takeDamage(source.damage, source.damageType) < 1) { // then the enemy dies
-					if (target.isAlive) {
-						target.isAlive = false;
-						TowerTest.addCredits(target.getCredits());
-						myContext.getEngine().runOnUpdateThread(new Runnable() {
-							@Override
-							public void run() {
-								scene.detachChild(target);
-							}
-						});
-						arrayEn.remove(target);
-						// TODO play death animation enemy function pass scene to
-						// detach
-					}
-				}
-				*/
+				 * if (target.takeDamage(source.damage, source.damageType) < 1) { // then the enemy dies if (target.isAlive) { target.isAlive = false;
+				 * TowerTest.addCredits(target.getCredits()); myContext.getEngine().runOnUpdateThread(new Runnable() {
+				 * 
+				 * @Override public void run() { scene.detachChild(target); } }); arrayEn.remove(target); // TODO play death animation enemy function pass scene to // detach }
+				 * }
+				 */
 			}
 		});
 		registerEntityModifier(trajectory);

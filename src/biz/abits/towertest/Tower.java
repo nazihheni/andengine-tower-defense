@@ -17,8 +17,9 @@ import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.debug.Debug;
 
-import com.badlogic.gdx.math.Vector2;
+import android.util.Log;
 
+import com.badlogic.gdx.math.Vector2;
 
 /**
  * Basic Tower class contains it's own projectiles and provides methods for firing
@@ -57,6 +58,8 @@ public class Tower extends Sprite {
 	TowerRange towerRangeBad;
 	public boolean moveable = true;
 	Projectile SpriteBullet;
+	static ArrayList<Tower> arrayTower;
+	static Scene scene;
 	// int speed = 500;
 	VertexBufferObjectManager vbom;
 	ArrayList<Projectile> arrayBullets; // may change to spritebatch
@@ -75,22 +78,21 @@ public class Tower extends Sprite {
 	 * @param pTextureRegion I don't think this is even used? :-\
 	 * @param tvbom VertexBufferObjectManager
 	 */
-	public Tower(Scene scene, TextureRegion b, float pX, float pY, float pWidth, float pHeight,
-			TextureRegion pTextureRegion, TextureRegion hitAreaTextureGood, TextureRegion hitAreaTextureBad,
-			VertexBufferObjectManager tvbom) {
+	public Tower(TextureRegion b, float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion, TextureRegion hitAreaTextureGood,
+			TextureRegion hitAreaTextureBad, Scene pScene, ArrayList<Tower> pArrayTower, VertexBufferObjectManager tvbom) {
 		super(pX, pY, pWidth, pHeight, pTextureRegion, tvbom);
 		// towerRangeGood.setPosition(pX, pY);
 		vbom = tvbom;
 		bullet = b; // we need bullet TextureRegion to make one
 		// x=pX; //some x n y of the tower
 		// y=pY;
+		scene = pScene;
 		arrayBullets = new ArrayList<Projectile>(); // create a new ArrayList
 		towerRangeGood = new TowerRange(0, 0, hitAreaTextureGood, vbom);
 		towerRangeBad = new TowerRange(0, 0, hitAreaTextureBad, vbom);
-		towerRangeGood.setPosition(this.getWidth() / 2 - towerRangeGood.getWidth() / 2, this.getHeight() / 2
-				- towerRangeGood.getHeight() / 2);
-		towerRangeBad.setPosition(this.getWidth() / 2 - towerRangeBad.getWidth() / 2, this.getHeight() / 2
-				- towerRangeBad.getHeight() / 2);
+		towerRangeGood.setPosition(this.getWidth() / 2 - towerRangeGood.getWidth() / 2, this.getHeight() / 2 - towerRangeGood.getHeight() / 2);
+		towerRangeBad.setPosition(this.getWidth() / 2 - towerRangeBad.getWidth() / 2, this.getHeight() / 2 - towerRangeBad.getHeight() / 2);
+		arrayTower = pArrayTower;
 		this.setZIndex(zIndex); // used to determine the order stuff is drawn in
 		total++;
 	}
@@ -242,10 +244,54 @@ public class Tower extends Sprite {
 	 * 
 	 * @return credit value of tower
 	 */
-	// TODO finish this function (pass in scene/list to remove it maybe)
-	public long sell() {
-		total--;
+	public long sell(BaseGameActivity myContext) {
+		remove(true, myContext);
 		return credits;
+	}
+
+	/**
+	 * removes tower from scene and array, and updates counter
+	 * 
+	 * @param tower
+	 * @param resetTile
+	 */
+	public void remove(final Tower tower, final boolean resetTile, BaseGameActivity myContext) {
+		myContext.getEngine().runOnUpdateThread(new Runnable() {
+			@Override
+			public void run() {
+				scene.unregisterTouchArea(tower);
+				// scene.detachChild(tower);
+				tower.detachSelf();
+				arrayTower.remove(tower);
+				if (resetTile) {
+					Log.e("Tower", "removed " + tower.getCol() + "," + tower.getRow());
+				}
+			}
+		});
+		total--;
+		if (resetTile) { // we must re-calculate ALL paths, since there's no telling how to know if the one they removed will change paths :-\
+			TowerTest.tmxLayer.getTMXTileAt(tower.getX(), tower.getY()).setGlobalTileID(TowerTest.mTMXTiledMap, 30);
+			Path path;
+			// first go through and update all the enemies in the ArrayList
+			for (Enemy en : Enemy.arrayEn) {
+				path = new Path(en, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
+				en.path = path;
+				en.stop();
+				en.startMoving(myContext);
+			}
+			// now don't forget to update the enemyClone!
+			path = new Path(TowerTest.enemyClone, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
+			TowerTest.enemyClone.path = path;
+		}
+	}
+
+	/**
+	 * Removes this tower from scene and array, and updates counter
+	 * 
+	 * @param resetTile true if you want the tile set to traversable
+	 */
+	public void remove(boolean resetTile, BaseGameActivity myContext) {
+		remove(this, resetTile, myContext);
 	}
 
 	/**
@@ -274,8 +320,7 @@ public class Tower extends Sprite {
 	public void checkClearSpotAndPlace(Scene scene, float newX, float newY) {
 		final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
 		try {
-			final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap
-					.getTMXTileProperties(tmxTile.getGlobalTileID());
+			final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile.getGlobalTileID());
 			// Snaps tower to tile
 			if (TowerTest.enableSnap) {
 				newX = tmxTile.getTileX();
@@ -315,15 +360,11 @@ public class Tower extends Sprite {
 	 */
 	public void setHitAreaShown(Scene scene, boolean showHitArea) {
 		if (moveable) {
-			towerRangeGood.setPosition(this.getWidth() / 2 - towerRangeGood.getWidth() / 2, this.getHeight() / 2
-					- towerRangeGood.getHeight() / 2);
-			towerRangeBad.setPosition(this.getWidth() / 2 - towerRangeBad.getWidth() / 2, this.getHeight() / 2
-					- towerRangeBad.getHeight() / 2);
+			towerRangeGood.setPosition(this.getWidth() / 2 - towerRangeGood.getWidth() / 2, this.getHeight() / 2 - towerRangeGood.getHeight() / 2);
+			towerRangeBad.setPosition(this.getWidth() / 2 - towerRangeBad.getWidth() / 2, this.getHeight() / 2 - towerRangeBad.getHeight() / 2);
 		} else {
-			towerRangeGood.setPosition(this.getX() + this.getWidth() / 2 - towerRangeGood.getWidth() / 2, this.getY()
-					+ this.getHeight() / 2 - towerRangeGood.getHeight() / 2);
-			towerRangeBad.setPosition(this.getX() + this.getWidth() / 2 - towerRangeBad.getWidth() / 2, this.getY()
-					+ this.getHeight() / 2 - towerRangeBad.getHeight() / 2);
+			towerRangeGood.setPosition(this.getX() + this.getWidth() / 2 - towerRangeGood.getWidth() / 2, this.getY() + this.getHeight() / 2 - towerRangeGood.getHeight() / 2);
+			towerRangeBad.setPosition(this.getX() + this.getWidth() / 2 - towerRangeBad.getWidth() / 2, this.getY() + this.getHeight() / 2 - towerRangeBad.getHeight() / 2);
 		}
 
 		if (showHitArea) {

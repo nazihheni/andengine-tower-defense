@@ -9,7 +9,6 @@ import org.andengine.extension.tmx.TMXTile;
 import org.andengine.extension.tmx.TMXTileProperty;
 import org.andengine.util.algorithm.path.ICostFunction;
 import org.andengine.util.algorithm.path.IPathFinderMap;
-import org.andengine.util.algorithm.path.astar.AStarPathFinder;
 import org.andengine.util.algorithm.path.astar.IAStarHeuristic;
 import org.andengine.util.algorithm.path.astar.NullHeuristic;
 
@@ -26,7 +25,7 @@ public class Path implements Cloneable {
 	TMXLayer tmxlayer;
 	public ArrayList<Waypoint> waypoints;
 	Iterator<Waypoint> iterator;
-	public org.andengine.util.algorithm.path.Path A_Path;
+	public org.andengine.util.algorithm.path.Path rcPath;
 	private Waypoint end;
 	private Level level;
 	private ArrayList<Point> xyPath;
@@ -43,18 +42,16 @@ public class Path implements Cloneable {
 		end = pEnd;
 		tmxlayer = pTmxlayer;
 		level = plevel;
-		findPath();
-		// now convert the col/row path, to xy coordinates, for later use
-		// xyPath = new org.andengine.entity.modifier.PathModifier.Path(A_Path.getLength());
-		xyPath = new ArrayList<Point>();
-		for (int i = 0; i < A_Path.getLength(); i++)
-			xyPath.add(new Point(TowerTest.getXFromCol(A_Path.getX(i)), TowerTest.getYFromRow(A_Path.getY(i))));
-		trimPathToEnemy(); // I bet you can't guess what this one does!
+		if (findPath()) {
+			// now convert the col/row path, to xy coordinates, for later use
+			// xyPath = new org.andengine.entity.modifier.PathModifier.Path(A_Path.getLength());
+			convertRCPathtoXY();
+			optimizeXYPath();
+		}
 		// xyPath = xyPath.to(TowerTest.getXFromCol(A_Path.getX(i)), TowerTest.getYFromRow(A_Path.getY(i)));
 	}
 
-	public Path(Enemy en, Waypoint pEnd, TMXLayer pTmxlayer, Level plevel, ArrayList<Point> pxyPath,
-			org.andengine.util.algorithm.path.Path pA_Path) {
+	public Path(Enemy en, Waypoint pEnd, TMXLayer pTmxlayer, Level plevel, ArrayList<Point> pxyPath, org.andengine.util.algorithm.path.Path pA_Path) {
 		enemy = en;
 		waypoints = new ArrayList<Waypoint>();
 		iterator = waypoints.iterator();
@@ -62,15 +59,18 @@ public class Path implements Cloneable {
 		tmxlayer = pTmxlayer;
 		level = plevel;
 		xyPath = pxyPath;
-		A_Path = pA_Path;
+		rcPath = pA_Path;
 	}
 
 	public org.andengine.entity.modifier.PathModifier.Path getEntityPath() {
-		org.andengine.entity.modifier.PathModifier.Path tempPath = new org.andengine.entity.modifier.PathModifier.Path(
-				xyPath.size() - 1);
-		for (int i = 0; i < xyPath.size() - 1; i++)
-			tempPath = tempPath.to(xyPath.get(i).x, xyPath.get(i).y);
-		return tempPath;
+		if (xyPath == null) {
+			return null;
+		} else {
+			org.andengine.entity.modifier.PathModifier.Path tempPath = new org.andengine.entity.modifier.PathModifier.Path(xyPath.size());
+			for (int i = 0; i < xyPath.size(); i++)
+				tempPath = tempPath.to(xyPath.get(i).x, xyPath.get(i).y);
+			return tempPath;
+		}
 	}
 
 	/**
@@ -155,8 +155,7 @@ public class Path implements Cloneable {
 		public boolean isBlocked(int pX, int pY, Enemy pEntity) {
 			try {
 				TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(TowerTest.getXFromCol(pX), TowerTest.getYFromRow(pY));
-				TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile
-						.getGlobalTileID());
+				TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile.getGlobalTileID());
 				if (tmxTileProperties.containsTMXProperty("Collidable", "False")) {
 					// set the circle to red
 					// it is blocked!
@@ -187,8 +186,7 @@ public class Path implements Cloneable {
 
 	ICostFunction<Enemy> CostCallback = new ICostFunction<Enemy>() {
 		@Override
-		public float getCost(IPathFinderMap<Enemy> pPathFinderMap, int pFromX, int pFromY, int pToX, int pToY,
-				Enemy pEntity) {
+		public float getCost(IPathFinderMap<Enemy> pPathFinderMap, int pFromX, int pFromY, int pToX, int pToY, Enemy pEntity) {
 			// Read the cost attribute from the tile at the given position
 			// TODO enable this shizz and add cost to tilemap! (KYLE)
 			// TMXProperty cost = pEntity.getTMXTile(pFromX,
@@ -201,12 +199,12 @@ public class Path implements Cloneable {
 	IAStarHeuristic<Enemy> Heuristic = new NullHeuristic<Enemy>();
 
 	public boolean checkRemainingPath(int pX, int pY) {
-		final int len = A_Path.getLength();
+		final int len = rcPath.getLength();
 		final int[] xs = new int[len]; // A_Path.getX(pY).mXs;
 		final int[] ys = new int[len];
 		for (int i = 0; i < len; i++) {
-			xs[i] = A_Path.getX(i);
-			ys[i] = A_Path.getY(i);
+			xs[i] = rcPath.getX(i);
+			ys[i] = rcPath.getY(i);
 		}
 
 		final int enCol = TowerTest.getColFromX(enemy.getX());
@@ -221,13 +219,21 @@ public class Path implements Cloneable {
 		return false; // we hit the end, so it's not on this path
 	}
 
-	private void findPath() {
-		Log.w("Finder", "I just calculated a path for " + TowerTest.getColFromX(enemy.getX()) + ","
-				+ TowerTest.getColFromX(enemy.getY()));
+	private boolean findPath() {
+		Log.w("Finder", "I just calculated a path for " + TowerTest.getColFromX(enemy.getX()) + "," + TowerTest.getColFromX(enemy.getY()));
 		// coords
-		A_Path = TowerTest.finder.findPath(PathMap, TowerTest.pColMin, TowerTest.pRowMin, TowerTest.pColMax,
-				TowerTest.pRowMax, enemy, enemy.getCol(), enemy.getRow(), end.x, end.y, TowerTest.allowDiagonal,
-				Heuristic, CostCallback);
+		try {
+			rcPath = TowerTest.finder.findPath(PathMap, TowerTest.pColMin, TowerTest.pRowMin, TowerTest.pColMax, TowerTest.pRowMax, enemy, enemy.getCol(), enemy.getRow(),
+					end.x, end.y, TowerTest.allowDiagonal, Heuristic, CostCallback);
+			if (rcPath == null) {
+				return false;
+			} else {
+				return true;
+			}
+		} catch (NullPointerException e) {
+			rcPath = null;
+			return false;
+		}
 
 		/*
 		 * float dY = target.getMidY() - this.getMidY(); // some calc about how far the bullet can go, in this case up to the enemy float dX = target.getMidX() -
@@ -236,15 +242,52 @@ public class Path implements Cloneable {
 		 */
 	}
 
+	private void convertRCPathtoXY() {
+		xyPath = new ArrayList<Point>();
+		for (int i = 0; i < rcPath.getLength(); i++)
+			xyPath.add(new Point(TowerTest.getXFromCol(rcPath.getX(i)), TowerTest.getYFromRow(rcPath.getY(i))));
+		xyPath.add(0, new Point(enemy.getX(), enemy.getY())); // add their current location to the beginning
+	}
+
+	/**
+	 * ensures that there are no overlapping paths, as well as removes middle-nodes for straight paths
+	 */
+	private void optimizeXYPath() {
+		double currentAngle; // angle of the previous segment
+		double newAngle;
+		double newAngleInverse;
+		// first remove all middle-nodes
+		if (xyPath.size() > 2) { // no point in doing it if the line is already as short as it can be
+			// set the starting angle to the first two points
+			currentAngle = Math.atan2(xyPath.get(1).y - xyPath.get(0).y, xyPath.get(1).x - xyPath.get(0).x);
+			for (int i = 1; i < xyPath.size() - 1; i++) { // flip through all the points to see if we should remove the previous
+				// if it's on the same angle as our last, then remove the previous
+				// what's our angle from the last point
+				newAngle = Math.atan2(xyPath.get(i + 1).y - xyPath.get(i).y, xyPath.get(i + 1).x - xyPath.get(i).x);
+				newAngleInverse = Math.atan2(xyPath.get(i).y - xyPath.get(i + 1).y, xyPath.get(i).x - xyPath.get(i + 1).x); // the inverse angle, allows it to treat angles
+																															// that are the opposite direction as the same
+																															// direction, therefore removing double-backs :-)
+				if ((Math.abs(newAngle - currentAngle) < 0.000001) || (Math.abs(newAngleInverse - currentAngle) < 0.000001)) { // onARoll and the angles are equal
+																																// (close enough)
+					xyPath.remove(i);// remove the previous point, since it's the same angle as our current
+					i--;
+				} else {
+					// we must have changed direction, so store this current point as our new corner
+					currentAngle = newAngle;
+				}
+			}
+		}
+	}
+
 	/**
 	 * Trims the path to where the enemy is
 	 * 
 	 * @param pX x value in coordinates (NOT int column, int row)
 	 * @param pY y value in coordinates (NOT int column, int row)
 	 */
-	public void trimPathToEnemy() {
+	private void trimPathToEnemy() {
 		int trimNum = 0;
-		for (int i = 0; i < xyPath.size() - 1; i++) { // flip through all the segments to check
+		for (int i = 0; i < xyPath.size() - 1; i++) { // flip through all the segments to check (- 1 is because we're doing segments)
 			if (xyPath.get(i).x == xyPath.get(i + 1).x) { // Vertical segment
 				if (enemy.getX() == xyPath.get(i).x)
 					if (((xyPath.get(i).y <= enemy.getY()) && (enemy.getY() <= xyPath.get(i + 1).y))
@@ -262,18 +305,24 @@ public class Path implements Cloneable {
 			}
 		}
 		// now remove everything before trimNum and tack on the enemy's current xy
-		for (int i = trimNum; i >= 0; i--) {
-			xyPath.remove(i);
+		if (trimNum > 0) {
+			Log.e("Jared", "Removing overlapping path");
+			for (int i = trimNum + 1; i >= 0; i--) {
+				Log.e("Jared", "Removing " + xyPath.get(i).x + "" + xyPath.get(i).y);
+			}
+			for (int i = trimNum + 1; i >= 0; i--) {
+				xyPath.remove(i);
+			}
 		}
-		xyPath.add(0, new Point(enemy.getX(), enemy.getY())); // add their current location to the beginning
 	}
 
-	@SuppressWarnings("unchecked")
 	public Path clone(Enemy newEnemy) {
-		org.andengine.util.algorithm.path.Path tempA_Path = new org.andengine.util.algorithm.path.Path(A_Path
-				.getLength());
-		for (int i = 0; i < A_Path.getLength(); i++)
-			tempA_Path.set(i, A_Path.getX(i), A_Path.getY(i));
-		return new Path(newEnemy, end, tmxlayer, level, (ArrayList<Point>) xyPath.clone(), A_Path);
+		org.andengine.util.algorithm.path.Path tempA_Path = new org.andengine.util.algorithm.path.Path(rcPath.getLength());
+		for (int i = 0; i < rcPath.getLength(); i++)
+			tempA_Path.set(i, rcPath.getX(i), rcPath.getY(i));
+		ArrayList<Point> tempXYPath = new ArrayList<Point>();
+		for (int i = 0; i < xyPath.size(); i++)
+			tempXYPath.add(new Point(xyPath.get(i).x, xyPath.get(i).y));
+		return new Path(newEnemy, end, tmxlayer, level, tempXYPath, tempA_Path);
 	}
 }
