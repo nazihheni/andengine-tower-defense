@@ -8,7 +8,6 @@ import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.opengl.texture.region.ITextureRegion;
-import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.util.modifier.IModifier;
@@ -19,7 +18,7 @@ import com.badlogic.gdx.math.Vector2;
 public class Enemy extends Sprite {
 	// I am Enemy class
 	private int health = 5000;
-	private int credits = 10;
+	private final int credits = 10;
 	public float speed = 50.0f; // movement speed (distance to move per ?)
 	public final static String texture = "enemy.png";
 	public Path path;
@@ -71,13 +70,13 @@ public class Enemy extends Sprite {
 	}
 
 	public void setPathandMove(Waypoint pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
-		this.createPath(pEnd, myContext, pTmxlayer, arrayEn);
+		createPath(pEnd, myContext, pTmxlayer, arrayEn);
 		// path = new Path(Enemy.this, pEnd, pTmxlayer, level);
 		startMoving(myContext);
 	}
 
 	public void stop() {
-		this.unregisterEntityModifier(trajectory);
+		unregisterEntityModifier(trajectory);
 	}
 
 	/**
@@ -136,7 +135,7 @@ public class Enemy extends Sprite {
 
 	public void startMoving(final BaseGameActivity myContext) {
 		// convert our type of path we have to their type of path
-		org.andengine.entity.modifier.PathModifier.Path tempPath = path.getEntityPath();
+		final org.andengine.entity.modifier.PathModifier.Path tempPath = path.getEntityPath();
 
 		// now find the total length of the path
 		final float dist = tempPath.getLength();
@@ -176,9 +175,10 @@ public class Enemy extends Sprite {
 		return TowerTest.getRowFromY(getY());
 	}
 
+	@Override
 	public Enemy clone() {
 		// no need to use the other constructor, since those are already set
-		Enemy returnEnemy = new Enemy(this.getX(), this.getY(), this.getWidth(), this.getHeight(), this.getTextureRegion(), this.getVertexBufferObjectManager());
+		final Enemy returnEnemy = new Enemy(getX(), getY(), getWidth(), getHeight(), getTextureRegion(), getVertexBufferObjectManager());
 		returnEnemy.path = path.clone(returnEnemy);
 		return returnEnemy;
 	}

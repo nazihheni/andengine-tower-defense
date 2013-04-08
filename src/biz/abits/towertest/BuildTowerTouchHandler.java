@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import org.andengine.entity.scene.IOnAreaTouchListener;
 import org.andengine.entity.scene.ITouchArea;
 import org.andengine.entity.scene.Scene;
-import org.andengine.extension.tmx.TMXTile;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
@@ -100,61 +99,9 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 				// where it is
 				tw.remove(false, myContext);
 			} else {
-				float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
-				float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
-				final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
-				int backupTileID = tmxTile.getGlobalTileID();
-
-				tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, 31);
-				// crazy loop action
-				boolean towerNotAllowed = false;
-				Path[] tempPaths = new Path[arrayEn.size() + 1];
-				boolean[] needsNewPath = new boolean[arrayEn.size() + 1];
-				for (int i = 0; i < arrayEn.size(); i++) {
-					Enemy enemy = arrayEn.get(i);
-					// if the tower is on this enemy's path, then, check if the enemy can find a new one
-					if (enemy.path.checkRemainingPath(TowerTest.getColFromX(newX), TowerTest.getRowFromY(newY))) {
-						// only then, should we check pathfinding!
-						tempPaths[i] = new Path(enemy, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
-						if (tempPaths[i].rcPath == null) {
-							// they can't put it here!
-							towerNotAllowed = true;
-							break;
-						}
-						needsNewPath[i] = true;
-					} else {
-						needsNewPath[i] = false;
-					}
-				}
-				// also, check the starting points!
-				if (!towerNotAllowed) {
-					if (TowerTest.enemyClone.path.rcPath.contains(TowerTest.getColFromX(newX), TowerTest.getColFromX(newY))) {
-						tempPaths[arrayEn.size()] = new Path(TowerTest.enemyClone, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, level);
-						if (tempPaths[arrayEn.size()].rcPath == null) {
-							// they can't put it here!
-							towerNotAllowed = true;
-						}
-						needsNewPath[arrayEn.size()] = true;
-					}
-				}
-				// now that we have all the paths, if they were all good, assign them to their enemies, otherwise remove the tower
-				if (towerNotAllowed) { // remove it, because one enemy had a problem with it
-					tw.remove(false, myContext);
-					tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, backupTileID);
-				} else {
-					// go through and assign the paths, since nobody had a problem with it
-					for (int i = 0; i < arrayEn.size(); i++) {
-						if (needsNewPath[i]) {
-							Enemy enemy = arrayEn.get(i);
-							enemy.path = tempPaths[i];
-							enemy.stop();
-							enemy.startMoving(myContext);
-						}
-					}
-					if (needsNewPath[arrayEn.size()]) {
-						TowerTest.enemyClone.path = tempPaths[arrayEn.size()];
-					}
-				}
+				final float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
+				final float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
+				Tower.canPlace(newX, newY, true, myContext, tw);
 
 				// TODO add logic to not subtract credits if removed!!!!!!!
 
@@ -170,8 +117,8 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 				// This is the part that creates the tower when you hit the
 				// "creation" tower
 				createNewTower = false;
-				float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX() + startingOffsetX) - buildTower.getXHandleOffset();
-				float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY() + startingOffsetY) - buildTower.getYHandleOffset();
+				final float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX() + startingOffsetX) - buildTower.getXHandleOffset();
+				final float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY() + startingOffsetY) - buildTower.getYHandleOffset();
 				tw = new Tower(bulletTexture, newX, newY, 96, 96, towerTexture, hitAreaTextureGood, hitAreaTextureBad, scene, arrayTower, tvbom) {
 					@Override
 					public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
@@ -244,16 +191,16 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 						}
 					}
 				}; // end of tower definition
-				tw.checkClearSpotAndPlace(scene, newX, newY);
+				tw.checkClearSpotAndPlace(scene, newX, newY, myContext);
 				tw.setHitAreaShown(scene, true);
 				arrayTower.add(tw); // add to array
 				scene.registerTouchArea(tw); // register touch area , so this allows you to drag it
 				scene.attachChild(tw); // add it to the scene
 			} else if (tw.moveable) {
 				// This moves it to it's new position whenever they move their finger
-				float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
-				float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
-				tw.checkClearSpotAndPlace(scene, newX, newY);
+				final float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
+				final float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
+				tw.checkClearSpotAndPlace(scene, newX, newY, myContext);
 			}
 			return true;
 		}

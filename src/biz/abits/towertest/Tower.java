@@ -60,6 +60,9 @@ public class Tower extends Sprite {
 	Projectile SpriteBullet;
 	static ArrayList<Tower> arrayTower;
 	static Scene scene;
+	static float lastCheckedX = 0;
+	static float lastCheckedY = 0;
+
 	// int speed = 500;
 	VertexBufferObjectManager vbom;
 	ArrayList<Projectile> arrayBullets; // may change to spritebatch
@@ -316,8 +319,9 @@ public class Tower extends Sprite {
 	 * @param scene
 	 * @param newX x value where we're trying to place the tower
 	 * @param newY y value where we're trying to place the tower
+	 * @param myContext
 	 */
-	public void checkClearSpotAndPlace(Scene scene, float newX, float newY) {
+	public void checkClearSpotAndPlace(Scene scene, float newX, float newY, BaseGameActivity myContext) {
 		final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
 		try {
 			final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile.getGlobalTileID());
@@ -330,13 +334,86 @@ public class Tower extends Sprite {
 				// set the circle to red (it has an error)
 				this.setTowerPlaceError(scene, true);
 			} else {
-				// set the circle to green
-				this.setTowerPlaceError(scene, false);
+				if ((newX != lastCheckedX) || (newY != lastCheckedY)) { // only check it if we haven't checked it yet
+					if (Tower.canPlace(newX, newY, false, myContext, this)) {
+						// set the circle to green
+						this.setTowerPlaceError(scene, false);
+					} else {
+						this.setTowerPlaceError(scene, true);
+					}
+				}
 			}
 		} catch (Exception e) { // this happens when it's drug off the map
 			this.setTowerPlaceError(scene, true);
 		}
 		this.setPosition(newX, newY);
+	}
+
+	public static boolean canPlace(float newX, float newY, boolean assignPaths, BaseGameActivity myContext, Tower tw) {
+		final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
+		int backupTileID = tmxTile.getGlobalTileID();
+
+		tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, 31);
+		// crazy loop action
+		boolean towerNotAllowed = false;
+		Path[] tempPaths = new Path[Enemy.arrayEn.size() + 1];
+		boolean[] needsNewPath = new boolean[Enemy.arrayEn.size() + 1];
+		if (assignPaths) {
+			for (int i = 0; i < Enemy.arrayEn.size(); i++) {
+				Enemy enemy = Enemy.arrayEn.get(i);
+				// if the tower is on this enemy's path, then, check if the enemy can find a new one
+				if (enemy.path.checkRemainingPath(TowerTest.getColFromX(newX), TowerTest.getRowFromY(newY))) {
+					// only then, should we check pathfinding!
+					tempPaths[i] = new Path(enemy, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
+					if (tempPaths[i].rcPath == null) {
+						// they can't put it here!
+						towerNotAllowed = true;
+						break;
+					}
+					needsNewPath[i] = true;
+				} else {
+					needsNewPath[i] = false;
+				}
+			}
+		}
+		// also, check the starting points!
+		if (!towerNotAllowed) {
+			if (TowerTest.enemyClone.path.rcPath.contains(TowerTest.getColFromX(newX), TowerTest.getColFromX(newY))) {
+				tempPaths[Enemy.arrayEn.size()] = new Path(TowerTest.enemyClone, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
+				if (tempPaths[Enemy.arrayEn.size()].rcPath == null) {
+					// they can't put it here!
+					towerNotAllowed = true;
+				}
+				needsNewPath[Enemy.arrayEn.size()] = true;
+			}
+		}
+		// now that we have all the paths, if they were all good, assign them to their enemies, otherwise remove the tower
+		lastCheckedX = newX;
+		lastCheckedY = newY;
+		if (!assignPaths) {
+			tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, backupTileID);
+			return !towerNotAllowed;
+		} else {
+			if (towerNotAllowed) { // remove it, because one enemy had a problem with it
+				tw.remove(false, myContext);
+				tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, backupTileID);
+				return false;
+			} else {
+				// go through and assign the paths, since nobody had a problem with it
+				for (int i = 0; i < Enemy.arrayEn.size(); i++) {
+					if (needsNewPath[i]) {
+						Enemy enemy = Enemy.arrayEn.get(i);
+						enemy.path = tempPaths[i];
+						enemy.stop();
+						enemy.startMoving(myContext);
+					}
+				}
+				if (needsNewPath[Enemy.arrayEn.size()]) {
+					TowerTest.enemyClone.path = tempPaths[Enemy.arrayEn.size()];
+				}
+				return true;
+			}
+		}
 	}
 
 	/**
