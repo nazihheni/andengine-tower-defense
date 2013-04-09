@@ -73,8 +73,11 @@ public class Projectile extends Sprite {
 				});
 				source.removeBullet(Projectile.this);
 				// enemy takes damage
-				if (target.takeDamage(source.damage, source.damageType) < 1) { // then the enemy dies if (target.isAlive) { target.isAlive = false;
-					TowerTest.addCredits(target.getCredits());
+				if (target.takeDamage(source.damage, source.damageType) < 1) { // then the enemy dies 
+					if (target.isAlive) { //this prevents getting multiple credits for one kill!
+						target.isAlive = false;
+						TowerTest.addCredits(target.getCredits());
+					}
 					myContext.getEngine().runOnUpdateThread(new Runnable() {
 						@Override
 						public void run() {

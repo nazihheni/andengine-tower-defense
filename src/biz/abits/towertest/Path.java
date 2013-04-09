@@ -175,7 +175,7 @@ public class Path implements Cloneable {
 					}
 				}
 				for (int i = 0; i < level.startLoc.length; i++) {
-					if ((pX == level.startLoc[0].x) && (pY == level.startLoc[0].y)) {
+					if ((pX == level.startLoc[i].x) && (pY == level.startLoc[i].y)) {
 						return false;
 					}
 				}
@@ -199,22 +199,26 @@ public class Path implements Cloneable {
 	IAStarHeuristic<Enemy> Heuristic = new NullHeuristic<Enemy>();
 
 	public boolean checkRemainingPath(int pX, int pY) {
-		final int len = rcPath.getLength();
-		final int[] xs = new int[len]; // A_Path.getX(pY).mXs;
-		final int[] ys = new int[len];
-		for (int i = 0; i < len; i++) {
-			xs[i] = rcPath.getX(i);
-			ys[i] = rcPath.getY(i);
-		}
-
-		final int enCol = TowerTest.getColFromX(enemy.getX());
-		final int enRow = TowerTest.getRowFromY(enemy.getY());
-		for (int i = len - 1; i >= 0; i--) { // starts checking from the end
-			if (xs[i] == pX && ys[i] == pY) {
-				return true; // the point WAS on our remaining path
-			} else if (xs[i] == enCol && ys[i] == enRow) {
-				return false; // we found the enemy first, so no reason to check the rest
+		if (rcPath != null) {
+			final int len = rcPath.getLength();
+			final int[] xs = new int[len]; // A_Path.getX(pY).mXs;
+			final int[] ys = new int[len];
+			for (int i = 0; i < len; i++) {
+				xs[i] = rcPath.getX(i);
+				ys[i] = rcPath.getY(i);
 			}
+
+			final int enCol = TowerTest.getColFromX(enemy.getX());
+			final int enRow = TowerTest.getRowFromY(enemy.getY());
+			for (int i = len - 1; i >= 0; i--) { // starts checking from the end
+				if (xs[i] == pX && ys[i] == pY) {
+					return true; // the point WAS on our remaining path
+				} else if (xs[i] == enCol && ys[i] == enRow) {
+					return false; // we found the enemy first, so no reason to check the rest
+				}
+			}
+		} else {
+			return false; // no reason to check the path if it's crapola right? :-P
 		}
 		return false; // we hit the end, so it's not on this path
 	}
@@ -264,9 +268,9 @@ public class Path implements Cloneable {
 				// if it's on the same angle as our last, then remove the previous
 				// what's our angle from the last point
 				newAngle = Math.atan2(xyPath.get(i + 1).y - xyPath.get(i).y, xyPath.get(i + 1).x - xyPath.get(i).x);
-				newAngleInverse = Math.atan2(xyPath.get(i).y - xyPath.get(i + 1).y, xyPath.get(i).x - xyPath.get(i + 1).x); // the inverse angle, allows it to treat angles
-																															// that are the opposite direction as the same
-																															// direction, therefore removing double-backs :-)
+				// note -pi/2 < newAngle < pi/2
+				newAngleInverse = ((newAngle < Math.PI) ? newAngle + Math.PI : newAngle - Math.PI); // the inverse angle, allows it to treat angles
+				// that are the opposite direction as the same direction, therefore removing double-backs :-)
 				if ((Math.abs(newAngle - currentAngle) < 0.000001) || (Math.abs(newAngleInverse - currentAngle) < 0.000001)) { // onARoll and the angles are equal
 																																// (close enough)
 					xyPath.remove(i);// remove the previous point, since it's the same angle as our current
@@ -317,12 +321,16 @@ public class Path implements Cloneable {
 	}
 
 	public Path clone(Enemy newEnemy) {
-		org.andengine.util.algorithm.path.Path tempA_Path = new org.andengine.util.algorithm.path.Path(rcPath.getLength());
-		for (int i = 0; i < rcPath.getLength(); i++)
-			tempA_Path.set(i, rcPath.getX(i), rcPath.getY(i));
-		ArrayList<Point> tempXYPath = new ArrayList<Point>();
-		for (int i = 0; i < xyPath.size(); i++)
-			tempXYPath.add(new Point(xyPath.get(i).x, xyPath.get(i).y));
-		return new Path(newEnemy, end, tmxlayer, level, tempXYPath, tempA_Path);
+		if (rcPath == null) {
+			return null;
+		} else {
+			org.andengine.util.algorithm.path.Path tempA_Path = new org.andengine.util.algorithm.path.Path(rcPath.getLength());
+			for (int i = 0; i < rcPath.getLength(); i++)
+				tempA_Path.set(i, rcPath.getX(i), rcPath.getY(i));
+			ArrayList<Point> tempXYPath = new ArrayList<Point>();
+			for (int i = 0; i < xyPath.size(); i++)
+				tempXYPath.add(new Point(xyPath.get(i).x, xyPath.get(i).y));
+			return new Path(newEnemy, end, tmxlayer, level, tempXYPath, tempA_Path);
+		}
 	}
 }

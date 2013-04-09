@@ -89,11 +89,11 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 			createNewTower = true;
 		}
 		if (pSceneTouchEvent.isActionUp()) {
+			createNewTower = true;
 			tw.setHitAreaShown(scene, false); // note: we MUST hide the hit area
 												// BEFORE setting moveable to
 												// false!
 			tw.moveable = false;
-			createNewTower = true;
 			if (tw.hasPlaceError() || TowerTest.credits < buildTower.getCredits()) {
 				// refund credits and remove tower, because they can't place it
 				// where it is
@@ -122,73 +122,7 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 				tw = new Tower(bulletTexture, newX, newY, 96, 96, towerTexture, hitAreaTextureGood, hitAreaTextureBad, scene, arrayTower, tvbom) {
 					@Override
 					public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
-						// TODO add code for upgrades, better make a separate
-						// class for it, perhaps contained within the Tower
-						// class
-						if (pSceneTouchEvent.isActionDown()) {
-							if (!currentlyDragging) {
-								lastX = pSceneTouchEvent.getX();
-								lastY = pSceneTouchEvent.getY();
-								firstX = lastX;
-								firstY = lastY;
-								distTraveled = 0;
-								showHitArea = true;
-								// Log.e("Jared","I just set showHitArea to TRUE!");
-								currentlyDragging = true;
-								firstTouchEvent = pSceneTouchEvent; // back it up
-								return true;
-							} else {
-								Log.w("onSceneTouchEvent", "I had two down touch events witout an up!");
-								return true;
-							}
-						} else if (pSceneTouchEvent.isActionMove()) {
-							distTraveled += Math.sqrt((Math.pow(lastX - pSceneTouchEvent.getX(), 2)) + (Math.pow(lastY - pSceneTouchEvent.getY(), 2)))
-									* TowerTest.zoomCamera.getZoomFactor();
-							// store x and y for next move event
-							lastX = pSceneTouchEvent.getX();
-							lastY = pSceneTouchEvent.getY();
-							if (distTraveled < TowerTest.TOWER_HEIGHT) {
-								// Log.e("Jared","distTraveled:"+distTraveled+"<TOWER_HEIGHT:"+TowerTest.TOWER_HEIGHT);
-								return true; // tell it we handled the touch event, because they haven't gone far enough (should be true)
-							} else {
-								if (showHitArea) { // that means it's the first time we've ran this, so..
-									// pSceneTouchEvent.obtain(firstTouchEvent.getX(), firstTouchEvent.getY(), firstTouchEvent.getAction(), firstTouchEvent.getPointerID(),
-									// firstTouchEvent.getMotionEvent());
-									startingOffsetX = firstX - lastX;
-									startingOffsetY = firstY - lastY;
-									TowerTest.currentXoffset = lastX - firstX;
-									TowerTest.currentYoffset = lastY - firstY;
-									// Log.e("Jared", "I modified my touch event!");
-								}
-								// Log.e("Jared","I just set showHitArea to FALSE!");
-								showHitArea = false;
-								return false; // pass it through if it's already
-												// too far
-							}
-						} else if (pSceneTouchEvent.isActionUp()) {
-							TowerTest.currentXoffset = 0;
-							TowerTest.currentYoffset = 0;
-							if (showHitArea) {
-								// Log.e("Jared","showHitArea is "+showHitArea);
-								this.remove(this, true, myContext);
-								// this.setHitAreaShown(scene, !this.getHitAreaShown()); // toggle hit area circle
-								currentlyDragging = false;
-								// Log.e("Jared", "Done dragging show it");
-								return true;
-								// do upgrade
-							} else {
-								// NOT Upgrading Tower, they were panning around
-								// Log.e("Jared","I just set showHitArea to FALSE!");
-								showHitArea = false;
-								// Log.e("Jared", "Done dragging");
-								currentlyDragging = false;
-								return false;
-							}
-						} else {
-							// Log.e("Jared","I just set showHitArea to FALSE!");
-							showHitArea = false;
-							return false;
-						}
+						return towerTouchEvent(pSceneTouchEvent);
 					}
 				}; // end of tower definition
 				tw.checkClearSpotAndPlace(scene, newX, newY, myContext);
@@ -206,4 +140,75 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 		}
 		return true;
 	}
+	
+	private boolean towerTouchEvent(TouchEvent pSceneTouchEvent) {
+		// TODO add code for upgrades, better make a separate
+		// class for it, perhaps contained within the Tower
+		// class
+		if (pSceneTouchEvent.isActionDown()) {
+			if (!currentlyDragging) {
+				lastX = pSceneTouchEvent.getX();
+				lastY = pSceneTouchEvent.getY();
+				firstX = lastX;
+				firstY = lastY;
+				distTraveled = 0;
+				showHitArea = true;
+				// Log.e("Jared","I just set showHitArea to TRUE!");
+				currentlyDragging = true;
+				firstTouchEvent = pSceneTouchEvent; // back it up
+				return true;
+			} else {
+				Log.w("onSceneTouchEvent", "I had two down touch events witout an up!");
+				return true;
+			}
+		} else if (pSceneTouchEvent.isActionMove()) {
+			distTraveled += Math.sqrt((Math.pow(lastX - pSceneTouchEvent.getX(), 2)) + (Math.pow(lastY - pSceneTouchEvent.getY(), 2)))
+					* TowerTest.zoomCamera.getZoomFactor();
+			// store x and y for next move event
+			lastX = pSceneTouchEvent.getX();
+			lastY = pSceneTouchEvent.getY();
+			if (distTraveled < TowerTest.TOWER_HEIGHT) {
+				// Log.e("Jared","distTraveled:"+distTraveled+"<TOWER_HEIGHT:"+TowerTest.TOWER_HEIGHT);
+				return true; // tell it we handled the touch event, because they haven't gone far enough (should be true)
+			} else {
+				if (showHitArea) { // that means it's the first time we've ran this, so..
+					// pSceneTouchEvent.obtain(firstTouchEvent.getX(), firstTouchEvent.getY(), firstTouchEvent.getAction(), firstTouchEvent.getPointerID(),
+					// firstTouchEvent.getMotionEvent());
+					startingOffsetX = firstX - lastX;
+					startingOffsetY = firstY - lastY;
+					TowerTest.currentXoffset = lastX - firstX;
+					TowerTest.currentYoffset = lastY - firstY;
+					// Log.e("Jared", "I modified my touch event!");
+				}
+				// Log.e("Jared","I just set showHitArea to FALSE!");
+				showHitArea = false;
+				return false; // pass it through if it's already
+								// too far
+			}
+		} else if (pSceneTouchEvent.isActionUp()) {
+			TowerTest.currentXoffset = 0;
+			TowerTest.currentYoffset = 0;
+			if (showHitArea) {
+				// Log.e("Jared","showHitArea is "+showHitArea);
+				tw.remove(tw, true, myContext);
+				// this.setHitAreaShown(scene, !this.getHitAreaShown()); // toggle hit area circle
+				currentlyDragging = false;
+				// Log.e("Jared", "Done dragging show it");
+				return true;
+				// do upgrade
+			} else {
+				// NOT Upgrading Tower, they were panning around
+				// Log.e("Jared","I just set showHitArea to FALSE!");
+				showHitArea = false;
+				// Log.e("Jared", "Done dragging");
+				currentlyDragging = false;
+				return false;
+			}
+		} else {
+			// Log.e("Jared","I just set showHitArea to FALSE!");
+			showHitArea = false;
+			return false;
+		}
+	}
+	
 }

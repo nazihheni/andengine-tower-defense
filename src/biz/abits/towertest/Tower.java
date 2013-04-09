@@ -273,18 +273,24 @@ public class Tower extends Sprite {
 		});
 		total--;
 		if (resetTile) { // we must re-calculate ALL paths, since there's no telling how to know if the one they removed will change paths :-\
-			TowerTest.tmxLayer.getTMXTileAt(tower.getX(), tower.getY()).setGlobalTileID(TowerTest.mTMXTiledMap, 30);
-			Path path;
-			// first go through and update all the enemies in the ArrayList
-			for (Enemy en : Enemy.arrayEn) {
-				path = new Path(en, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
-				en.path = path;
-				en.stop();
-				en.startMoving(myContext);
+			try {
+				TowerTest.tmxLayer.getTMXTileAt(tower.getX(), tower.getY()).setGlobalTileID(TowerTest.mTMXTiledMap, 30);
+				Path path;
+				// first go through and update all the enemies in the ArrayList
+				for (Enemy en : Enemy.arrayEn) {
+					path = new Path(en, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
+					en.path = path;
+					en.stop();
+					en.startMoving(myContext);
+				}
+				// now don't forget to update the enemyClone!
+				for (Enemy en : TowerTest.enemyClone) {
+					path = new Path(en, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
+					en.path = path;
+				}
+			} catch (NullPointerException e) {
+				//then they must be in the black void, so no need to reset the tile
 			}
-			// now don't forget to update the enemyClone!
-			path = new Path(TowerTest.enemyClone, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
-			TowerTest.enemyClone.path = path;
 		}
 	}
 
@@ -351,68 +357,77 @@ public class Tower extends Sprite {
 
 	public static boolean canPlace(float newX, float newY, boolean assignPaths, BaseGameActivity myContext, Tower tw) {
 		final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
-		int backupTileID = tmxTile.getGlobalTileID();
-
-		tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, 31);
-		// crazy loop action
-		boolean towerNotAllowed = false;
-		Path[] tempPaths = new Path[Enemy.arrayEn.size() + 1];
-		boolean[] needsNewPath = new boolean[Enemy.arrayEn.size() + 1];
-		if (assignPaths) {
-			for (int i = 0; i < Enemy.arrayEn.size(); i++) {
-				Enemy enemy = Enemy.arrayEn.get(i);
-				// if the tower is on this enemy's path, then, check if the enemy can find a new one
-				if (enemy.path.checkRemainingPath(TowerTest.getColFromX(newX), TowerTest.getRowFromY(newY))) {
-					// only then, should we check pathfinding!
-					tempPaths[i] = new Path(enemy, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
-					if (tempPaths[i].rcPath == null) {
-						// they can't put it here!
-						towerNotAllowed = true;
-						break;
-					}
-					needsNewPath[i] = true;
-				} else {
-					needsNewPath[i] = false;
-				}
-			}
-		}
-		// also, check the starting points!
-		if (!towerNotAllowed) {
-			if (TowerTest.enemyClone.path.rcPath.contains(TowerTest.getColFromX(newX), TowerTest.getColFromX(newY))) {
-				tempPaths[Enemy.arrayEn.size()] = new Path(TowerTest.enemyClone, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
-				if (tempPaths[Enemy.arrayEn.size()].rcPath == null) {
-					// they can't put it here!
-					towerNotAllowed = true;
-				}
-				needsNewPath[Enemy.arrayEn.size()] = true;
-			}
-		}
-		// now that we have all the paths, if they were all good, assign them to their enemies, otherwise remove the tower
-		lastCheckedX = newX;
-		lastCheckedY = newY;
-		if (!assignPaths) {
-			tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, backupTileID);
-			return !towerNotAllowed;
-		} else {
-			if (towerNotAllowed) { // remove it, because one enemy had a problem with it
-				tw.remove(false, myContext);
-				tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, backupTileID);
-				return false;
-			} else {
-				// go through and assign the paths, since nobody had a problem with it
+		if (tmxTile != null) {
+			int backupTileID = tmxTile.getGlobalTileID();
+			tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, 31);
+			// crazy loop action
+			boolean towerNotAllowed = false;
+			Path[] tempPaths = new Path[Enemy.arrayEn.size() + TowerTest.enemyClone.size()];
+			boolean[] needsNewPath = new boolean[Enemy.arrayEn.size() + TowerTest.enemyClone.size()];
+			if (assignPaths) {
 				for (int i = 0; i < Enemy.arrayEn.size(); i++) {
-					if (needsNewPath[i]) {
-						Enemy enemy = Enemy.arrayEn.get(i);
-						enemy.path = tempPaths[i];
-						enemy.stop();
-						enemy.startMoving(myContext);
+					Enemy enemy = Enemy.arrayEn.get(i);
+					// if the tower is on this enemy's path, then, check if the enemy can find a new one
+					if (enemy.path != null) {
+						if (enemy.path.checkRemainingPath(TowerTest.getColFromX(newX), TowerTest.getRowFromY(newY))) {
+							// only then, should we check pathfinding!
+							tempPaths[i] = new Path(enemy, TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
+							if (tempPaths[i].rcPath == null) {
+								// they can't put it here!
+								towerNotAllowed = true;
+								break;
+							}
+							needsNewPath[i] = true;
+						} else {
+							needsNewPath[i] = false;
+						}
 					}
 				}
-				if (needsNewPath[Enemy.arrayEn.size()]) {
-					TowerTest.enemyClone.path = tempPaths[Enemy.arrayEn.size()];
-				}
-				return true;
 			}
+			// also, check the starting points!
+			if (!towerNotAllowed) {
+				for (int i = 0; i < TowerTest.enemyClone.size(); i++) {
+					if (TowerTest.enemyClone.get(i).path.rcPath.contains(TowerTest.getColFromX(newX), TowerTest.getColFromX(newY))) {
+						tempPaths[Enemy.arrayEn.size() + i] = new Path(TowerTest.enemyClone.get(i), TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
+						if (tempPaths[Enemy.arrayEn.size() + i].rcPath == null) {
+							// they can't put it here!
+							towerNotAllowed = true;
+						}
+						needsNewPath[Enemy.arrayEn.size() + i] = true;
+					}
+				}
+			}
+			// now that we have all the paths, if they were all good, assign them to their enemies, otherwise remove the tower
+			lastCheckedX = newX;
+			lastCheckedY = newY;
+			if (!assignPaths) {
+				tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, backupTileID);
+				return !towerNotAllowed;
+			} else {
+				if (towerNotAllowed) { // remove it, because one enemy had a problem with it
+					tw.remove(false, myContext);
+					tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, backupTileID);
+					return false;
+				} else {
+					// go through and assign the paths, since nobody had a problem with it
+					for (int i = 0; i < Enemy.arrayEn.size(); i++) {
+						if (needsNewPath[i]) {
+							Enemy enemy = Enemy.arrayEn.get(i);
+							enemy.path = tempPaths[i];
+							enemy.stop();
+							enemy.startMoving(myContext);
+						}
+					}
+					for (int i = 0; i < TowerTest.enemyClone.size(); i++) {
+						if (needsNewPath[Enemy.arrayEn.size() + i]) {
+							TowerTest.enemyClone.get(i).path = tempPaths[Enemy.arrayEn.size() + i];
+						}
+					}
+					return true;
+				}
+			}
+		} else { //the tile is null (the tower is in the black void), so return false
+			return false;
 		}
 	}
 

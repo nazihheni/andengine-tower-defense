@@ -103,7 +103,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	public static TMXTiledMap mTMXTiledMap;
 	private ButtonSprite pauseButton;
 
-	static Waypoint lStarts[] = { new Waypoint(-1, 1) }; // define where the enemies will start at (can be 1 block off the map, and still be good)
+	static Waypoint lStarts[] = { new Waypoint(-1, 1), new Waypoint(-1, 5) }; // define where the enemies will start at (can be 1 block off the map, and still be good)
 	static Waypoint lEnds[] = { new Waypoint(15, 1) }; // define where the enemies will end at (can be 1 block off the map, and still be good)
 	static int[] waves = { 80, 2, 5, 10, 20, 40, 80, 160, 320, 640 };
 
@@ -137,7 +137,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	final String texPauseStr = "pause.png";
 	final String texPlayStr = "play.png";
 	Enemy enemy;
-	public static Enemy enemyClone;
+	public static ArrayList<Enemy> enemyClone = new ArrayList<Enemy>();
 	VertexBufferObjectManager vbom;
 	public static AStarPathFinder<Enemy> finder;
 	public static int pColMin = -1;
@@ -406,8 +406,10 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		arrayEn = new ArrayList<Enemy>();
 		final VertexBufferObjectManager tvbom = vbom;
 		finder = new AStarPathFinder<Enemy>();
-		enemyClone = new Enemy(getXFromCol(currentLevel.startLoc[0].x), getXFromCol(currentLevel.startLoc[0].y), 96, 96, enTexture, tvbom, currentLevel, scene, arrayEn);
-		enemyClone.createPath(currentLevel.endLoc[0], this, tmxLayer, arrayEn);
+		for (int i=0;i<currentLevel.startLoc.length;i++){
+			enemyClone.add(new Enemy(getXFromCol(currentLevel.startLoc[i].x), getXFromCol(currentLevel.startLoc[i].y), 96, 96, enTexture, tvbom, currentLevel, scene, arrayEn));
+			enemyClone.get(i).createPath(currentLevel.endLoc[0], this, tmxLayer, arrayEn);
+		}
 
 		Log.i("Location:", "registerUpdateHandler");
 		scene.registerUpdateHandler(hudLoop);
@@ -579,16 +581,18 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					if (currentLevel.wave[currentWaveNum] > currentEnemyCount) {
 						Log.i("waveProg", "enemy " + currentEnemyCount + "/" + currentLevel.wave[currentWaveNum] + " of wave " + currentWaveNum);
 						// TODO fix the last argument here and make startLoc compatible with multiple starting locations
-						enemy = enemyClone.clone();// new Enemy(getXFromCol(currentLevel.startLoc[0].x), getXFromCol(currentLevel.startLoc[0].y),96, 96, enTexture, tvbom,
-													// currentLevel, scene);
-						// enemy.setPathandMove(currentLevel.endLoc[0], TowerTest.this, tmxLayer, arrayEn);
-						enemy.startMoving(TowerTest.this);
-						// TODO make it assign which end location based on the wave
-						scene.attachChild(enemy);
-						arrayEn.add(enemy);
+						for (int i=0;i<currentLevel.startLoc.length;i++){
+							enemy = enemyClone.get(i).clone();// new Enemy(getXFromCol(currentLevel.startLoc[0].x), getXFromCol(currentLevel.startLoc[0].y),96, 96, enTexture, tvbom,
+														// currentLevel, scene);
+							// enemy.setPathandMove(currentLevel.endLoc[0], TowerTest.this, tmxLayer, arrayEn);
+							enemy.startMoving(TowerTest.this);
+							// TODO make it assign which end location based on the wave
+							scene.attachChild(enemy);
+							arrayEn.add(enemy);
+							currentEnemyCount++;
+						}
 						waveProgress.setProgress(1 - (float) (currentEnemyCount / currentLevel.wave[currentWaveNum]));
 						Log.i("waveProg", "" + (float) currentEnemyCount / currentLevel.wave[currentWaveNum]);
-						currentEnemyCount++;
 					} else if (currentDelayBetweenWaves < delayBetweenWaves) {
 						currentDelayBetweenWaves++;
 					}

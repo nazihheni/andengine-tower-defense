@@ -17,7 +17,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class Enemy extends Sprite {
 	// I am Enemy class
-	private int health = 5000;
+	private int health = 10000;
 	private final int credits = 10;
 	public float speed = 50.0f; // movement speed (distance to move per ?)
 	public final static String texture = "enemy.png";
@@ -134,35 +134,38 @@ public class Enemy extends Sprite {
 	}
 
 	public void startMoving(final BaseGameActivity myContext) {
-		// convert our type of path we have to their type of path
-		final org.andengine.entity.modifier.PathModifier.Path tempPath = path.getEntityPath();
+		if (path != null) {
+			// convert our type of path we have to their type of path
+			final org.andengine.entity.modifier.PathModifier.Path tempPath = path.getEntityPath();
+			if (tempPath != null) {
+				// now find the total length of the path
+				final float dist = tempPath.getLength();
 
-		// now find the total length of the path
-		final float dist = tempPath.getLength();
-
-		// D=r*t
-		// therefore t = D/r
-		trajectory = new PathModifier(dist / speed, tempPath);
-		trajectory.addModifierListener(new IModifierListener<IEntity>() {
-			@Override
-			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) { // Do stuff here if you want to
-			}
-
-			@Override
-			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-				myContext.getEngine().runOnUpdateThread(new Runnable() {
+				// D=r*t
+				// therefore t = D/r
+				trajectory = new PathModifier(dist / speed, tempPath);
+				trajectory.addModifierListener(new IModifierListener<IEntity>() {
 					@Override
-					public void run() {
-						// scene.detachChild(Enemy.this);
-						Enemy.this.detachSelf();
-						arrayEn.remove(Enemy.this);
-						// subtract a life
-						TowerTest.subtractLives(1);
+					public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) { // Do stuff here if you want to
 					}
-				}); // enemy takes damage
+
+					@Override
+					public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+						myContext.getEngine().runOnUpdateThread(new Runnable() {
+							@Override
+							public void run() {
+								// scene.detachChild(Enemy.this);
+								Enemy.this.detachSelf();
+								arrayEn.remove(Enemy.this);
+								// subtract a life
+								TowerTest.subtractLives(1);
+							}
+						}); // enemy takes damage
+					}
+				});
+				registerEntityModifier(trajectory);
 			}
-		});
-		registerEntityModifier(trajectory);
+		}
 	}
 
 	/** returns which column the enemy is in (between 0 for the first column, and 14 for the last column) */
