@@ -32,13 +32,13 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 	float startingOffsetY = 0;
 
 	TouchEvent firstTouchEvent = null;
-	/**
+	/*-*
 	 * Tells us if we can create a new tower, false = no, not allowed, true = yes, we can make a tower
 	 */
-	boolean createNewTower;
+	// boolean createNewTower;
 	boolean showHitArea;
 	boolean currentlyDragging = false;
-	private Tower tw;
+	public static Tower tw;
 	Scene scene;
 	Level level;
 	// Scene hud;
@@ -85,44 +85,42 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 	@Override
 	public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final ITouchArea pTouchArea, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
 		// touchDuration = event.getEventTime() - event.getDownTime();
-		if (pSceneTouchEvent.isActionDown()) {
-			createNewTower = true;
-		}
 		if (pSceneTouchEvent.isActionUp()) {
-			createNewTower = true;
-			tw.setHitAreaShown(scene, false); // note: we MUST hide the hit area
-												// BEFORE setting moveable to
-												// false!
-			tw.moveable = false;
-			if (tw.hasPlaceError() || TowerTest.credits < buildTower.getCredits()) {
-				// refund credits and remove tower, because they can't place it
-				// where it is
-				tw.remove(false, myContext);
-			} else {
-				final float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
-				final float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
-				Tower.canPlace(newX, newY, true, myContext, tw);
+			if (tw != null) {
+				// TODO the problem is, "isActionUp" NEVER gets called!
+				tw.setHitAreaShown(scene, false); // note: we MUST hide the hit area BEFORE setting moveable to false!
+				tw.moveable = false;
+				if (tw.hasPlaceError() || TowerTest.credits < buildTower.getCredits()) {
+					// refund credits and remove tower, because they can't place it
+					// where it is
+					tw.remove(false, myContext);
+				} else {
+					final float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
+					final float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
+					Tower.canPlace(newX, newY, true, myContext, tw);
 
-				// TODO add logic to not subtract credits if removed!!!!!!!
+					// TODO add logic to not subtract credits if removed!!!!!!!
 
-				// remove the credits, since we're placing it here
-				TowerTest.addCredits(-buildTower.getCredits());
-				Log.e("Jared", "getCol:" + tw.getCol());
-				Log.e("Jared", "getRow:" + tw.getRow());
+					// remove the credits, since we're placing it here
+					TowerTest.addCredits(-buildTower.getCredits());
+					Log.i("TowerDrop", "getCol:" + tw.getCol());
+					Log.i("TowerDrop", "getRow:" + tw.getRow());
+				}
+				// if location is good continue, else destroy tower and refund cost
+				tw = null;
+				// createNewTower = true;// do this last, so we make sure the tower gets finished before allowing more
 			}
-			// if location is good continue, else destroy tower and refund cost
-			return true;
 		} else if (pSceneTouchEvent.isActionMove()) {
-			if (createNewTower) {
+			if (tw == null) {
 				// This is the part that creates the tower when you hit the
 				// "creation" tower
-				createNewTower = false;
+				// createNewTower = false;
 				final float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX() + startingOffsetX) - buildTower.getXHandleOffset();
 				final float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY() + startingOffsetY) - buildTower.getYHandleOffset();
 				tw = new Tower(bulletTexture, newX, newY, 96, 96, towerTexture, hitAreaTextureGood, hitAreaTextureBad, scene, arrayTower, tvbom) {
 					@Override
 					public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
-						return towerTouchEvent(pSceneTouchEvent);
+						return towerTouchEvent(pSceneTouchEvent, this);
 					}
 				}; // end of tower definition
 				tw.checkClearSpotAndPlace(scene, newX, newY, myContext);
@@ -130,21 +128,20 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 				arrayTower.add(tw); // add to array
 				scene.registerTouchArea(tw); // register touch area , so this allows you to drag it
 				scene.attachChild(tw); // add it to the scene
-			} else if (tw.moveable) {
-				// This moves it to it's new position whenever they move their finger
-				final float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
-				final float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
-				tw.checkClearSpotAndPlace(scene, newX, newY, myContext);
+			} else {
+				if (tw.moveable) {
+					// This moves it to it's new position whenever they move their finger
+					final float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
+					final float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
+					tw.checkClearSpotAndPlace(scene, newX, newY, myContext);
+				}
 			}
-			return true;
 		}
 		return true;
 	}
-	
-	private boolean towerTouchEvent(TouchEvent pSceneTouchEvent) {
-		// TODO add code for upgrades, better make a separate
-		// class for it, perhaps contained within the Tower
-		// class
+
+	private boolean towerTouchEvent(TouchEvent pSceneTouchEvent, Tower thisTower) {
+		// TODO add code for upgrades, better make a separate class for it, perhaps contained within the Tower class
 		if (pSceneTouchEvent.isActionDown()) {
 			if (!currentlyDragging) {
 				lastX = pSceneTouchEvent.getX();
@@ -153,7 +150,6 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 				firstY = lastY;
 				distTraveled = 0;
 				showHitArea = true;
-				// Log.e("Jared","I just set showHitArea to TRUE!");
 				currentlyDragging = true;
 				firstTouchEvent = pSceneTouchEvent; // back it up
 				return true;
@@ -162,13 +158,12 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 				return true;
 			}
 		} else if (pSceneTouchEvent.isActionMove()) {
-			distTraveled += Math.sqrt((Math.pow(lastX - pSceneTouchEvent.getX(), 2)) + (Math.pow(lastY - pSceneTouchEvent.getY(), 2)))
-					* TowerTest.zoomCamera.getZoomFactor();
+			distTraveled += Math.sqrt((Math.pow(lastX - pSceneTouchEvent.getX(), 2)) + (Math.pow(lastY - pSceneTouchEvent.getY(), 2))) * TowerTest.zoomCamera.getZoomFactor();
 			// store x and y for next move event
 			lastX = pSceneTouchEvent.getX();
 			lastY = pSceneTouchEvent.getY();
 			if (distTraveled < TowerTest.TOWER_HEIGHT) {
-				// Log.e("Jared","distTraveled:"+distTraveled+"<TOWER_HEIGHT:"+TowerTest.TOWER_HEIGHT);
+				// Log.e("TowerCreate","distTraveled:"+distTraveled+"<TOWER_HEIGHT:"+TowerTest.TOWER_HEIGHT);
 				return true; // tell it we handled the touch event, because they haven't gone far enough (should be true)
 			} else {
 				if (showHitArea) { // that means it's the first time we've ran this, so..
@@ -178,37 +173,29 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 					startingOffsetY = firstY - lastY;
 					TowerTest.currentXoffset = lastX - firstX;
 					TowerTest.currentYoffset = lastY - firstY;
-					// Log.e("Jared", "I modified my touch event!");
 				}
-				// Log.e("Jared","I just set showHitArea to FALSE!");
 				showHitArea = false;
-				return false; // pass it through if it's already
-								// too far
+				return false; // pass it through if it's already too far
 			}
 		} else if (pSceneTouchEvent.isActionUp()) {
 			TowerTest.currentXoffset = 0;
 			TowerTest.currentYoffset = 0;
 			if (showHitArea) {
-				// Log.e("Jared","showHitArea is "+showHitArea);
-				tw.remove(tw, true, myContext);
+				thisTower.remove(thisTower, true, myContext);
 				// this.setHitAreaShown(scene, !this.getHitAreaShown()); // toggle hit area circle
 				currentlyDragging = false;
-				// Log.e("Jared", "Done dragging show it");
 				return true;
 				// do upgrade
 			} else {
 				// NOT Upgrading Tower, they were panning around
-				// Log.e("Jared","I just set showHitArea to FALSE!");
 				showHitArea = false;
-				// Log.e("Jared", "Done dragging");
 				currentlyDragging = false;
 				return false;
 			}
 		} else {
-			// Log.e("Jared","I just set showHitArea to FALSE!");
 			showHitArea = false;
 			return false;
 		}
 	}
-	
+
 }

@@ -56,6 +56,9 @@ public class Tower extends Sprite {
 	TextureRegion hitAreaTextureBad;
 	TowerRange towerRangeGood;
 	TowerRange towerRangeBad;
+	/**
+	 * Tells us that we can move the tower, also tells us that the tower can shoot, false means it can do neither thing
+	 */
 	public boolean moveable = true;
 	Projectile SpriteBullet;
 	static ArrayList<Tower> arrayTower;
@@ -274,7 +277,7 @@ public class Tower extends Sprite {
 		total--;
 		if (resetTile) { // we must re-calculate ALL paths, since there's no telling how to know if the one they removed will change paths :-\
 			try {
-				TowerTest.tmxLayer.getTMXTileAt(tower.getX(), tower.getY()).setGlobalTileID(TowerTest.mTMXTiledMap, 30);
+				TowerTest.tmxLayer.getTMXTileAt(tower.getX(), tower.getY()).setGlobalTileID(TowerTest.mTMXTiledMap, TowerTest.TILEID_CLEAR);
 				Path path;
 				// first go through and update all the enemies in the ArrayList
 				for (Enemy en : Enemy.arrayEn) {
@@ -359,7 +362,7 @@ public class Tower extends Sprite {
 		final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
 		if (tmxTile != null) {
 			int backupTileID = tmxTile.getGlobalTileID();
-			tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, 31);
+			tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, TowerTest.TILEID_BLOCKED);
 			// crazy loop action
 			boolean towerNotAllowed = false;
 			Path[] tempPaths = new Path[Enemy.arrayEn.size() + TowerTest.enemyClone.size()];

@@ -85,7 +85,9 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	public static int CAMERA_WIDTH = 1280;
 	public static int CAMERA_HEIGHT = 720;
 	public static int TOWER_WIDTH = 96;
-	public static int TOWER_HEIGHT = 96;
+	public static int TOWER_HEIGHT = 96; // poop
+	public final static int TILEID_BLOCKED = 31;
+	public final static int TILEID_CLEAR = 30;
 	public static ZoomCamera zoomCamera;
 	/** used to offset the pan to adjust for panning from a tower */
 	public static float currentXoffset = 0;
@@ -302,6 +304,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		waveProgress.setProgressColor(1.0f, 0.0f, 0.0f, 1.0f).setFrameColor(0.4f, 0.4f, 0.4f, 1.0f).setBackColor(0.0f, 0.0f, 0.0f, 0.2f);
 		// waveProgress.setMax(wave_size);
 		zoomCamera.setHUD(hud);
+		hud.attachChild(waveProgress);
 		// zoomCamera.setHUD(waveProgress); //TODO fix this
 		// =====================================
 		// TMXTileMap
@@ -406,8 +409,9 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		arrayEn = new ArrayList<Enemy>();
 		final VertexBufferObjectManager tvbom = vbom;
 		finder = new AStarPathFinder<Enemy>();
-		for (int i=0;i<currentLevel.startLoc.length;i++){
-			enemyClone.add(new Enemy(getXFromCol(currentLevel.startLoc[i].x), getXFromCol(currentLevel.startLoc[i].y), 96, 96, enTexture, tvbom, currentLevel, scene, arrayEn));
+		for (int i = 0; i < currentLevel.startLoc.length; i++) {
+			enemyClone
+					.add(new Enemy(getXFromCol(currentLevel.startLoc[i].x), getXFromCol(currentLevel.startLoc[i].y), 96, 96, enTexture, tvbom, currentLevel, scene, arrayEn));
 			enemyClone.get(i).createPath(currentLevel.endLoc[0], this, tmxLayer, arrayEn);
 		}
 
@@ -446,6 +450,11 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	 */
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
+		if (BuildTowerTouchHandler.tw != null) {
+			BuildTowerTouchHandler.tw.detachSelf();// this ensures that bad towers get removed
+			BuildTowerTouchHandler.tw = null;
+		}
+
 		mPinchZoomDetector.onTouchEvent(pSceneTouchEvent);
 		if (mPinchZoomDetector.isZooming()) {
 			mScrollDetector.setEnabled(false);
@@ -563,7 +572,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	int currentWaveNum = 0;
 	int currentEnemyCount = 0;
 	int currentDelayBetweenWaves = 0;
-	final float delay = 32; // delay between adding enemies
+	final float delay = 3; // delay between adding enemies
 	final int delayBetweenWaves = 3;
 	TimerHandler enemy_handler;
 
@@ -581,9 +590,10 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					if (currentLevel.wave[currentWaveNum] > currentEnemyCount) {
 						Log.i("waveProg", "enemy " + currentEnemyCount + "/" + currentLevel.wave[currentWaveNum] + " of wave " + currentWaveNum);
 						// TODO fix the last argument here and make startLoc compatible with multiple starting locations
-						for (int i=0;i<currentLevel.startLoc.length;i++){
-							enemy = enemyClone.get(i).clone();// new Enemy(getXFromCol(currentLevel.startLoc[0].x), getXFromCol(currentLevel.startLoc[0].y),96, 96, enTexture, tvbom,
-														// currentLevel, scene);
+						for (int i = 0; i < currentLevel.startLoc.length; i++) {
+							enemy = enemyClone.get(i).clone();// new Enemy(getXFromCol(currentLevel.startLoc[0].x), getXFromCol(currentLevel.startLoc[0].y),96, 96, enTexture,
+																// tvbom,
+							// currentLevel, scene);
 							// enemy.setPathandMove(currentLevel.endLoc[0], TowerTest.this, tmxLayer, arrayEn);
 							enemy.startMoving(TowerTest.this);
 							// TODO make it assign which end location based on the wave
@@ -683,11 +693,11 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		TowerTest.zoomCamera.offsetCenter((-pDistanceX) / zoomFactor - currentXoffset, (-pDistanceY) / zoomFactor - currentYoffset);
 		currentXoffset = 0;
 		currentYoffset = 0;
-		// Log.e("Jared", "currentXoffset:"+currentXoffset);
-		// Log.e("Jared", "currentYoffset:"+currentYoffset);
+		// Log.e("ScenePan", "currentXoffset:"+currentXoffset);
+		// Log.e("ScenePan", "currentYoffset:"+currentYoffset);
 
-		// Log.e("Jared", "pDistanceX:"+pDistanceX);
-		// Log.e("Jared", "pDistanceY:"+pDistanceY);
+		// Log.e("ScenePan", "pDistanceX:"+pDistanceX);
+		// Log.e("ScenePan", "pDistanceY:"+pDistanceY);
 
 	}
 
