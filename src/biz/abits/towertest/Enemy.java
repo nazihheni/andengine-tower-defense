@@ -19,7 +19,7 @@ public class Enemy extends Sprite {
 	// I am Enemy class
 	private int health = 10000;
 	private final int credits = 10;
-	public float speed = 50.0f; // movement speed (distance to move per ?)
+	public float speed = 500.0f; // movement speed (distance to move per ?)
 	public final static String texture = "enemy.png";
 	public Path path;
 	private PathModifier trajectory;

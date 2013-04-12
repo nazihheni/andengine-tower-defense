@@ -56,6 +56,7 @@ import org.andengine.util.debug.Debug;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.Toast;
@@ -100,14 +101,14 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	private float mPinchZoomStartedCameraZoomFactor;
 
 	private HUD hud;
-	private PauseableScene scene;
+	private static PauseableScene scene;
 	private ProgressBar waveProgress; // add to wave class
 	public static TMXTiledMap mTMXTiledMap;
-	private ButtonSprite pauseButton;
+	private static ButtonSprite pauseButton;
 
-	static Waypoint lStarts[] = { new Waypoint(-1, 1), new Waypoint(-1, 5) }; // define where the enemies will start at (can be 1 block off the map, and still be good)
+	static Waypoint lStarts[] = { new Waypoint(-1, 0), new Waypoint(-1, 1), new Waypoint(-1, 2), new Waypoint(-1, 3), new Waypoint(-1, 4), new Waypoint(-1, 5), new Waypoint(-1, 6) }; // define where the enemies will start at (can be 1 block off the map, and still be good)
 	static Waypoint lEnds[] = { new Waypoint(15, 1) }; // define where the enemies will end at (can be 1 block off the map, and still be good)
-	static int[] waves = { 80, 2, 5, 10, 20, 40, 80, 160, 320, 640 };
+	static int[] waves = { 1, 2, 5, 10}; //, 20, 40, 80, 160, 320, 640 
 
 	public static Level currentLevel = new Level(waves, lStarts, lEnds);
 
@@ -302,7 +303,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		// number of enemies remaining
 		waveProgress = new ProgressBar(zoomCamera, 20, 64, 100, 10, getVertexBufferObjectManager());
 		waveProgress.setProgressColor(1.0f, 0.0f, 0.0f, 1.0f).setFrameColor(0.4f, 0.4f, 0.4f, 1.0f).setBackColor(0.0f, 0.0f, 0.0f, 0.2f);
-		// waveProgress.setMax(wave_size);
+		waveProgress.setProgress(0);
 		zoomCamera.setHUD(hud);
 		hud.attachChild(waveProgress);
 		// zoomCamera.setHUD(waveProgress); //TODO fix this
@@ -561,11 +562,21 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 
 	public static void subtractLives(long pLives) {
 		lives -= pLives;
-		if (lives < 0) {
+		if (lives < 1) {
+			//they is dead bitches!
+			//loseGame();
 			lives = 0;
 		}
 		livesText.setText(lives + " lives");
 		livesMask.setWidth(livesText.getWidth());
+	}
+	
+	private static void loseGame() {
+		if (!TowerTest.paused) {
+			togglePauseGame();
+			//Toast.makeText(getBaseContext(), "LOSER!", Toast.LENGTH_LONG);
+			Log.e("LOSER!","Wrong Wrong Wrong, fingerpistols, you LOSE!");
+		}
 	}
 
 	// break this all out to a wave class, also use SpriteBatch
@@ -601,8 +612,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 							arrayEn.add(enemy);
 							currentEnemyCount++;
 						}
-						waveProgress.setProgress(1 - (float) (currentEnemyCount / currentLevel.wave[currentWaveNum]));
-						Log.i("waveProg", "" + (float) currentEnemyCount / currentLevel.wave[currentWaveNum]);
+						waveProgress.setProgress(((float) currentWaveNum / (float) currentLevel.wave.length)*100);
+						Log.i("waveProg", "" + (float) (currentWaveNum)+"/"+(float) (currentLevel.wave.length));
 					} else if (currentDelayBetweenWaves < delayBetweenWaves) {
 						currentDelayBetweenWaves++;
 					}
@@ -735,7 +746,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		TowerTest.zoomCamera.setZoomFactor(Math.min(Math.max(TowerTest.MIN_ZOOM, mPinchZoomStartedCameraZoomFactor * pZoomFactor), TowerTest.MAX_ZOOM));
 	}
 
-	public void togglePauseGame() {
+	public static void togglePauseGame() {
 		paused = !paused;
 		pauseButton.setCurrentTileIndex((paused) ? 1 : 0);
 		scene.setPaused(paused);
