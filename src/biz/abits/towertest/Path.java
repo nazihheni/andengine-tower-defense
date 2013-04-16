@@ -29,6 +29,7 @@ public class Path implements Cloneable {
 	private Waypoint end;
 	private Level level;
 	private ArrayList<Point> xyPath;
+	final static private double tolerance = 0.000001;
 
 	// public org.andengine.entity.modifier.PathModifier.Path xyPath;
 
@@ -263,16 +264,16 @@ public class Path implements Cloneable {
 		// first remove all middle-nodes
 		if (xyPath.size() > 2) { // no point in doing it if the line is already as short as it can be
 			// set the starting angle to the first two points
-			currentAngle = Math.atan2(xyPath.get(1).y - xyPath.get(0).y, xyPath.get(1).x - xyPath.get(0).x);
+			currentAngle = Math.atan2(xyPath.get(1).y - xyPath.get(0).y, xyPath.get(1).x - xyPath.get(0).x); // -pi to pi
+			// currentAngle = ((currentAngle < 0) ? currentAngle + 2 * Math.PI : currentAngle); //make it positive
 			for (int i = 1; i < xyPath.size() - 1; i++) { // flip through all the points to see if we should remove the previous
 				// if it's on the same angle as our last, then remove the previous
 				// what's our angle from the last point
 				newAngle = Math.atan2(xyPath.get(i + 1).y - xyPath.get(i).y, xyPath.get(i + 1).x - xyPath.get(i).x);
-				// note -pi/2 < newAngle < pi/2
-				newAngleInverse = ((newAngle < Math.PI) ? newAngle + Math.PI : newAngle - Math.PI); // the inverse angle, allows it to treat angles
+				newAngleInverse = ((newAngle > 0) ? newAngle - Math.PI : newAngle + Math.PI); // the inverse angle, allows it to treat angles
 				// that are the opposite direction as the same direction, therefore removing double-backs :-)
-				if ((Math.abs(newAngle - currentAngle) < 0.000001) || (Math.abs(newAngleInverse - currentAngle) < 0.000001)) { // onARoll and the angles are equal
-																																// (close enough)
+				if ((Math.abs(newAngle - currentAngle) < tolerance) || (Math.abs(newAngleInverse - currentAngle) < tolerance)) { // onARoll and the angles are equal
+																																	// (close enough)
 					xyPath.remove(i);// remove the previous point, since it's the same angle as our current
 					i--;
 				} else {
@@ -284,40 +285,39 @@ public class Path implements Cloneable {
 	}
 
 	/**
-	 * Trims the path to where the enemy is
+	 * gets the direction (in radians) that the enemy is traveling
 	 * 
-	 * @param pX x value in coordinates (NOT int column, int row)
-	 * @param pY y value in coordinates (NOT int column, int row)
+	 * @return angle (between -pi and pi)
 	 */
-	private void trimPathToEnemy() {
-		int trimNum = 0;
-		for (int i = 0; i < xyPath.size() - 1; i++) { // flip through all the segments to check (- 1 is because we're doing segments)
-			if (xyPath.get(i).x == xyPath.get(i + 1).x) { // Vertical segment
-				if (enemy.getX() == xyPath.get(i).x)
-					if (((xyPath.get(i).y <= enemy.getY()) && (enemy.getY() <= xyPath.get(i + 1).y))
-							|| ((xyPath.get(i + 1).y <= enemy.getY()) && (enemy.getY() <= xyPath.get(i).y))) {
-						Log.e("Jared", "I'm AM on the path");
-						trimNum = i;
-					}
-			} else { // Horizontal segment //if(xyPath.getY(i) == xyPath.getY(i+1)){
-				if (enemy.getY() == xyPath.get(i).y)
-					if (((xyPath.get(i).x <= enemy.getX()) && (enemy.getX() <= xyPath.get(i + 1).x))
+	public double getCurrentAngle() {
+		double m;
+		double b;
+		if (xyPath.size() > 1) {
+			for (int i = 0; i < xyPath.size() - 1; i++) { // flip through all the segments
+				if (((xyPath.get(i).y <= enemy.getY()) && (enemy.getY() <= xyPath.get(i + 1).y))
+						|| ((xyPath.get(i + 1).y <= enemy.getY()) && (enemy.getY() <= xyPath.get(i).y))) { // getY() is between y1 and y2
+					if (((xyPath.get(i).x <= enemy.getX()) && (enemy.getX() <= xyPath.get(i + 1).x)) // getX() is between x1 and x2
 							|| ((xyPath.get(i + 1).x <= enemy.getX()) && (enemy.getX() <= xyPath.get(i).x))) {
-						Log.e("Jared", "I'm AM on the path");
-						trimNum = i;
+						// that means it could be on our line (it's within our box of x1,y1, and x2,y2 all that's left is to check the equation of the line
+						// y = m * x + b
+						// b = y1 - mx1
+						if ((xyPath.get(i + 1).x - xyPath.get(i).x) == 0) { // vertical line, therefore
+							if (Math.abs(enemy.getX() - xyPath.get(i).x) < tolerance) {
+								return Math.atan2(xyPath.get(i + 1).y - xyPath.get(i).y, xyPath.get(i + 1).x - xyPath.get(i).x);
+							}
+						} else {
+							m = (xyPath.get(i + 1).y - xyPath.get(i).y) / (xyPath.get(i + 1).x - xyPath.get(i).x);
+							b = xyPath.get(i).y - m * xyPath.get(i).x;
+							if (Math.abs((m * enemy.getX() + b) - enemy.getY()) < tolerance) {
+								return Math.atan2(xyPath.get(i + 1).y - xyPath.get(i).y, xyPath.get(i + 1).x - xyPath.get(i).x);
+							}
+						}
 					}
+				}
 			}
 		}
-		// now remove everything before trimNum and tack on the enemy's current xy
-		if (trimNum > 0) {
-			Log.e("Jared", "Removing overlapping path");
-			for (int i = trimNum + 1; i >= 0; i--) {
-				Log.e("Jared", "Removing " + xyPath.get(i).x + "" + xyPath.get(i).y);
-			}
-			for (int i = trimNum + 1; i >= 0; i--) {
-				xyPath.remove(i);
-			}
-		}
+		Log.w("Path", "Warning, enemy was not found on his path!");
+		return 0; // return 0 if all else fails
 	}
 
 	public Path clone(Enemy newEnemy) {

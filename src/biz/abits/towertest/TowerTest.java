@@ -106,9 +106,10 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	public static TMXTiledMap mTMXTiledMap;
 	private static ButtonSprite pauseButton;
 
-	static Waypoint lStarts[] = { new Waypoint(-1, 0), new Waypoint(-1, 1), new Waypoint(-1, 2), new Waypoint(-1, 3), new Waypoint(-1, 4), new Waypoint(-1, 5), new Waypoint(-1, 6) }; // define where the enemies will start at (can be 1 block off the map, and still be good)
+	static Waypoint lStarts[] = { new Waypoint(-1, 0) };// , new Waypoint(-1, 1), new Waypoint(-1, 2), new Waypoint(-1, 3), new Waypoint(-1, 4), new Waypoint(-1, 5), new
+														// Waypoint(-1, 6) }; // define where the enemies will start at (can be 1 block off the map, and still be good)
 	static Waypoint lEnds[] = { new Waypoint(15, 1) }; // define where the enemies will end at (can be 1 block off the map, and still be good)
-	static int[] waves = { 1, 2, 5, 10}; //, 20, 40, 80, 160, 320, 640 
+	static int[] waves = { 1, 2, 5, 10, 20, 40, 80, 160, 320, 640 };
 
 	public static Level currentLevel = new Level(waves, lStarts, lEnds);
 
@@ -563,19 +564,19 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	public static void subtractLives(long pLives) {
 		lives -= pLives;
 		if (lives < 1) {
-			//they is dead bitches!
-			//loseGame();
+			// they is dead bitches!
+			// loseGame();
 			lives = 0;
 		}
 		livesText.setText(lives + " lives");
 		livesMask.setWidth(livesText.getWidth());
 	}
-	
+
 	private static void loseGame() {
 		if (!TowerTest.paused) {
 			togglePauseGame();
-			//Toast.makeText(getBaseContext(), "LOSER!", Toast.LENGTH_LONG);
-			Log.e("LOSER!","Wrong Wrong Wrong, fingerpistols, you LOSE!");
+			// Toast.makeText(getBaseContext(), "LOSER!", Toast.LENGTH_LONG);
+			Log.e("LOSER!", "Wrong Wrong Wrong, fingerpistols, you LOSE!");
 		}
 	}
 
@@ -599,7 +600,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					// int x = a.nextInt(CAMERA_WIDTH-60)+20;
 					// int y = a.nextInt(CAMERA_HEIGHT-60)+20;
 					if (currentLevel.wave[currentWaveNum] > currentEnemyCount) {
-						Log.i("waveProg", "enemy " + currentEnemyCount + "/" + currentLevel.wave[currentWaveNum] + " of wave " + currentWaveNum);
+						Log.i("waveProg", "enemy " + currentEnemyCount + "/" + currentLevel.wave[currentWaveNum] + " of wave " + currentWaveNum + "/"
+								+ currentLevel.wave.length);
 						// TODO fix the last argument here and make startLoc compatible with multiple starting locations
 						for (int i = 0; i < currentLevel.startLoc.length; i++) {
 							enemy = enemyClone.get(i).clone();// new Enemy(getXFromCol(currentLevel.startLoc[0].x), getXFromCol(currentLevel.startLoc[0].y),96, 96, enTexture,
@@ -612,8 +614,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 							arrayEn.add(enemy);
 							currentEnemyCount++;
 						}
-						waveProgress.setProgress(((float) currentWaveNum / (float) currentLevel.wave.length)*100);
-						Log.i("waveProg", "" + (float) (currentWaveNum)+"/"+(float) (currentLevel.wave.length));
+						waveProgress.setProgress(((float) currentWaveNum / (float) currentLevel.wave.length) * 100);
 					} else if (currentDelayBetweenWaves < delayBetweenWaves) {
 						currentDelayBetweenWaves++;
 					}

@@ -13,13 +13,11 @@ import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.util.modifier.IModifier;
 import org.andengine.util.modifier.IModifier.IModifierListener;
 
-import com.badlogic.gdx.math.Vector2;
-
 public class Enemy extends Sprite {
 	// I am Enemy class
-	private int health = 10000;
+	private int health = 100000;
 	private final int credits = 10;
-	public float speed = 500.0f; // movement speed (distance to move per ?)
+	public float speed = 50.0f; // movement speed (distance to move per ?)
 	public final static String texture = "enemy.png";
 	public Path path;
 	private PathModifier trajectory;
@@ -27,7 +25,6 @@ public class Enemy extends Sprite {
 	public boolean isAlive = true;
 	// static (only set once) area
 	public static ArrayList<Enemy> arrayEn;
-	private static Scene scene;
 	private static Level level;
 
 	/**
@@ -46,7 +43,6 @@ public class Enemy extends Sprite {
 	public Enemy(float pX, float pY, float pWidth, float pHeight, ITextureRegion iTextureRegion, VertexBufferObjectManager tvbom, Level plevel, Scene sc,
 			ArrayList<Enemy> pArrayEn) {
 		super(pX, pY, pWidth, pHeight, iTextureRegion, tvbom);
-		scene = sc;
 		level = plevel;
 		arrayEn = pArrayEn;
 	}
@@ -109,20 +105,16 @@ public class Enemy extends Sprite {
 		return credits;
 	}
 
-	public Vector2 getPosition() {
-		return new Vector2(getX(), getY());
+	public double getXSpeed() {
+		return Math.cos(getCurrentAngle()) * speed;
 	}
 
-	public Vector2 getVelocity() {
-		return new Vector2(speed, 0); // hard-coded to horizontal for now
+	public double getYSpeed() {
+		return Math.sin(getCurrentAngle()) * speed;
 	}
-
-	public float getXSpeed() {
-		return speed;
-	}
-
-	public float getYSpeed() {
-		return 0;
+	
+	public double getCurrentAngle() {
+		return path.getCurrentAngle();		
 	}
 
 	public float getMidX() {
