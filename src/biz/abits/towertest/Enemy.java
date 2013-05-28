@@ -2,6 +2,7 @@ package biz.abits.towertest;
 
 import java.util.ArrayList;
 
+import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.PathModifier;
 import org.andengine.entity.scene.Scene;
@@ -20,12 +21,15 @@ public class Enemy extends Sprite {
 	public float speed = 50.0f; // movement speed (distance to move per ?)
 	public final static String texture = "enemy.png";
 	public Path path;
+	public ProgressBar healthBar;
+	public ZoomCamera camP;
 	private PathModifier trajectory;
 	/** used to verify that the target hasn't died yet, makes sure that they don't get duplicate kill credit for more than one bullet hitting target and striking killing blow */
 	public boolean isAlive = true;
 	// static (only set once) area
 	public static ArrayList<Enemy> arrayEn;
 	private static Level level;
+	
 
 	/**
 	 * Create a new enemy with a set Path list of waypoints (also sets static variables)
@@ -45,6 +49,7 @@ public class Enemy extends Sprite {
 		super(pX, pY, pWidth, pHeight, iTextureRegion, tvbom);
 		level = plevel;
 		arrayEn = pArrayEn;
+		
 	}
 
 	/**
@@ -67,6 +72,11 @@ public class Enemy extends Sprite {
 
 	public void setPathandMove(Waypoint pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
 		createPath(pEnd, myContext, pTmxlayer, arrayEn);
+		camP = new ZoomCamera(0, 0, Enemy.SPRITE_SIZE, Enemy.SPRITE_SIZE);
+		healthBar = new ProgressBar(camP, 20, 64, 100, 10, getVertexBufferObjectManager());
+		healthBar.setProgressColor(1.0f, 0.0f, 0.0f, 1.0f).setFrameColor(0.4f, 0.4f, 0.4f, 1.0f).setBackColor(0.0f, 0.0f, 0.0f, 0.2f);
+		healthBar.setProgress(0);
+		this.attachChild(healthBar);
 		// path = new Path(Enemy.this, pEnd, pTmxlayer, level);
 		startMoving(myContext);
 	}

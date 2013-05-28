@@ -614,7 +614,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 							arrayEn.add(enemy);
 							currentEnemyCount++;
 						}
-						waveProgress.setProgress(((float) currentWaveNum / (float) currentLevel.wave.length) * 100);
+						waveProgress.setProgress(((float) (currentWaveNum + 1) / (float) currentLevel.wave.length) * 100);
 					} else if (currentDelayBetweenWaves < delayBetweenWaves) {
 						currentDelayBetweenWaves++;
 					}
