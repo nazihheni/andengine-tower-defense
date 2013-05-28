@@ -9,6 +9,7 @@ import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.opengl.texture.region.ITextureRegion;
+import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.util.modifier.IModifier;
@@ -22,7 +23,9 @@ public class Enemy extends Sprite {
 	public final static String texture = "enemy.png";
 	public Path path;
 	public ProgressBar healthBar;
-	public ZoomCamera camP;
+	TowerRange towerRangeGood;
+	private static ZoomCamera zoomCamera;
+	static TextureRegion hitAreaTextureGood;
 	private PathModifier trajectory;
 	/** used to verify that the target hasn't died yet, makes sure that they don't get duplicate kill credit for more than one bullet hitting target and striking killing blow */
 	public boolean isAlive = true;
@@ -45,11 +48,12 @@ public class Enemy extends Sprite {
 	 * @param pArrayEn
 	 */
 	public Enemy(float pX, float pY, float pWidth, float pHeight, ITextureRegion iTextureRegion, VertexBufferObjectManager tvbom, Level plevel, Scene sc,
-			ArrayList<Enemy> pArrayEn) {
+			ArrayList<Enemy> pArrayEn, ZoomCamera pZoomCamera, TextureRegion pHitAreaTextureGood) { //used to create the first enemy that we later clone
 		super(pX, pY, pWidth, pHeight, iTextureRegion, tvbom);
 		level = plevel;
 		arrayEn = pArrayEn;
-		
+		zoomCamera = pZoomCamera;
+		hitAreaTextureGood = pHitAreaTextureGood;
 	}
 
 	/**
@@ -63,7 +67,19 @@ public class Enemy extends Sprite {
 	 * @param tvbom
 	 */
 	public Enemy(float pX, float pY, float pWidth, float pHeight, ITextureRegion iTextureRegion, VertexBufferObjectManager tvbom) {
+		//used by the clone function
 		super(pX, pY, pWidth, pHeight, iTextureRegion, tvbom);
+		/*towerRangeGood = new TowerRange(0, 0, hitAreaTextureGood, getVertexBufferObjectManager());
+		towerRangeGood.setPosition(0, 0);
+		this.attachChild(towerRangeGood);*/
+		
+		healthBar = new ProgressBar(null, 20, 64, 100, 10, tvbom);
+		healthBar.setProgressColor(1.0f, 0.0f, 0.0f, 1.0f).setFrameColor(0.4f, 0.4f, 0.4f, 1.0f).setBackColor(0.0f, 0.0f, 0.0f, 0.2f);
+		healthBar.setProgress(0);
+		healthBar.setPosition(0, 0);
+		this.attachChild(healthBar);
+		
+		//camP = new ZoomCamera(0, 0, Enemy.SPRITE_SIZE, Enemy.SPRITE_SIZE);
 	}
 
 	public void createPath(Waypoint pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
@@ -72,11 +88,6 @@ public class Enemy extends Sprite {
 
 	public void setPathandMove(Waypoint pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
 		createPath(pEnd, myContext, pTmxlayer, arrayEn);
-		camP = new ZoomCamera(0, 0, Enemy.SPRITE_SIZE, Enemy.SPRITE_SIZE);
-		healthBar = new ProgressBar(camP, 20, 64, 100, 10, getVertexBufferObjectManager());
-		healthBar.setProgressColor(1.0f, 0.0f, 0.0f, 1.0f).setFrameColor(0.4f, 0.4f, 0.4f, 1.0f).setBackColor(0.0f, 0.0f, 0.0f, 0.2f);
-		healthBar.setProgress(0);
-		this.attachChild(healthBar);
 		// path = new Path(Enemy.this, pEnd, pTmxlayer, level);
 		startMoving(myContext);
 	}

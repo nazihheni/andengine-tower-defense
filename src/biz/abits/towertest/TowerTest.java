@@ -413,7 +413,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		finder = new AStarPathFinder<Enemy>();
 		for (int i = 0; i < currentLevel.startLoc.length; i++) {
 			enemyClone
-					.add(new Enemy(getXFromCol(currentLevel.startLoc[i].x), getXFromCol(currentLevel.startLoc[i].y), 96, 96, enTexture, tvbom, currentLevel, scene, arrayEn));
+					.add(new Enemy(getXFromCol(currentLevel.startLoc[i].x), getXFromCol(currentLevel.startLoc[i].y), 96, 96, enTexture, tvbom, currentLevel, scene, arrayEn, zoomCamera, hitAreaTextureGood));
 			enemyClone.get(i).createPath(currentLevel.endLoc[0], this, tmxLayer, arrayEn);
 		}
 
