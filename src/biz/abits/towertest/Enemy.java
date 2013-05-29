@@ -73,10 +73,9 @@ public class Enemy extends Sprite {
 		towerRangeGood.setPosition(0, 0);
 		this.attachChild(towerRangeGood);*/
 		
-		healthBar = new ProgressBar(null, 20, 64, 100, 10, tvbom);
+		healthBar = new ProgressBar(0, 0, 100, 10, tvbom);
 		healthBar.setProgressColor(1.0f, 0.0f, 0.0f, 1.0f).setFrameColor(0.4f, 0.4f, 0.4f, 1.0f).setBackColor(0.0f, 0.0f, 0.0f, 0.2f);
-		healthBar.setProgress(0);
-		healthBar.setPosition(0, 0);
+		healthBar.setProgress(100);
 		this.attachChild(healthBar);
 		
 		//camP = new ZoomCamera(0, 0, Enemy.SPRITE_SIZE, Enemy.SPRITE_SIZE);
@@ -105,6 +104,7 @@ public class Enemy extends Sprite {
 	 */
 	public int takeDamage(int amount, String type) {
 		health -= amount;
+		//update health bar
 		return health;
 	}
 

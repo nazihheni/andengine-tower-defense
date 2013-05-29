@@ -11,5 +11,6 @@
 	<classpathentry exported="true" kind="lib" path="/AndEngine/bin/andengine.jar"/>
 	<classpathentry exported="true" kind="lib" path="/AndEnginePhysicsBox2DExtension/bin/andenginephysicsbox2dextension.jar"/>
 	<classpathentry exported="true" kind="lib" path="/AndEngineTMXTiledMapExtension/bin/andenginetmxtiledmapextension.jar"/>
+	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
