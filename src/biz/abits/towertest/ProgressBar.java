@@ -24,13 +24,15 @@ public class ProgressBar extends Rectangle {
 	private final Rectangle mProgressRectangle;
 
 	private float mPixelsPerPercentRatio;
+	private float mMaxValue;
 
 	// ===========================================================
 	// Constructors
 	// ===========================================================
-	public ProgressBar(final float pX, final float pY, final float pWidth, final float pHeight, VertexBufferObjectManager tvbom) {
+	public ProgressBar(final float pX, final float pY, final float pWidth, final float pHeight, float pMaxValue, VertexBufferObjectManager tvbom) {
 		super(pX, pY, pWidth, pHeight, tvbom);
 		this.mProgressRectangle = new Rectangle(0, 0, pWidth, pHeight, tvbom);
+		this.mMaxValue = pMaxValue;
 		this.mPixelsPerPercentRatio = pWidth / 100;
 		this.mFrameLines[0] = new Line(0, 0, 0 + pWidth, 0, FRAME_LINE_WIDTH, tvbom); // Top line.
 		this.mFrameLines[1] = new Line(0 + pWidth, 0, 0 + pWidth, 0 + pHeight, FRAME_LINE_WIDTH, tvbom); // Right line.
@@ -63,14 +65,26 @@ public class ProgressBar extends Rectangle {
 	/**
 	 * Set the current progress of this progress bar.
 	 * 
-	 * @param pProgress is <b> BETWEEN </b> 0 - 100.
+	 * @param pProgress is <b> BETWEEN </b> 0 - mMaxValue.
 	 */
-	public ProgressBar setProgress(final float pProgress) {
+	public ProgressBar setProgress(float pProgress) {
 		if (pProgress < 0)
-			this.mProgressRectangle.setWidth(0); // This is an internal check
-													// for my specific game, you
-													// can remove it.
-		this.mProgressRectangle.setWidth(this.mPixelsPerPercentRatio * pProgress);
+			this.mProgressRectangle.setWidth(0);
+		else if (pProgress > mMaxValue) //set it to the minimum
+			this.mProgressRectangle.setWidth(this.getWidth() * 1); //set it to the maximum
+		else
+			this.mProgressRectangle.setWidth(this.getWidth() * pProgress / mMaxValue);
+		
+		return this;
+	}
+	
+	/**
+	 * used to adjust the maximum value of the progressbar, it's initial value is set in the constructor though!
+	 * @param pMax is the new maximum value
+	 * @return the ProgressBar
+	 */
+	public ProgressBar setMax(final float pMax) {
+		this.mMaxValue = pMax;
 		return this;
 	}
 

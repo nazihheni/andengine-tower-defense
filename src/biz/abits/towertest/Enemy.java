@@ -17,7 +17,8 @@ import org.andengine.util.modifier.IModifier.IModifierListener;
 
 public class Enemy extends Sprite {
 	// I am Enemy class
-	private int health = 100000;
+	static private final int maxHealth = 100000;
+	private int health = maxHealth;
 	private final int credits = 10;
 	public float speed = 50.0f; // movement speed (distance to move per ?)
 	public final static String texture = "enemy.png";
@@ -72,10 +73,9 @@ public class Enemy extends Sprite {
 		/*towerRangeGood = new TowerRange(0, 0, hitAreaTextureGood, getVertexBufferObjectManager());
 		towerRangeGood.setPosition(0, 0);
 		this.attachChild(towerRangeGood);*/
-		
-		healthBar = new ProgressBar(0, 0, 100, 10, tvbom);
+		healthBar = new ProgressBar(0, 0, 100, 10, maxHealth, tvbom);
 		healthBar.setProgressColor(1.0f, 0.0f, 0.0f, 1.0f).setFrameColor(0.4f, 0.4f, 0.4f, 1.0f).setBackColor(0.0f, 0.0f, 0.0f, 0.2f);
-		healthBar.setProgress(100);
+		healthBar.setProgress(maxHealth);
 		this.attachChild(healthBar);
 		
 		//camP = new ZoomCamera(0, 0, Enemy.SPRITE_SIZE, Enemy.SPRITE_SIZE);
@@ -105,6 +105,7 @@ public class Enemy extends Sprite {
 	public int takeDamage(int amount, String type) {
 		health -= amount;
 		//update health bar
+		this.healthBar.setProgress(health);		
 		return health;
 	}
 

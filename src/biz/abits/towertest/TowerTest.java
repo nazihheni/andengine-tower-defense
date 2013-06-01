@@ -302,7 +302,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		// HUD does not move with camera, it is stationary
 		hud = new HUD();
 		// number of enemies remaining
-		waveProgress = new ProgressBar(20, 70, 100, 10, getVertexBufferObjectManager());
+		waveProgress = new ProgressBar(20, 70, 100, 10, currentLevel.wave.length, getVertexBufferObjectManager());
 		waveProgress.setProgressColor(1.0f, 0.0f, 0.0f, 1.0f).setFrameColor(0.4f, 0.4f, 0.4f, 1.0f).setBackColor(0.0f, 0.0f, 0.0f, 0.2f);
 		waveProgress.setProgress(0);
 		zoomCamera.setHUD(hud);
@@ -614,7 +614,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 							arrayEn.add(enemy);
 							currentEnemyCount++;
 						}
-						waveProgress.setProgress(((float) (currentWaveNum + 1) / (float) currentLevel.wave.length) * 100);
+						waveProgress.setProgress((float) (currentWaveNum + 1));
 					} else if (currentDelayBetweenWaves < delayBetweenWaves) {
 						currentDelayBetweenWaves++;
 					}
