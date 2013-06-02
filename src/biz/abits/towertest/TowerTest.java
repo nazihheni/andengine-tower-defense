@@ -302,7 +302,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		// HUD does not move with camera, it is stationary
 		hud = new HUD();
 		// number of enemies remaining
-		waveProgress = new ProgressBar(20, 70, 100, 10, currentLevel.wave.length, getVertexBufferObjectManager());
+		waveProgress = new ProgressBar(20, 70, 100, 10, currentLevel.wave.length, 0, getVertexBufferObjectManager());
 		waveProgress.setProgressColor(1.0f, 0.0f, 0.0f, 1.0f).setFrameColor(0.4f, 0.4f, 0.4f, 1.0f).setBackColor(0.0f, 0.0f, 0.0f, 0.2f);
 		waveProgress.setProgress(0);
 		zoomCamera.setHUD(hud);
@@ -413,7 +413,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		finder = new AStarPathFinder<Enemy>();
 		for (int i = 0; i < currentLevel.startLoc.length; i++) {
 			enemyClone
-					.add(new Enemy(getXFromCol(currentLevel.startLoc[i].x), getXFromCol(currentLevel.startLoc[i].y), 96, 96, enTexture, tvbom, currentLevel, scene, arrayEn, zoomCamera, hitAreaTextureGood));
+					.add(new Enemy(getXFromCol(currentLevel.startLoc[i].x), getXFromCol(currentLevel.startLoc[i].y), 96, 96, enTexture, tvbom, currentLevel, scene, arrayEn));
 			enemyClone.get(i).createPath(currentLevel.endLoc[0], this, tmxLayer, arrayEn);
 		}
 
