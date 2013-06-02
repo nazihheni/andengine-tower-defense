@@ -42,11 +42,9 @@ public class Enemy extends Sprite {
 	 * @param iTextureRegion
 	 * @param tvbom
 	 * @param plevel
-	 * @param sc
 	 * @param pArrayEn
 	 */
-	public Enemy(float pX, float pY, float pWidth, float pHeight, ITextureRegion iTextureRegion, VertexBufferObjectManager tvbom, Level plevel, Scene sc,
-			ArrayList<Enemy> pArrayEn) { //used to create the first enemy that we later clone
+	public Enemy(float pX, float pY, float pWidth, float pHeight, ITextureRegion iTextureRegion, VertexBufferObjectManager tvbom, Level plevel, ArrayList<Enemy> pArrayEn) { //used to create the first enemy that we later clone
 		super(pX, pY, pWidth, pHeight, iTextureRegion, tvbom);
 		level = plevel;
 		arrayEn = pArrayEn;
@@ -72,12 +70,6 @@ public class Enemy extends Sprite {
 
 	public void createPath(Waypoint pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
 		path = new Path(Enemy.this, pEnd, pTmxlayer, level);
-	}
-
-	public void setPathandMove(Waypoint pEnd, BaseGameActivity myContext, TMXLayer pTmxlayer, ArrayList<Enemy> arrayEn) {
-		createPath(pEnd, myContext, pTmxlayer, arrayEn);
-		// path = new Path(Enemy.this, pEnd, pTmxlayer, level);
-		startMoving(myContext);
 	}
 
 	public void stop() {

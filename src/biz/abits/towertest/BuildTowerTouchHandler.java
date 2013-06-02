@@ -50,7 +50,6 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 	TextureRegion hitAreaTextureGood;
 	TextureRegion hitAreaTextureBad;
 	ArrayList<Enemy> arrayEn;
-	VertexBufferObjectManager tvbom;
 	BaseGameActivity myContext;
 
 	/**
@@ -73,7 +72,6 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 		arrayTower = al;
 		bulletTexture = btex;
 		towerTexture = ttex;
-		tvbom = vbom;
 		hitAreaTextureGood = hagtex;
 		hitAreaTextureBad = habtex;
 		level = pLevel;
@@ -117,7 +115,7 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 				// createNewTower = false;
 				final float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX() + startingOffsetX) - buildTower.getXHandleOffset();
 				final float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY() + startingOffsetY) - buildTower.getYHandleOffset();
-				tw = new Tower(bulletTexture, newX, newY, 96, 96, towerTexture, hitAreaTextureGood, hitAreaTextureBad, scene, arrayTower, tvbom) {
+				tw = new Tower(bulletTexture, newX, newY, 96, 96, towerTexture, hitAreaTextureGood, hitAreaTextureBad, scene, arrayTower, BuildTowerTouchHandler.this.myContext.getVertexBufferObjectManager()) {
 					@Override
 					public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 						return towerTouchEvent(pSceneTouchEvent, this);

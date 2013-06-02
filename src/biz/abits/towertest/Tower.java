@@ -67,7 +67,6 @@ public class Tower extends Sprite {
 	static float lastCheckedY = 0;
 
 	// int speed = 500;
-	VertexBufferObjectManager vbom;
 	ArrayList<Projectile> arrayBullets; // may change to spritebatch
 
 	// Body range = PhysicsFactory.createCircularBody();
@@ -88,14 +87,13 @@ public class Tower extends Sprite {
 			TextureRegion hitAreaTextureBad, Scene pScene, ArrayList<Tower> pArrayTower, VertexBufferObjectManager tvbom) {
 		super(pX, pY, pWidth, pHeight, pTextureRegion, tvbom);
 		// towerRangeGood.setPosition(pX, pY);
-		vbom = tvbom;
 		bullet = b; // we need bullet TextureRegion to make one
 		// x=pX; //some x n y of the tower
 		// y=pY;
 		scene = pScene;
 		arrayBullets = new ArrayList<Projectile>(); // create a new ArrayList
-		towerRangeGood = new TowerRange(0, 0, hitAreaTextureGood, vbom);
-		towerRangeBad = new TowerRange(0, 0, hitAreaTextureBad, vbom);
+		towerRangeGood = new TowerRange(0, 0, hitAreaTextureGood, getVertexBufferObjectManager());
+		towerRangeBad = new TowerRange(0, 0, hitAreaTextureBad, getVertexBufferObjectManager());
 		towerRangeGood.setPosition(this.getWidth() / 2 - towerRangeGood.getWidth() / 2, this.getHeight() / 2 - towerRangeGood.getHeight() / 2);
 		towerRangeBad.setPosition(this.getWidth() / 2 - towerRangeBad.getWidth() / 2, this.getHeight() / 2 - towerRangeBad.getHeight() / 2);
 		arrayTower = pArrayTower;
@@ -120,7 +118,7 @@ public class Tower extends Sprite {
 		if (elapsed > cooldown * cdMod && !moveable) { // not on cooldown, and
 														// not actively being
 														// placed
-			SpriteBullet = new Projectile(source.getMidX(), source.getMidY(), 10f, 10f, bullet, vbom, scene); // READY?!?
+			SpriteBullet = new Projectile(source.getMidX(), source.getMidY(), 10f, 10f, bullet, getVertexBufferObjectManager(), scene); // READY?!?
 			SpriteBullet.setTarget(this, target); // AIM...
 			SpriteBullet.shoot(arrayEn, myContext); // FIIIIIRE!!!!
 			arrayBullets.add(SpriteBullet);
@@ -342,18 +340,23 @@ public class Tower extends Sprite {
 			if (tmxTileProperties.containsTMXProperty("Collidable", "False")) {
 				// set the circle to red (it has an error)
 				this.setTowerPlaceError(scene, true);
+				
+				Log.e("Jared","CAN NOT PLACE ON CACTI "+newX+","+newY);
 			} else {
 				if ((newX != lastCheckedX) || (newY != lastCheckedY)) { // only check it if we haven't checked it yet
 					if (Tower.canPlace(newX, newY, false, myContext, this)) {
 						// set the circle to green
 						this.setTowerPlaceError(scene, false);
+						Log.e("Jared","Can Place Here");
 					} else {
 						this.setTowerPlaceError(scene, true);
+						Log.e("Jared","CAN NOT PLACE HERE");
 					}
 				}
 			}
 		} catch (Exception e) { // this happens when it's drug off the map
 			this.setTowerPlaceError(scene, true);
+			Log.e("Jared","ERROR returning TMXTiledMap Properties!!!");
 		}
 		this.setPosition(newX, newY);
 	}
@@ -390,13 +393,18 @@ public class Tower extends Sprite {
 			// also, check the starting points!
 			if (!towerNotAllowed) {
 				for (int i = 0; i < TowerTest.enemyClone.size(); i++) {
-					if (TowerTest.enemyClone.get(i).path.rcPath.contains(TowerTest.getColFromX(newX), TowerTest.getColFromX(newY))) {
-						tempPaths[Enemy.arrayEn.size() + i] = new Path(TowerTest.enemyClone.get(i), TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
-						if (tempPaths[Enemy.arrayEn.size() + i].rcPath == null) {
-							// they can't put it here!
-							towerNotAllowed = true;
+					if (TowerTest.enemyClone.get(i).path == null) {
+						towerNotAllowed = true;
+						Log.e("Jared","Warning, a starting point doesn't have a path!!!");
+					} else {
+						if (TowerTest.enemyClone.get(i).path.rcPath.contains(TowerTest.getColFromX(newX), TowerTest.getColFromX(newY))) {
+							tempPaths[Enemy.arrayEn.size() + i] = new Path(TowerTest.enemyClone.get(i), TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
+							if (tempPaths[Enemy.arrayEn.size() + i].rcPath == null) {
+								// they can't put it here!
+								towerNotAllowed = true;
+							}
+							needsNewPath[Enemy.arrayEn.size() + i] = true;
 						}
-						needsNewPath[Enemy.arrayEn.size() + i] = true;
 					}
 				}
 			}

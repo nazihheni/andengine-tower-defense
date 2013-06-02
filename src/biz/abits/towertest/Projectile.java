@@ -21,12 +21,10 @@ public class Projectile extends Sprite {
 											// (distance to move per update)
 	public MoveByModifier trajectory;
 	public MoveByModifier targetTrajectory;
-	VertexBufferObjectManager vbom;
 	public static String texture = "bullet.png";
 
 	public Projectile(float pX, float pY, float pWidth, float pHeight, TextureRegion pTextureRegion, VertexBufferObjectManager tvbom, Scene sc) {
 		super(pX, pY, pWidth, pHeight, pTextureRegion, tvbom);
-		vbom = tvbom;
 		scene = sc;
 	}
 

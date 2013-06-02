@@ -106,7 +106,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	public static TMXTiledMap mTMXTiledMap;
 	private static ButtonSprite pauseButton;
 
-	static Waypoint lStarts[] = { new Waypoint(-1, 0) };// , new Waypoint(-1, 1), new Waypoint(-1, 2), new Waypoint(-1, 3), new Waypoint(-1, 4), new Waypoint(-1, 5), new
+	static Waypoint lStarts[] = { new Waypoint(0, 0) };// , new Waypoint(-1, 1), new Waypoint(-1, 2), new Waypoint(-1, 3), new Waypoint(-1, 4), new Waypoint(-1, 5), new
 														// Waypoint(-1, 6) }; // define where the enemies will start at (can be 1 block off the map, and still be good)
 	static Waypoint lEnds[] = { new Waypoint(15, 1) }; // define where the enemies will end at (can be 1 block off the map, and still be good)
 	static int[] waves = { 1, 2, 5, 10, 20, 40, 80, 160, 320, 640 };
@@ -142,7 +142,6 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	final String texPlayStr = "play.png";
 	Enemy enemy;
 	public static ArrayList<Enemy> enemyClone = new ArrayList<Enemy>();
-	VertexBufferObjectManager vbom;
 	public static AStarPathFinder<Enemy> finder;
 	public static int pColMin = -1;
 	public static int pRowMin = -1;
@@ -238,15 +237,14 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		enTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, Enemy.texture);
 		hitAreaTextureGood = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, hitAreaTexGoodStr);
 		hitAreaTextureBad = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, hitAreaTexBadStr);
-		texPause = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, texPauseStr);// TowerTest.loadSprite(getTextureManager(), this,
-																														// texPauseStr);
-		texPlay = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, texPlayStr);// TowerTest.loadSprite(getTextureManager(), this,
-																														// texPlayStr);
+		texPause = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, texPauseStr);// TowerTest.loadSprite(getTextureManager(), this, texPauseStr);
+		texPlay = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, texPlayStr);// TowerTest.loadSprite(getTextureManager(), this, texPlayStr);
 		try {
 			this.mBitmapTextureAtlas.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 0, 0));
 			this.mBitmapTextureAtlas.load();
 		} catch (TextureAtlasBuilderException e) {
 			Debug.e(e);
+			Log.e("Jared","this.mBitmapTextureAtlas.load(); FAILURE!!!");
 		}
 
 		// =================================================================================//
@@ -409,13 +407,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		// arrayBullet = new ArrayList<Sprite>(); //useless // we have array of
 		// bullets in Tower class
 		arrayEn = new ArrayList<Enemy>();
-		final VertexBufferObjectManager tvbom = vbom;
 		finder = new AStarPathFinder<Enemy>();
-		for (int i = 0; i < currentLevel.startLoc.length; i++) {
-			enemyClone
-					.add(new Enemy(getXFromCol(currentLevel.startLoc[i].x), getXFromCol(currentLevel.startLoc[i].y), 96, 96, enTexture, tvbom, currentLevel, scene, arrayEn));
-			enemyClone.get(i).createPath(currentLevel.endLoc[0], this, tmxLayer, arrayEn);
-		}
 
 		Log.i("Location:", "registerUpdateHandler");
 		scene.registerUpdateHandler(hudLoop);
@@ -441,7 +433,19 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		hud.setOnAreaTouchListener(btth);
 		// scene.setOnAreaTouchListener(btth);
 
-		add_enemy(getVertexBufferObjectManager()); // timer add enemy every amount of defined secs
+		for (int i = 0; i < currentLevel.startLoc.length; i++) {
+			if (enTexture == null) {
+				Log.e("Jared","=============================");
+				Log.e("Jared","=============================");
+				Log.e("Jared","our enemyClone texure is null");
+				Log.e("Jared","=============================");
+				Log.e("Jared","=============================");
+			}
+			enemyClone.add(new Enemy(getXFromCol(currentLevel.startLoc[i].x), getXFromCol(currentLevel.startLoc[i].y), 96, 96, enTexture, getVertexBufferObjectManager(), currentLevel, arrayEn));
+			enemyClone.get(i).createPath(currentLevel.endLoc[0], this, tmxLayer, arrayEn);
+			//scene.attachChild(enemyClone.get(i));
+		}
+		start_waves(); // timer add enemy every amount of defined secs
 		return scene;
 	}
 
@@ -588,8 +592,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	final int delayBetweenWaves = 3;
 	TimerHandler enemy_handler;
 
-	public void add_enemy(VertexBufferObjectManager vbom) {
-		final VertexBufferObjectManager tvbom = vbom;
+	public void start_waves() {
 		enemy_handler = new TimerHandler(delay, true, new ITimerCallback() {
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
@@ -604,13 +607,11 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 								+ currentLevel.wave.length);
 						// TODO fix the last argument here and make startLoc compatible with multiple starting locations
 						for (int i = 0; i < currentLevel.startLoc.length; i++) {
-							enemy = enemyClone.get(i).clone();// new Enemy(getXFromCol(currentLevel.startLoc[0].x), getXFromCol(currentLevel.startLoc[0].y),96, 96, enTexture,
-																// tvbom,
-							// currentLevel, scene);
+							enemy = enemyClone.get(i).clone();// new Enemy(getXFromCol(currentLevel.startLoc[0].x), getXFromCol(currentLevel.startLoc[0].y),96, 96, enTexture, tvbom, currentLevel, scene);
+							scene.attachChild(enemy);
 							// enemy.setPathandMove(currentLevel.endLoc[0], TowerTest.this, tmxLayer, arrayEn);
 							enemy.startMoving(TowerTest.this);
 							// TODO make it assign which end location based on the wave
-							scene.attachChild(enemy);
 							arrayEn.add(enemy);
 							currentEnemyCount++;
 						}
@@ -752,6 +753,24 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		pauseButton.setCurrentTileIndex((paused) ? 1 : 0);
 		scene.setPaused(paused);
 	}
+
+	/*
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if(this.mEngine != null && !this.mEngine.isRunning()){
+			this.mEngine.start();
+		}
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		if(this.mEngine != null && this.mEngine.isRunning()){
+			this.mEngine.stop();
+		}
+	};
+	*/
 
 	public static TextureRegion loadSprite(TextureManager tm, Context c, String strtex) {
 		TextureRegion tr;
