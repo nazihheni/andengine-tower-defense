@@ -589,7 +589,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	int currentWaveNum = 0;
 	int currentEnemyCount = 0;
 	int currentDelayBetweenWaves = 0;
-	final float delay = 3; // delay between adding enemies
+	final float delay = 8; // delay between adding enemies
 	final int delayBetweenWaves = 3;
 	TimerHandler enemy_handler;
 

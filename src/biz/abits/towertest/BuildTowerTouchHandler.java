@@ -93,9 +93,9 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 					// where it is
 					tw.remove(false, myContext);
 				} else {
-					final float newX = TowerTest.sceneTransX(pSceneTouchEvent.getX()) - tw.getXHandleOffset();
-					final float newY = TowerTest.sceneTransY(pSceneTouchEvent.getY()) - tw.getYHandleOffset();
-					Tower.canPlace(newX, newY, true, myContext, tw);
+					/*final float newX = TowerTest.sceneTransX(tw.getX()) - tw.getXHandleOffset();
+					final float newY = TowerTest.sceneTransY(tw.getY()) - tw.getYHandleOffset();*/
+					tw.canPlace(true, myContext, tw);
 
 					// TODO add logic to not subtract credits if removed!!!!!!!
 
@@ -181,6 +181,7 @@ public class BuildTowerTouchHandler implements IOnAreaTouchListener {
 			if (showHitArea) {
 				thisTower.remove(thisTower, true, myContext);
 				// this.setHitAreaShown(scene, !this.getHitAreaShown()); // toggle hit area circle
+				//TODO I have this temporarily disabled so we can quickly tap to delete towers
 				currentlyDragging = false;
 				return true;
 				// do upgrade

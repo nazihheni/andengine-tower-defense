@@ -329,39 +329,63 @@ public class Tower extends Sprite {
 	 * @param myContext
 	 */
 	public void checkClearSpotAndPlace(Scene scene, float newX, float newY, BaseGameActivity myContext) {
-		final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
-		try {
-			final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile.getGlobalTileID());
+		//try {
+			final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX+this.getXHandleOffset(), newY+this.getYHandleOffset());
 			// Snaps tower to tile
-			if (TowerTest.enableSnap) {
-				newX = tmxTile.getTileX();
-				newY = tmxTile.getTileY();
-			}
-			if (tmxTileProperties.containsTMXProperty("Collidable", "False")) {
-				// set the circle to red (it has an error)
+			if (tmxTile == null) {
 				this.setTowerPlaceError(scene, true);
-				
-				Log.e("Jared","CAN NOT PLACE ON CACTI "+newX+","+newY);
+				//Log.e("Jared","ERROR finding tile!!!");
+				this.setPosition(newX, newY);
 			} else {
-				if ((newX != lastCheckedX) || (newY != lastCheckedY)) { // only check it if we haven't checked it yet
-					if (Tower.canPlace(newX, newY, false, myContext, this)) {
-						// set the circle to green
-						this.setTowerPlaceError(scene, false);
-						Log.e("Jared","Can Place Here");
-					} else {
-						this.setTowerPlaceError(scene, true);
-						Log.e("Jared","CAN NOT PLACE HERE");
+				if (TowerTest.enableSnap) {
+					newX = tmxTile.getTileX()/* + this.getXHandleOffset()*/;
+					newY = tmxTile.getTileY()/* + this.getYHandleOffset()*/;
+					//TowerTest.tmxLayer.getTMXTileAt(newX, newY);
+					//newX = tmxTile.getTileX();
+					//newY = tmxTile.getTileY();
+				}
+				this.setPosition(newX, newY);
+				final TMXProperties<TMXTileProperty> tmxTileProperties = TowerTest.mTMXTiledMap.getTMXTileProperties(tmxTile.getGlobalTileID());
+				if (tmxTileProperties.containsTMXProperty("Collidable", "False")) {
+					// set the circle to red (it has an error)
+					this.setTowerPlaceError(scene, true);
+					//Log.e("Jared","CAN NOT PLACE ON CACTI "+newX+","+newY);
+				} else {
+					if ((newX != lastCheckedX) || (newY != lastCheckedY)) { // only check it if we haven't checked it yet
+						if (this.canPlace(false, myContext, this)) {
+							// set the circle to green
+							this.setTowerPlaceError(scene, false);
+							//Log.e("Jared","Can Place Here");
+						} else {
+							this.setTowerPlaceError(scene, true);
+							//Log.e("Jared","CAN NOT PLACE HERE");
+						}
 					}
 				}
 			}
-		} catch (Exception e) { // this happens when it's drug off the map
+			lastCheckedX = newX;
+			lastCheckedY = newY;
+		/*} catch (Exception e) { // this happens when it's drug off the map
 			this.setTowerPlaceError(scene, true);
 			Log.e("Jared","ERROR returning TMXTiledMap Properties!!!");
-		}
-		this.setPosition(newX, newY);
+			this.setPosition(newX, newY);
+		}*/
 	}
 
-	public static boolean canPlace(float newX, float newY, boolean assignPaths, BaseGameActivity myContext, Tower tw) {
+	/**
+	 * Checks to see if a tower can be placed there.
+	 * Checks:
+	 * 
+	 * @param newX
+	 * @param newY
+	 * @param assignPaths
+	 * @param myContext
+	 * @param tw
+	 * @return
+	 */
+	public boolean canPlace(boolean assignPaths, BaseGameActivity myContext, Tower tw) {
+		float newX = tw.getX(); 
+		float newY = tw.getY();
 		final TMXTile tmxTile = TowerTest.tmxLayer.getTMXTileAt(newX, newY);
 		if (tmxTile != null) {
 			int backupTileID = tmxTile.getGlobalTileID();
@@ -371,6 +395,7 @@ public class Tower extends Sprite {
 			Path[] tempPaths = new Path[Enemy.arrayEn.size() + TowerTest.enemyClone.length];
 			boolean[] needsNewPath = new boolean[Enemy.arrayEn.size() + TowerTest.enemyClone.length];
 			if (assignPaths) {
+				//check all the enemy paths to see if they can find a new path
 				for (int i = 0; i < Enemy.arrayEn.size(); i++) {
 					Enemy enemy = Enemy.arrayEn.get(i);
 					// if the tower is on this enemy's path, then, check if the enemy can find a new one
@@ -409,8 +434,6 @@ public class Tower extends Sprite {
 				}
 			}
 			// now that we have all the paths, if they were all good, assign them to their enemies, otherwise remove the tower
-			lastCheckedX = newX;
-			lastCheckedY = newY;
 			if (!assignPaths) {
 				tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, backupTileID);
 				return !towerNotAllowed;
