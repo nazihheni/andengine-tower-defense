@@ -368,8 +368,8 @@ public class Tower extends Sprite {
 			tmxTile.setGlobalTileID(TowerTest.mTMXTiledMap, TowerTest.TILEID_BLOCKED);
 			// crazy loop action
 			boolean towerNotAllowed = false;
-			Path[] tempPaths = new Path[Enemy.arrayEn.size() + TowerTest.enemyClone.size()];
-			boolean[] needsNewPath = new boolean[Enemy.arrayEn.size() + TowerTest.enemyClone.size()];
+			Path[] tempPaths = new Path[Enemy.arrayEn.size() + TowerTest.enemyClone.length];
+			boolean[] needsNewPath = new boolean[Enemy.arrayEn.size() + TowerTest.enemyClone.length];
 			if (assignPaths) {
 				for (int i = 0; i < Enemy.arrayEn.size(); i++) {
 					Enemy enemy = Enemy.arrayEn.get(i);
@@ -392,13 +392,13 @@ public class Tower extends Sprite {
 			}
 			// also, check the starting points!
 			if (!towerNotAllowed) {
-				for (int i = 0; i < TowerTest.enemyClone.size(); i++) {
-					if (TowerTest.enemyClone.get(i).path == null) {
+				for (int i = 0; i < TowerTest.enemyClone.length; i++) {
+					if (TowerTest.enemyClone[i].path == null) {
 						towerNotAllowed = true;
 						Log.e("Jared","Warning, a starting point doesn't have a path!!!");
 					} else {
-						if (TowerTest.enemyClone.get(i).path.rcPath.contains(TowerTest.getColFromX(newX), TowerTest.getColFromX(newY))) {
-							tempPaths[Enemy.arrayEn.size() + i] = new Path(TowerTest.enemyClone.get(i), TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
+						if (TowerTest.enemyClone[i].path.rcPath.contains(TowerTest.getColFromX(newX), TowerTest.getColFromX(newY))) {
+							tempPaths[Enemy.arrayEn.size() + i] = new Path(TowerTest.enemyClone[i], TowerTest.currentLevel.endLoc[0], TowerTest.tmxLayer, TowerTest.currentLevel);
 							if (tempPaths[Enemy.arrayEn.size() + i].rcPath == null) {
 								// they can't put it here!
 								towerNotAllowed = true;
@@ -429,9 +429,9 @@ public class Tower extends Sprite {
 							enemy.startMoving(myContext);
 						}
 					}
-					for (int i = 0; i < TowerTest.enemyClone.size(); i++) {
+					for (int i = 0; i < TowerTest.enemyClone.length; i++) {
 						if (needsNewPath[Enemy.arrayEn.size() + i]) {
-							TowerTest.enemyClone.get(i).path = tempPaths[Enemy.arrayEn.size() + i];
+							TowerTest.enemyClone[i].path = tempPaths[Enemy.arrayEn.size() + i];
 						}
 					}
 					return true;

@@ -140,8 +140,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	final String hitAreaTexBadStr = "towerRangeBad.png";
 	final String texPauseStr = "pause.png";
 	final String texPlayStr = "play.png";
-	Enemy enemy;
-	public static ArrayList<Enemy> enemyClone = new ArrayList<Enemy>();
+	public static Enemy enemyClone[];
 	public static AStarPathFinder<Enemy> finder;
 	public static int pColMin = -1;
 	public static int pRowMin = -1;
@@ -432,7 +431,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 
 		hud.setOnAreaTouchListener(btth);
 		// scene.setOnAreaTouchListener(btth);
-
+		enemyClone = new Enemy[currentLevel.startLoc.length];
+		
 		for (int i = 0; i < currentLevel.startLoc.length; i++) {
 			if (enTexture == null) {
 				Log.e("Jared","=============================");
@@ -441,8 +441,9 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 				Log.e("Jared","=============================");
 				Log.e("Jared","=============================");
 			}
-			enemyClone.add(new Enemy(getXFromCol(currentLevel.startLoc[i].x), getXFromCol(currentLevel.startLoc[i].y), 96, 96, enTexture, getVertexBufferObjectManager(), currentLevel, arrayEn));
-			enemyClone.get(i).createPath(currentLevel.endLoc[0], this, tmxLayer, arrayEn);
+			enemyClone[i] = new Enemy(getXFromCol(currentLevel.startLoc[i].x), getXFromCol(currentLevel.startLoc[i].y), 96, 96, enTexture, getVertexBufferObjectManager(), currentLevel, arrayEn); 
+			//enemyClone.add();
+			enemyClone[i].createPath(currentLevel.endLoc[0], this, tmxLayer, arrayEn);
 			//scene.attachChild(enemyClone.get(i));
 		}
 		start_waves(); // timer add enemy every amount of defined secs
@@ -603,11 +604,11 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 					// int x = a.nextInt(CAMERA_WIDTH-60)+20;
 					// int y = a.nextInt(CAMERA_HEIGHT-60)+20;
 					if (currentLevel.wave[currentWaveNum] > currentEnemyCount) {
-						Log.i("waveProg", "enemy " + currentEnemyCount + "/" + currentLevel.wave[currentWaveNum] + " of wave " + currentWaveNum + "/"
-								+ currentLevel.wave.length);
+						Log.i("waveProg", "enemy " + currentEnemyCount + "/" + currentLevel.wave[currentWaveNum] + " of wave " + currentWaveNum + "/" + currentLevel.wave.length);
 						// TODO fix the last argument here and make startLoc compatible with multiple starting locations
 						for (int i = 0; i < currentLevel.startLoc.length; i++) {
-							enemy = enemyClone.get(i).clone();// new Enemy(getXFromCol(currentLevel.startLoc[0].x), getXFromCol(currentLevel.startLoc[0].y),96, 96, enTexture, tvbom, currentLevel, scene);
+							Enemy enemy;
+							enemy = enemyClone[i].clone();// new Enemy(getXFromCol(currentLevel.startLoc[0].x), getXFromCol(currentLevel.startLoc[0].y),96, 96, enTexture, tvbom, currentLevel, scene);
 							scene.attachChild(enemy);
 							// enemy.setPathandMove(currentLevel.endLoc[0], TowerTest.this, tmxLayer, arrayEn);
 							enemy.startMoving(TowerTest.this);
