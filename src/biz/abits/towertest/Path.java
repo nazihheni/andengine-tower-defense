@@ -28,7 +28,7 @@ public class Path implements Cloneable {
 	public org.andengine.util.algorithm.path.Path rcPath;
 	private Waypoint end;
 	private Level level;
-	private ArrayList<Point> xyPath;
+	public ArrayList<Point> xyPath;
 	final static private double tolerance = 0.000001;
 
 	// public org.andengine.entity.modifier.PathModifier.Path xyPath;

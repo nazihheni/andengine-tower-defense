@@ -45,8 +45,6 @@ public class Tower extends Sprite {
 	TextureRegion bullet;
 	private static String strFire = "tower.ogg";
 	private static Sound soundFire;
-	float targetX;
-	float targetY;
 	private boolean placeError = false;
 	private boolean hitAreaShown = false;
 	private boolean hitAreaGoodShown = false;
@@ -125,31 +123,35 @@ public class Tower extends Sprite {
 			lastFire = System.currentTimeMillis();
 			// TODO check sound settings
 			soundFire.play();
+			Sprite myBullet = this.getLastBulletSprite();
+			scene.attachChild(myBullet);
 			return true;
 		} else
 			return false;
 	}
 
+	/**
+	 * Called by TowerTest to make the Tower fire a bullet at the Enemy
+	 * Note, it just calls fire(enemy, this, scene, arrayEn, myContext)
+	 * 
+	 * @param enemy to be fired at
+	 * @param scene to attach bullet to
+	 * @param arrayEn used if the Enemy dies
+	 * @param myContext used for threading in the Projectile
+	 */
 	public void fire(Enemy enemy, Scene scene, ArrayList<Enemy> arrayEn, BaseGameActivity myContext) {
 		if (!TowerTest.paused) {
 			try {
-				targetX = enemy.getMidX(); // simple get the enemy x,y and center it and tell the bullet where to aim and fire
-				targetY = enemy.getMidY();
 				// call fire from the tower
-				boolean fired = this.fire(enemy, this, scene, arrayEn, myContext); // Asks the tower to open fire and places
+				//boolean fired = 
+				this.fire(enemy, this, scene, arrayEn, myContext); // Asks the tower to open fire and places
 																					// the bullet in middle of tower
-				if (fired) {
-					// ArrayList<Projectile> towerBulletList = this.getArrayList(); // gets bullets from Tower class where our bullets are fired from
-					Sprite myBullet = this.getLastBulletSprite();
-					scene.attachChild(myBullet);
-					// for(Sprite bullet : towerBulletList){
-					/*
-					 * for(int i = 0; i < towerBulletList.size(); i++){ Projectile bullet; bullet = towerBulletList.get(i); if(bullet.isDone()) { //collidesWith(enemy)){
-					 * //WARNING: This function should be called from within postRunnable(Runnable) which is registered to a Scene or the Engine itself, because otherwise it
-					 * may throw an IndexOutOfBoundsException in the Update-Thread or the GL-Thread! //nevermind, I threw it in the listener for the bullet onModifierFinished
-					 * listener! } }
-					 */
-				}
+				/*
+				 * for(int i = 0; i < towerBulletList.size(); i++){ Projectile bullet; bullet = towerBulletList.get(i); if(bullet.isDone()) { //collidesWith(enemy)){
+				 * //WARNING: This function should be called from within postRunnable(Runnable) which is registered to a Scene or the Engine itself, because otherwise it
+				 * may throw an IndexOutOfBoundsException in the Update-Thread or the GL-Thread! //nevermind, I threw it in the listener for the bullet onModifierFinished
+				 * listener! } }
+				 */
 			} catch (Exception e) {
 
 			}

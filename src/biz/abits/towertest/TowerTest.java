@@ -86,7 +86,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	public static int CAMERA_WIDTH = 1280;
 	public static int CAMERA_HEIGHT = 720;
 	public static int TOWER_WIDTH = 96;
-	public static int TOWER_HEIGHT = 96; // poop
+	public static int TOWER_HEIGHT = 96;
 	public final static int TILEID_BLOCKED = 31;
 	public final static int TILEID_CLEAR = 30;
 	public static ZoomCamera zoomCamera;
@@ -109,7 +109,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	static Waypoint lStarts[] = { new Waypoint(0, 0) };// , new Waypoint(-1, 1), new Waypoint(-1, 2), new Waypoint(-1, 3), new Waypoint(-1, 4), new Waypoint(-1, 5), new
 														// Waypoint(-1, 6) }; // define where the enemies will start at (can be 1 block off the map, and still be good)
 	static Waypoint lEnds[] = { new Waypoint(15, 1) }; // define where the enemies will end at (can be 1 block off the map, and still be good)
-	static int[] waves = { 1, 2, 5, 10, 20, 40, 80, 160, 320, 640 };
+	static int[] waves = { 1, 5, 10, 20, 40, 80, 160, 320, 640 };
 
 	public static Level currentLevel = new Level(waves, lStarts, lEnds);
 
@@ -434,13 +434,6 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		enemyClone = new Enemy[currentLevel.startLoc.length];
 		
 		for (int i = 0; i < currentLevel.startLoc.length; i++) {
-			if (enTexture == null) {
-				Log.e("Jared","=============================");
-				Log.e("Jared","=============================");
-				Log.e("Jared","our enemyClone texure is null");
-				Log.e("Jared","=============================");
-				Log.e("Jared","=============================");
-			}
 			enemyClone[i] = new Enemy(getXFromCol(currentLevel.startLoc[i].x), getXFromCol(currentLevel.startLoc[i].y), 96, 96, enTexture, getVertexBufferObjectManager(), currentLevel, arrayEn); 
 			//enemyClone.add();
 			enemyClone[i].createPath(currentLevel.endLoc[0], this, tmxLayer, arrayEn);
@@ -590,7 +583,7 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	int currentEnemyCount = 0;
 	int currentDelayBetweenWaves = 0;
 	final float delay = 8; // delay between adding enemies
-	final int delayBetweenWaves = 3;
+	final int delayBetweenWaves = 10;
 	TimerHandler enemy_handler;
 
 	public void start_waves() {

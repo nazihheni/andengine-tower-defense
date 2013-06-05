@@ -2,18 +2,17 @@ package biz.abits.towertest;
 
 import java.util.ArrayList;
 
-import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.PathModifier;
-import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.opengl.texture.region.ITextureRegion;
-import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.util.modifier.IModifier;
 import org.andengine.util.modifier.IModifier.IModifierListener;
+
+import android.util.Log;
 
 public class Enemy extends Sprite {
 	// I am Enemy class
@@ -30,6 +29,7 @@ public class Enemy extends Sprite {
 	// static (only set once) area
 	public static ArrayList<Enemy> arrayEn;
 	private static Level level;
+	final static private double tolerance = 0.000001;
 	
 
 	/**
@@ -108,17 +108,17 @@ public class Enemy extends Sprite {
 		return credits;
 	}
 
-	public double getXSpeed() {
-		return Math.cos(getCurrentAngle()) * speed;
-	}
+	//public double getXSpeed() {
+	//	return Math.cos(getCurrentAngle()) * speed;
+	//}
 
-	public double getYSpeed() {
-		return Math.sin(getCurrentAngle()) * speed;
-	}
+	//public double getYSpeed() {
+	//	return Math.sin(getCurrentAngle()) * speed;
+	//}
 	
-	public double getCurrentAngle() {
-		return path.getCurrentAngle();		
-	}
+	//public double getCurrentAngle() {
+	//	return path.getCurrentAngle();		
+	//}
 
 	public float getMidX() {
 		return getX() + getWidth() / 2;
@@ -180,5 +180,46 @@ public class Enemy extends Sprite {
 		returnEnemy.path = path.clone(returnEnemy);
 		returnEnemy.healthBar = healthBar.clone(returnEnemy);
 		return returnEnemy;
+	}
+
+	/**
+	 * Gets the distance to the next point in the Enemy's path
+	 * @return the second point of the link, to get the link reference .get(x) and .get(x-1)
+	 */
+	public int getCurrentLink() {
+		//first find which two points the Enemy is between
+		double myError;
+		int curLink = this.path.xyPath.size() - 1; //default to the last link
+		if (this.path.xyPath.size() > 2) {
+			for(int i = 1;i<this.path.xyPath.size();i++) {
+				if (((this.path.xyPath.get(i-1).y <= this.getY()) && (this.getY() <= this.path.xyPath.get(i).y))
+						|| ((this.path.xyPath.get(i).y <= this.getY()) && (this.getY() <= this.path.xyPath.get(i-1).y))) { // getY() is between y1 and y2
+					if (((this.path.xyPath.get(i-1).x <= this.getX()) && (this.getX() <= this.path.xyPath.get(i).x))
+							|| ((this.path.xyPath.get(i).x <= this.getX()) && (this.getX() <= this.path.xyPath.get(i-1).x))) { // getX() is between x1 and x2
+						if ((Math.abs(this.path.xyPath.get(i).x - this.path.xyPath.get(i-1).x)) < tolerance) { // vertical line, therefore
+							if (Math.abs(this.getX() - this.path.xyPath.get(i-1).x) < tolerance) { //just see if the X value matches
+								curLink = i;
+								i = this.path.xyPath.size()-1;
+							}
+						} else {
+							double m = (this.path.xyPath.get(i).y - this.path.xyPath.get(i-1).y) / (this.path.xyPath.get(i).x - this.path.xyPath.get(i-1).x);
+							double b = this.path.xyPath.get(i-1).y - m*this.path.xyPath.get(i-1).x; //b = y-mx
+							//now check to see if our point is on y=mx+b
+							myError = (m*this.getX()+b) - this.getY(); //should be zero if we are on this line
+							if (Math.abs(myError) < tolerance) {
+								curLink = i;
+								i = this.path.xyPath.size()-1;
+							}				
+						}
+					}
+				}
+				//if it's on this line
+				//check if it's between myPoint.x,myPoint.y and this.path.xyPath.get(i).x,this.path.xyPath.get(i).y
+			}
+			//now we have which link we're on
+			return curLink;
+		} else {
+			return -1;
+		}
 	}
 }

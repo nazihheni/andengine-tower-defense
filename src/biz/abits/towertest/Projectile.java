@@ -12,6 +12,13 @@ import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.util.modifier.IModifier;
 import org.andengine.util.modifier.IModifier.IModifierListener;
 
+class TrajectoryReturn {
+	double t;
+	double x;
+	double y;
+	double enemyAngle;
+}
+
 public class Projectile extends Sprite {
 	// I am Enemy class
 	Scene scene;
@@ -38,32 +45,70 @@ public class Projectile extends Sprite {
 		target = e;
 		source = t;
 	}
+	
+	/**
+	 * finds the time that it will take for the projectile to hit the enemy based on curLink and prevDist
+	 * @param curLink the link for us to assume the Enemy is on
+	 * @param prevDist the distance it will take for the enemy to get to this link (how big of a head-start the bullet has)
+	 * @return t the time it takes for the bullet to catch the enemy
+	 */
+	private TrajectoryReturn findTrajectory(int curLink, double prevDist) {
+		//don't forget when troubleshooting this stuff:
+		//EVERYTHING IS UPSIDE-DOWN, because higher Y means down, so your angles will be upside-down!!!
+		TrajectoryReturn trajectoryReturn = new TrajectoryReturn();
+		trajectoryReturn.enemyAngle = Math.atan2(target.path.xyPath.get(curLink).y - target.path.xyPath.get(curLink-1).y, target.path.xyPath.get(curLink).x - target.path.xyPath.get(curLink-1).x);
+		if (prevDist < 0) {
+			trajectoryReturn.x = target.getMidX();
+			trajectoryReturn.y = target.getMidY();
+		} else {
+			//we need to make up for the other links the Enemy has to travel before getting to this link
+			//enemyAngle is [-pi..pi]
+			Double backAngle = trajectoryReturn.enemyAngle + Math.PI;
+			trajectoryReturn.x = target.path.xyPath.get(curLink-1).x + Math.cos(backAngle)*prevDist + target.getMidX() - target.getX();
+			trajectoryReturn.y = target.path.xyPath.get(curLink-1).y + Math.sin(backAngle)*prevDist + target.getMidY() - target.getY();
+		}
+		final double enemytotowerAngle = Math.atan2(getMidY() - trajectoryReturn.y, getMidX() - trajectoryReturn.x); // angle of the hypotenuse (-pi to pi)
+		double incAngle = enemytotowerAngle - trajectoryReturn.enemyAngle; // this angle SHOULD be between 0 and pi/2
+		
+		while (incAngle <= -Math.PI)
+			incAngle += 2*Math.PI;
+		while (incAngle > Math.PI)
+			incAngle -= 2*Math.PI;
 
-	public void shoot(final ArrayList<Enemy> arrayEn, final BaseGameActivity myContext) {
-		// to predict where the enemy will be, we need a parametric equation for
-		// the enemy's position
-		final double enemytotowerAngle = Math.atan2(getMidY() - target.getMidY(), getMidX() - target.getMidX()); // angle of the hypotenuse (-pi to pi)
-		final double enemyAngle = target.getCurrentAngle(); // (-pi to pi)
-		double incAngle = enemytotowerAngle - enemyAngle; // this angle SHOULD be between 0 and pi/2
-		while (incAngle <= -180)
-			incAngle += 360;
-		while (incAngle > 180)
-			incAngle -= 360;
-
-		final double d0 = Math.sqrt(Math.pow(getMidX() - target.getMidX(), 2) + Math.pow(getMidY() - target.getMidY(), 2)); // starting distance
+		final double d0 = Math.sqrt(Math.pow(getMidX() - trajectoryReturn.x, 2) + Math.pow(getMidY() - trajectoryReturn.y, 2)); // starting distance
 		//final double y0 = d0 * Math.sin(incAngle);// ; // starting y distance to target
 		final double x0 = d0 * Math.cos(incAngle);// ; // starting x distance to target
 		// this quadratic equation is based on the law of cosines, just FYI
 		final double a = Math.pow(target.speed, 2) - Math.pow(Projectile.speed, 2);
 		final double b = -2 * target.speed * x0;
 		final double c = Math.pow(d0, 2);
-		final double t = (-b - Math.sqrt(Math.pow(b, 2) - 4 * a * c)) / (2 * a); // quadratic formula wee!
-		final double bulletDist = Projectile.speed * t;
-		final double enTravelDist = target.speed * t;
+		trajectoryReturn.t = (-b - Math.sqrt(Math.pow(b, 2) - 4 * a * c)) / (2 * a); // quadratic formula wee!
+		return trajectoryReturn;
+	}
+
+	/**
+	 * This function calculates the trajectory of the bullet, based on the Enemy's current speed and angle, it then gives the bullet that trajectory and sets a listener to remove the bullet for when the bullet reaches it's target
+	 * @param arrayEn
+	 * @param myContext
+	 */
+	public void shoot(final ArrayList<Enemy> arrayEn, final BaseGameActivity myContext) {
+		int curLink1 = target.getCurrentLink();
+		//start with the distance from the Enemy to the next point
+		double totalDist = Math.sqrt(Math.pow(target.path.xyPath.get(curLink1).x - target.getX(), 2) + Math.pow(target.path.xyPath.get(curLink1).y - target.getY(), 2));
+		TrajectoryReturn trajReturn = findTrajectory(curLink1, -1);
+		int curLink = curLink1;
+		//if it takes longer for the bullet than it takes for the enemy to turn the corner, look at the next link
+		while ((trajReturn.t > (totalDist / target.speed)) && (curLink<target.path.xyPath.size()-1)) { //if it equals the size, then we're on the last link, so who cares, go with it!
+			curLink++;
+			trajReturn = findTrajectory(curLink, totalDist);
+			totalDist += Math.sqrt(Math.pow(target.path.xyPath.get(curLink).x - target.path.xyPath.get(curLink-1).x, 2) + Math.pow(target.path.xyPath.get(curLink).y - target.path.xyPath.get(curLink-1).y, 2));
+		}
+		double bulletDist = Projectile.speed * trajReturn.t;
+		double enTravelDist = target.speed * trajReturn.t;
 		// D=r*t
 		// therefore t = D/r
-		trajectory = new MoveByModifier((float) (bulletDist / Projectile.speed), (float) (target.getMidX() - getMidX() + Math.cos(target.getCurrentAngle()) * enTravelDist),
-				(float) (target.getMidY() - getMidY() + Math.sin(target.getCurrentAngle()) * enTravelDist));
+		trajectory = new MoveByModifier((float) (bulletDist / Projectile.speed), (float) (trajReturn.x - getMidX() + Math.cos(trajReturn.enemyAngle) * enTravelDist),
+				(float) (trajReturn.y - getMidY() + Math.sin(trajReturn.enemyAngle) * enTravelDist));
 		trajectory.addModifierListener(new IModifierListener<IEntity>() {
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
@@ -92,7 +137,8 @@ public class Projectile extends Sprite {
 							scene.detachChild(target);
 						}
 					});
-					arrayEn.remove(target); // TODO play death animation enemy function pass scene to // detach }
+					arrayEn.remove(target); 
+					// TODO play death animation enemy function pass scene to
 				}
 			}
 		});
