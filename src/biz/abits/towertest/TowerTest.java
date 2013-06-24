@@ -16,6 +16,12 @@ import org.andengine.engine.options.resolutionpolicy.FillResolutionPolicy;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
+import org.andengine.entity.scene.background.Background;
+import org.andengine.entity.scene.menu.MenuScene;
+import org.andengine.entity.scene.menu.MenuScene.IOnMenuItemClickListener;
+import org.andengine.entity.scene.menu.item.IMenuItem;
+import org.andengine.entity.scene.menu.item.SpriteMenuItem;
+import org.andengine.entity.scene.menu.item.decorator.ScaleMenuItemDecorator;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.ButtonSprite.OnClickListener;
 import org.andengine.entity.text.Text;
@@ -46,12 +52,14 @@ import org.andengine.opengl.texture.atlas.bitmap.BuildableBitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.source.IBitmapTextureAtlasSource;
 import org.andengine.opengl.texture.atlas.buildable.builder.BlackPawnTextureAtlasBuilder;
 import org.andengine.opengl.texture.atlas.buildable.builder.ITextureAtlasBuilder.TextureAtlasBuilderException;
+import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.algorithm.path.astar.AStarPathFinder;
+import org.andengine.util.color.Color;
 import org.andengine.util.debug.Debug;
 
 import android.content.Context;
@@ -62,7 +70,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 @SuppressWarnings("unused")
-public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchListener, IScrollDetectorListener, IPinchZoomDetectorListener {
+public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchListener, IScrollDetectorListener, IPinchZoomDetectorListener, IOnMenuItemClickListener {
 	// I am Main class//
 	// TODO use accelerometer to pan screen around
 	// TODO Use SpriteBatch class for bullets, enemies, towers.
@@ -89,6 +97,8 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	public static int TOWER_HEIGHT = 96;
 	public final static int TILEID_BLOCKED = 31;
 	public final static int TILEID_CLEAR = 30;
+	private final int MENU_PLAY = 0;
+	private final int MENU_OPT = 1;
 	public static ZoomCamera zoomCamera;
 	/** used to offset the pan to adjust for panning from a tower */
 	public static float currentXoffset = 0;
@@ -101,10 +111,14 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	private float mPinchZoomStartedCameraZoomFactor;
 
 	private HUD hud;
+	private static Scene mainScene;
 	private static PauseableScene scene;
+	private static MenuScene menuScene;
 	private ProgressBar waveProgress; // add to wave class
 	public static TMXTiledMap mTMXTiledMap;
 	private static ButtonSprite pauseButton;
+	private ITextureRegion menuBtnPlayReg;
+	private ITextureRegion menuBtnOptionsReg;
 
 	static Waypoint lStarts[] = { new Waypoint(0, 0) };// , new Waypoint(-1, 1), new Waypoint(-1, 2), new Waypoint(-1, 3), new Waypoint(-1, 4), new Waypoint(-1, 5), new
 														// Waypoint(-1, 6) }; // define where the enemies will start at (can be 1 block off the map, and still be good)
@@ -230,13 +244,17 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		// ==== Towers
 		mBitmapTextureAtlas = new BuildableBitmapTextureAtlas(getTextureManager(), 1024, 1024);
 		towerTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, Tower.texture);
+		menuBtnOptionsReg = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, texPauseStr);
+		
+		menuBtnPlayReg = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, hitAreaTexBadStr);
+		
 		// ==== Projectiles
-		bulletTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, Projectile.texture);
+		bulletTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, hitAreaTexGoodStr);
 		// ==== Enemies
 		enTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, Enemy.texture);
 		hitAreaTextureGood = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, hitAreaTexGoodStr);
 		hitAreaTextureBad = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, hitAreaTexBadStr);
-		texPause = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, texPauseStr);// TowerTest.loadSprite(getTextureManager(), this, texPauseStr);
+		texPause = // TowerTest.loadSprite(getTextureManager(), this, texPauseStr);
 		texPlay = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, texPlayStr);// TowerTest.loadSprite(getTextureManager(), this, texPlayStr);
 		try {
 			this.mBitmapTextureAtlas.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 0, 0));
@@ -293,9 +311,58 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 	 */
 	@Override
 	protected Scene onCreateScene() {
+		// TODO Auto-generated method stub
+		
+		mainScene = new Scene();
+		mainScene.setBackground(new Background(Color.WHITE));
+		
+		menuScene = new MenuScene(zoomCamera);
+		final IMenuItem playButton = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_PLAY, 200, 70, menuBtnPlayReg,
+		  getVertexBufferObjectManager()), 1.1f, 1);
+		
+		final IMenuItem optButton = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_OPT, 200, 70, menuBtnOptionsReg,
+		  getVertexBufferObjectManager()), 1.1f, 1);
+		playButton.setPosition(CAMERA_WIDTH / 2 - playButton.getWidth() / 2, 100);
+		optButton.setPosition(CAMERA_WIDTH / 2 - optButton.getWidth() / 2, 200);
+		menuScene.addMenuItem(playButton);
+		menuScene.addMenuItem(optButton);
+		menuScene.buildAnimations();
+		
+		menuScene.setBackgroundEnabled(false);
+		menuScene.setOnMenuItemClickListener(new IOnMenuItemClickListener(){
+			@Override
+			public boolean onMenuItemClicked(MenuScene pMenuScene,
+					IMenuItem pMenuItem, float pMenuItemLocalX,
+					float pMenuItemLocalY) {
+				switch (pMenuItem.getID()) {
+				case MENU_PLAY:
+					//Toast.makeText(getBaseContext(), "MENU_PLAY!", Toast.LENGTH_LONG).show();
+					Log.e("Jared","MENU_PLAY");
+					scene = createGameScene();
+					mainScene.setChildScene(scene);
+					break;
+				case MENU_OPT:
+					//Toast.makeText(getBaseContext(), "MENU_OPT!", Toast.LENGTH_LONG).show();
+					Log.e("Jared","MENU_OPT");
+					break;
+				}
+				return false;
+			}
+		});
+		
+		mainScene.setChildScene(menuScene);
+		
+		return mainScene;
+		//*/
+		
+		
+		//*/
+	}
+	
+	private PauseableScene createGameScene(){
 		Log.i("Location:", "onCreateScene");
 		mEngine.registerUpdateHandler(new FPSLogger());
-		scene = new PauseableScene();
+		PauseableScene scene = new PauseableScene();
 		// HUD does not move with camera, it is stationary
 		hud = new HUD();
 		// number of enemies remaining
@@ -343,15 +410,12 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		mScrollDetector = new SurfaceScrollDetector(this);
 		mPinchZoomDetector = new PinchZoomDetector(this);
 		mPinchZoomDetector.setEnabled(true);
-		/*
-		 * {
-		 * 
-		 * @Override public void onPinchZoom(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
-		 * this.mCamera.setZoomFactor(Math.min( Math.max(this.maxZoom, this.mPinchZoomStartedCameraZoomFactor pZoomFactor), 2)); }
-		 * 
-		 * @Override public void onPinchZoomFinished(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
-		 * this.mCamera.setZoomFactor(Math.min( Math.max(this.maxZoom, this.mPinchZoomStartedCameraZoomFactor pZoomFactor), 2)); } };
-		 */
+		// @Override public void onPinchZoom(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
+		// this.mCamera.setZoomFactor(Math.min( Math.max(this.maxZoom, this.mPinchZoomStartedCameraZoomFactor pZoomFactor), 2)); }
+
+		// @Override public void onPinchZoomFinished(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
+		// this.mCamera.setZoomFactor(Math.min( Math.max(this.maxZoom, this.mPinchZoomStartedCameraZoomFactor pZoomFactor), 2)); } };
+		
 
 		mEngine.registerUpdateHandler(fpsCounter);
 		// xcoord,ycoord,font,initial text?,length,vbom
@@ -383,13 +447,12 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		subtractLives(0); // initialize the value
 
 		// maybe use this for HUD
-		/*
-		 * scene.registerUpdateHandler(new TimerHandler(1 / 10.0f, true, new ITimerCallback() {
-		 * 
-		 * @Override public void onTimePassed(final TimerHandler pTimerHandler) { //elapsedText.setText("Seconds elapsed: " +
-		 * ChangeableTextExample.this.mEngine.getSecondsElapsedTotal()); fpsText.setText("FPS: " + new DecimalFormat("#.##").format(fpsCounter.getFPS()));
-		 * creditText.setText("$" + credits); } }));
-		 */
+		// * scene.registerUpdateHandler(new TimerHandler(1 / 10.0f, true, new ITimerCallback() {
+		// * 
+		// * @Override public void onTimePassed(final TimerHandler pTimerHandler) { //elapsedText.setText("Seconds elapsed: " +
+		// * ChangeableTextExample.this.mEngine.getSecondsElapsedTotal()); fpsText.setText("FPS: " + new DecimalFormat("#.##").format(fpsCounter.getFPS()));
+		// * creditText.setText("$" + credits); } }));
+		
 
 		// scene.attachChild(fpsText);
 		// scene.attachChild(creditText);
@@ -790,6 +853,20 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 
 	public static float getYFromRow(int pR) {
 		return Math.round(pR * mTMXTiledMap.getTileHeight());
+	}
+
+	@Override
+	public boolean onMenuItemClicked(MenuScene pMenuScene, IMenuItem pMenuItem,
+			float pMenuItemLocalX, float pMenuItemLocalY) {
+		switch (pMenuItem.getID()) {
+		case MENU_PLAY:
+			Toast.makeText(this, "Menu Play", Toast.LENGTH_SHORT).show();
+			break;
+		case MENU_OPT:
+			Toast.makeText(this, "Menu Options", Toast.LENGTH_SHORT).show();
+			break;
+		}
+		return false;
 	}
 
 	// END OF CLASS

@@ -143,8 +143,9 @@ public class Tower extends Sprite {
 		if (!TowerTest.paused) {
 			try {
 				// call fire from the tower
-				//boolean fired = 
-				this.fire(enemy, this, scene, arrayEn, myContext); // Asks the tower to open fire and places
+				//boolean fired =
+				if ((enemy.getHealth() - enemy.inboundDamage) > 0) //this makes sure it doesn't overkill the enemy by a crazy amount
+					this.fire(enemy, this, scene, arrayEn, myContext); // Asks the tower to open fire and places
 																					// the bullet in middle of tower
 				/*
 				 * for(int i = 0; i < towerBulletList.size(); i++){ Projectile bullet; bullet = towerBulletList.get(i); if(bullet.isDone()) { //collidesWith(enemy)){

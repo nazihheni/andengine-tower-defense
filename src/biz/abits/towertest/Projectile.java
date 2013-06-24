@@ -126,6 +126,7 @@ public class Projectile extends Sprite {
 				});
 				source.removeBullet(Projectile.this);
 				// enemy takes damage
+				target.inboundDamage -= source.damage;
 				if (target.takeDamage(source.damage, source.damageType) < 1) { // then the enemy dies
 					if (target.isAlive) { // this prevents getting multiple credits for one kill!
 						target.isAlive = false;
@@ -143,6 +144,7 @@ public class Projectile extends Sprite {
 			}
 		});
 		registerEntityModifier(trajectory);
+		target.inboundDamage += source.damage;
 	}
 
 	public float getMidX() {

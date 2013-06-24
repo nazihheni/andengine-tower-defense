@@ -29,6 +29,8 @@ public class Enemy extends Sprite {
 	// static (only set once) area
 	public static ArrayList<Enemy> arrayEn;
 	private static Level level;
+	/** Keeps track of damage that is coming at the target, so the towers don't overkill like crazy */
+	public int inboundDamage = 0;
 	final static private double tolerance = 0.000001;
 	
 
