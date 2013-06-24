@@ -67,6 +67,7 @@ import android.graphics.Typeface;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.widget.Toast;
 
 @SuppressWarnings("unused")
@@ -353,10 +354,6 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		mainScene.setChildScene(menuScene);
 		
 		return mainScene;
-		//*/
-		
-		
-		//*/
 	}
 	
 	private PauseableScene createGameScene(){
@@ -622,6 +619,18 @@ public class TowerTest extends SimpleBaseGameActivity implements IOnSceneTouchLi
 		// update screen to reflect new score
 	}
 
+	@Override
+	public boolean dispatchKeyEvent(KeyEvent event)
+	{
+		if (event.getKeyCode() == KeyEvent.KEYCODE_BACK)
+		{
+			mainScene.setChildScene(menuScene);
+			return true;
+		} else {
+			return false;
+		}
+	}	
+	
 	public static void subtractLives(long pLives) {
 		lives -= pLives;
 		if (lives < 1) {
